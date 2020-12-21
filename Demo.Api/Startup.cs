@@ -1,6 +1,7 @@
 using System;
 using Demo.Api.Extensions;
 using Demo.Common.Filters;
+using Demo.Common.HealthCheck;
 using Demo.Common.Logging;
 using Demo.Common.Middleware;
 using Microsoft.AspNetCore.Builder;
@@ -77,6 +78,7 @@ namespace Demo.Api
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapDefaultHealthChecks();
                 endpoints.MapControllers();
             });
         }

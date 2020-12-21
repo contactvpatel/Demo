@@ -10,8 +10,6 @@ using AutoMapper;
 using Demo.Api.Extensions.Swagger;
 using Demo.Application.Interfaces;
 using Demo.Application.Services;
-using Demo.Common;
-using Demo.Common.Attributes;
 using Demo.Common.Logging;
 using Demo.Core.Configuration;
 using Demo.Core.Repositories;
@@ -45,6 +43,9 @@ namespace Demo.Api.Extensions
 
             // LoggingHelpers
             services.AddTransient<LoggingDelegatingHandler>();
+
+            // HealthChecks
+            services.AddHealthChecks().AddDbContextCheck<DemoContext>();
         }
 
         public static void ConfigureDatabases(IServiceCollection services)

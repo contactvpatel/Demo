@@ -8,7 +8,7 @@ namespace Demo.Application.Mapper
     // The best implementation of AutoMapper for class libraries -> https://www.abhith.net/blog/using-automapper-in-a-net-core-class-library/
     public static class ObjectMapper
     {
-        private static readonly Lazy<IMapper> Lazy = new Lazy<IMapper>(() =>
+        private static readonly Lazy<IMapper> Lazy = new(() =>
         {
             var config = new MapperConfiguration(cfg =>
             {
