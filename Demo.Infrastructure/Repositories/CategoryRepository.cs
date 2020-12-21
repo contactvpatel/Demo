@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Demo.Core.Entities;
 using Demo.Core.Repositories;
@@ -6,18 +8,30 @@ using Demo.Core.Specifications;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Demo.Infrastructure.Repositories
 {
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
-        public CategoryRepository(DemoContext dbContext, IConfiguration configuration) : base(dbContext, configuration)
+        private readonly DemoContext _demoDbContext;
+        private readonly ILogger<CategoryRepository> _logger;
+        
+        public CategoryRepository(DemoContext dbContext,IConfiguration configuration, ILogger<CategoryRepository> logger) : base(dbContext, configuration)
         {
+            _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<Category> GetCategoryWithProducts(int categoryId)
+        public async Task<IEnumerable<Category>> GetAll()
         {
-            var spec = new CategorySpecification(categoryId);
+            return await GetAllAsync();
+        }
+
+        public async Task<Category> GetById(int id)
+        {
+            // Using Specification Pattern
+            var spec = new CategorySpecification(id);
             var category = (await GetAsync(spec)).FirstOrDefault();
             return category;
         }

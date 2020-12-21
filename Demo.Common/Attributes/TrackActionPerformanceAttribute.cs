@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Demo.Common.Attributes;
 using Demo.Common.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace Demo.Common.Filters
+namespace Demo.Common.Attributes
 {
-    public class TrackActionPerformanceFilter : IActionFilter
+    [AttributeUsage(AttributeTargets.Method)]
+    public class TrackActionPerformance : ActionFilterAttribute
     {
         private Stopwatch _timer;
         private readonly ILogger<TrackActionPerformance> _logger;
         private IDisposable _userScope;
 
-        public TrackActionPerformanceFilter(ILogger<TrackActionPerformance> logger)
+        public TrackActionPerformance(ILogger<TrackActionPerformance> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public void OnActionExecuting(ActionExecutingContext context)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
             _timer = new Stopwatch();
 
@@ -38,7 +38,7 @@ namespace Demo.Common.Filters
             _timer.Start();
         }
 
-        public void OnActionExecuted(ActionExecutedContext context)
+        public override void OnActionExecuted(ActionExecutedContext context)
         {
             _timer.Stop();
             if (context.Exception == null)

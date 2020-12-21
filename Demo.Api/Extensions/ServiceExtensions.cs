@@ -11,12 +11,12 @@ using Demo.Api.Extensions.Swagger;
 using Demo.Application.Interfaces;
 using Demo.Application.Services;
 using Demo.Common;
+using Demo.Common.Attributes;
+using Demo.Common.Logging;
 using Demo.Core.Configuration;
-using Demo.Core.Interfaces;
 using Demo.Core.Repositories;
 using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Data;
-using Demo.Infrastructure.Logging;
 using Demo.Infrastructure.Repositories;
 using Demo.Infrastructure.Repositories.Base;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -35,7 +35,6 @@ namespace Demo.Api.Extensions
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
 
             // Add Application Layer
             services.AddScoped<IProductService, ProductService>();
@@ -44,8 +43,8 @@ namespace Demo.Api.Extensions
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            // Scope Information
-            services.AddSingleton<IScopeInformation, ScopeInformation>();
+            // LoggingHelpers
+            services.AddTransient<LoggingDelegatingHandler>();
         }
 
         public static void ConfigureDatabases(IServiceCollection services)
@@ -134,7 +133,7 @@ namespace Demo.Api.Extensions
             //options.SwaggerDoc("v2", new OpenApiInfo
             //{
             //    Version = "v2",
-            //    Title = "Demo API"
+            //    Detail = "Demo API"
             //});
         }
     }

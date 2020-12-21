@@ -7,8 +7,8 @@ namespace Demo.Core.Repositories
 {
     public interface IProductRepository : IRepository<Product>
     {
-        Task<IEnumerable<Product>> GetProducts();
-        Task<IEnumerable<Product>> GetProductByName(string productName);
-        Task<IEnumerable<Product>> GetProductByCategory(int categoryId);
+        Task<IEnumerable<Product>> GetAll();
+        Task<IEnumerable<Product>> GetByName(string productName);
+        Task<IEnumerable<Product>> GetByCategoryId(int categoryId);
     }
 }

@@ -41,7 +41,7 @@ namespace Demo.Core.Repositories.Base
         Task<T> QuerySingleAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
 
-        Task<int> ExecuteAsync(string sql, object param = null, IDbTransaction transaction = null,
+        Task<int> ExecuteAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
     }
 }

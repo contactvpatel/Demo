@@ -1,6 +1,7 @@
 using System;
 using Demo.Api.Extensions;
 using Demo.Common.Filters;
+using Demo.Common.Logging;
 using Demo.Common.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,7 +38,8 @@ namespace Demo.Api
             services.AddControllers(options =>
                 {
                     //options.ReturnHttpNotAcceptable = true;
-                    options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                    //Filter to track Action Performance for Entire application's actions
+                    //options.Filters.Add(typeof(TrackActionPerformanceFilter));
                 })
                 //.AddXmlDataContractSerializerFormatters()
                 .AddNewtonsoftJson();
@@ -46,17 +48,15 @@ namespace Demo.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            // Global Exception Handler Middleware
+            app.UseApiExceptionHandler(options =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
+                options.AddResponseDetails = UpdateApiErrorResponse;
+                options.DetermineLogLevel = DetermineLogLevel;
+            });
+            
+            if (!env.IsDevelopment())
             {
-                app.UseApiExceptionHandler(options =>
-                {
-                    options.AddResponseDetails = UpdateApiErrorResponse;
-                    options.DetermineLogLevel = DetermineLogLevel;
-                });
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -98,8 +98,6 @@ namespace Demo.Api
             {
                 apiError.Detail = "Exception was a database exception!";
             }
-
-            //apiError.Links = "https://gethelpformyerror.com/";
         }
     }
 }

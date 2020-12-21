@@ -8,19 +8,22 @@ using System.Threading.Tasks;
 using Demo.Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Demo.Infrastructure.Repositories
 {
     public class ProductRepository : Repository<Product>, IProductRepository
     {
         private readonly DemoContext _demoDbContext;
+        private readonly ILogger<ProductRepository> _logger;
 
-        public ProductRepository(DemoContext dbContext, IConfiguration configuration) : base(dbContext, configuration)
+        public ProductRepository(DemoContext dbContext, IConfiguration configuration, ILogger<ProductRepository> logger) : base(dbContext, configuration)
         {
             _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<Product>> GetProducts()
+        public async Task<IEnumerable<Product>> GetAll()
         {
             // Option 1: Using Specification & Generic Repository (EFCore)
             //var spec = new ProductSpecification();
@@ -47,7 +50,7 @@ namespace Demo.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProductByName(string productName)
+        public async Task<IEnumerable<Product>> GetByName(string productName)
         {
             return await _demoDbContext.Products
                 .Where(x => x.Name == productName)
@@ -55,7 +58,7 @@ namespace Demo.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProductByCategory(int categoryId)
+        public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)
         {
             return await _demoDbContext.Products
                 .Where(x => x.CategoryId == categoryId)

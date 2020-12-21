@@ -6,7 +6,7 @@ namespace Demo.Application.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<CategoryModel>> GetCategories();
-        Task<CategoryModel> GetCategoryById(int categoryId);
+        Task<IEnumerable<CategoryModel>> GetAll();
+        Task<CategoryModel> GetById(int id);
     }
 }

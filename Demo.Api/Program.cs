@@ -1,12 +1,13 @@
 using System;
 using System.IO;
+using Demo.Common.Logging;
 using Demo.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog.Web;
+using Serilog;
 
 namespace Demo.Api
 {
@@ -20,29 +21,18 @@ namespace Demo.Api
 
         public static void Main(string[] args)
         {
-            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-            try
-            {
-                var host = CreateHostBuilder(args).Build();
-                logger.Info("Seed Data");
-                SeedDatabase(host);
-                logger.Info("Starting Api host");
-                host.Run();
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Host terminated unexpectedly");
-            }
-            finally
-            {
-                NLog.LogManager.Shutdown();
-            }
+            var host = CreateHostBuilder(args).Build();
+            SeedDatabase(host);
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-                .UseNLog();
+                .UseSerilog((context, provider, loggerConfig) =>
+                {
+                    loggerConfig.LogConfiguration(context, provider, Configuration);
+                });
 
         private static void SeedDatabase(IHost host)
         {

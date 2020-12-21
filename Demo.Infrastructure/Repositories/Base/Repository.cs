@@ -106,71 +106,37 @@ namespace Demo.Infrastructure.Repositories.Base
             _demoDbContext.Set<T>().Remove(entity);
             await _demoDbContext.SaveChangesAsync();
         }
-
+        
         public async Task<IReadOnlyList<T>> QueryAsync<T>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
             await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
-            try
-            {
-                await connection.OpenAsync(cancellationToken);
-                return (await connection.QueryAsync<T>(sql, param, transaction)).ToList();
-            }
-            catch (Exception ex)
-            {
-                
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
-
-            return null;
+            await connection.OpenAsync(cancellationToken);
+            return (await connection.QueryAsync<T>(sql, param, transaction)).ToList();
         }
 
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
             await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
-            try
-            {
-                await connection.OpenAsync(cancellationToken);
-                return await connection.QueryFirstOrDefaultAsync<T>(sql, param, transaction);
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
+            await connection.OpenAsync(cancellationToken);
+            return await connection.QueryFirstOrDefaultAsync<T>(sql, param, transaction);
         }
 
         public async Task<T> QuerySingleAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
             await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
-            try
-            {
-                await connection.OpenAsync(cancellationToken);
-                return await connection.QuerySingleAsync<T>(sql, param, transaction);
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
+            await connection.OpenAsync(cancellationToken);
+            return await connection.QuerySingleAsync<T>(sql, param, transaction);
         }
 
-        public async Task<int> ExecuteAsync(string sql, object param = null, IDbTransaction transaction = null,
+        public async Task<int> ExecuteAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
             await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
-            try
-            {
-                await connection.OpenAsync(cancellationToken);
-                return await connection.ExecuteAsync(sql, param, transaction);
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
+            await connection.OpenAsync(cancellationToken);
+            return await connection.ExecuteAsync(sql, param, transaction);
         }
     }
 }

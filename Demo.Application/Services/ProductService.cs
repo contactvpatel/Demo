@@ -2,106 +2,86 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Demo.Core.Entities;
-using Demo.Core.Interfaces;
 using Demo.Core.Repositories;
 using Demo.Application.Models;
 using Demo.Application.Mapper;
 using Demo.Application.Interfaces;
+using Demo.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Demo.Application.Services
 {
-    // TODO : add validation , authorization, logging, exception handling etc. -- cross cutting activities in here.
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
-        private readonly IAppLogger<ProductService> _logger;
+        private readonly ILogger<ProductService> _logger;
 
-        public ProductService(IProductRepository productRepository, IAppLogger<ProductService> logger)
+        public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<ProductModel>> GetProducts()
+        public async Task<IEnumerable<ProductModel>> GetAll()
         {
-            var productList = await _productRepository.GetProducts();
+            var productList = await _productRepository.GetAll();
             return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
         }
 
-        public async Task<ProductModel> GetProductById(int productId)
+        public async Task<ProductModel> GetById(int id)
         {
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(id);
             return ObjectMapper.Mapper.Map<ProductModel>(product);
         }
 
-        public async Task<IEnumerable<ProductModel>> GetProductByName(string productName)
+        public async Task<IEnumerable<ProductModel>> GetByName(string productName)
         {
-            var productList = await _productRepository.GetProductByName(productName);
+            var productList = await _productRepository.GetByName(productName);
             return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
         }
 
-        public async Task<IEnumerable<ProductModel>> GetProductByCategory(int categoryId)
+        public async Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId)
         {
-            var productList = await _productRepository.GetProductByCategory(categoryId);
+            var productList = await _productRepository.GetByCategoryId(categoryId);
             return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
         }
 
         public async Task<ProductModel> Create(ProductModel productModel)
         {
-            await ValidateProductIfExist(productModel);
-
-            productModel.Created = DateTime.Now;
-            productModel.LastUpdated = DateTime.Now;
-
+            var newProduct = await _productRepository.GetByName(productModel.Name);
+            if (newProduct != null)
+                throw new ApplicationException($"Product already exits.");
+            
             var mappedEntity = ObjectMapper.Mapper.Map<Product>(productModel);
             if (mappedEntity == null)
-                throw new ApplicationException($"Entity could not be mapped.");
+                throw new ApplicationException($"Product could not be mapped."); 
 
             var newEntity = await _productRepository.AddAsync(mappedEntity);
-            _logger.LogInformation($"Entity successfully added.");
+            _logger.LogInformationExtension($"Product successfully added.");
 
             return ObjectMapper.Mapper.Map<ProductModel>(newEntity);
         }
 
         public async Task Update(ProductModel productModel)
         {
-            ValidateProductIfNotExist(productModel);
-
-            productModel.LastUpdated = DateTime.Now;
-
             var editProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (editProduct == null)
-                throw new ApplicationException($"Entity could not be loaded.");
+                throw new ApplicationException($"Product could not be loaded.");
 
             ObjectMapper.Mapper.Map(productModel, editProduct);
 
             await _productRepository.UpdateAsync(editProduct);
-            _logger.LogInformation($"Entity successfully updated.");
+            _logger.LogInformationExtension($"Product successfully updated.");
         }
 
         public async Task Delete(ProductModel productModel)
         {
-            ValidateProductIfNotExist(productModel);
             var deletedProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (deletedProduct == null)
-                throw new ApplicationException($"Entity could not be loaded.");
+                throw new ApplicationException($"Product could not be loaded.");
 
-            await _productRepository.DeleteAsync(deletedProduct);
-            _logger.LogInformation($"Entity successfully deleted.");
-        }
-
-        private async Task ValidateProductIfExist(ProductModel productModel)
-        {
-            var existingEntity = await _productRepository.GetByIdAsync(productModel.ProductId);
-            if (existingEntity != null)
-                throw new ApplicationException($"{productModel} with this id already exists");
-        }
-
-        private void ValidateProductIfNotExist(ProductModel productModel)
-        {
-            var existingEntity = _productRepository.GetByIdAsync(productModel.ProductId);
-            if (existingEntity == null)
-                throw new ApplicationException($"{productModel} with this id is not exists");
+            await _productRepository.DeleteAsync(ObjectMapper.Mapper.Map<Product>(deletedProduct));
+            _logger.LogInformationExtension($"Product successfully deleted.");
         }
     }
 }
