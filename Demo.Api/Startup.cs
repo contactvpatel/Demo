@@ -28,6 +28,13 @@ namespace Demo.Api
         public void ConfigureServices(IServiceCollection services)
         {
             // service dependencies
+            // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
+            services.Scan(scan => scan
+            .FromCallingAssembly()
+            .FromApplicationDependencies(c => c.FullName.StartsWith("Demo"))
+            .AddClasses()
+            .AsMatchingInterface().WithScopedLifetime());
+
             services.ConfigureDemoServices(Configuration);
 
             services.ConfigureApiVersioning();

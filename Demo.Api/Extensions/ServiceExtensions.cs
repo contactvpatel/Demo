@@ -8,15 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
 using Demo.Api.Extensions.Swagger;
-using Demo.Application.Interfaces;
-using Demo.Application.Services;
 using Demo.Common.Logging;
 using Demo.Core.Configuration;
-using Demo.Core.Repositories;
-using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Data;
-using Demo.Infrastructure.Repositories;
-using Demo.Infrastructure.Repositories.Base;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Demo.Api.Extensions
@@ -30,13 +24,15 @@ namespace Demo.Api.Extensions
 
             // Add Infrastructure Layer
             ConfigureDatabases(services);
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-            // Add Application Layer
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<ICategoryService, CategoryService>();
+            // NOTE: Following mapping is covered by Scrutor Scan method in Startup class.
+            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            //services.AddScoped<IProductRepository, ProductRepository>();
+            //services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            //// Add Application Layer
+            //services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<ICategoryService, CategoryService>();
 
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
