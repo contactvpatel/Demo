@@ -27,13 +27,7 @@ namespace Demo.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // service dependencies
-            // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
-            services.Scan(scan => scan
-            .FromCallingAssembly()
-            .FromApplicationDependencies(c => c.FullName.StartsWith("Demo"))
-            .AddClasses()
-            .AsMatchingInterface().WithScopedLifetime());
+            // service dependencies         
 
             services.ConfigureDemoServices(Configuration);
 

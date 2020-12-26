@@ -25,6 +25,13 @@ namespace Demo.Api.Extensions
             // Add Infrastructure Layer
             ConfigureDatabases(services);
 
+            // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
+            services.Scan(scan => scan
+            .FromCallingAssembly()
+            .FromApplicationDependencies(c => c.FullName.StartsWith("Demo"))
+            .AddClasses()
+            .AsMatchingInterface().WithScopedLifetime());
+
             // NOTE: Following mapping is covered by Scrutor Scan method in Startup class.
             //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             //services.AddScoped<IProductRepository, ProductRepository>();
