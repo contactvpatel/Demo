@@ -32,7 +32,7 @@ namespace Demo.Api.Extensions
             .AddClasses()
             .AsMatchingInterface().WithScopedLifetime());
 
-            // NOTE: Following mapping is covered by Scrutor Scan method in Startup class.
+            // NOTE: All below dependencies are covered using above use of Scrutor package. User can override scope by expecilty declaring it as well.
             //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             //services.AddScoped<IProductRepository, ProductRepository>();
             //services.AddScoped<ICategoryRepository, CategoryRepository>();

@@ -28,7 +28,6 @@ namespace Demo.Api
         public void ConfigureServices(IServiceCollection services)
         {
             // service dependencies         
-
             services.ConfigureDemoServices(Configuration);
 
             services.ConfigureApiVersioning();
