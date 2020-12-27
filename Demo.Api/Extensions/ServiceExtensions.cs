@@ -8,15 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
 using Demo.Api.Extensions.Swagger;
-using Demo.Application.Interfaces;
-using Demo.Application.Services;
 using Demo.Common.Logging;
 using Demo.Core.Configuration;
-using Demo.Core.Repositories;
-using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Data;
-using Demo.Infrastructure.Repositories;
-using Demo.Infrastructure.Repositories.Base;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Demo.Api.Extensions
@@ -30,13 +24,22 @@ namespace Demo.Api.Extensions
 
             // Add Infrastructure Layer
             ConfigureDatabases(services);
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-            // Add Application Layer
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<ICategoryService, CategoryService>();
+            // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
+            services.Scan(scan => scan
+            .FromCallingAssembly()
+            .FromApplicationDependencies(c => c.FullName.StartsWith("Demo"))
+            .AddClasses()
+            .AsMatchingInterface().WithScopedLifetime());
+
+            // NOTE: All below dependencies are covered using above use of Scrutor package. User can override scope by expecilty declaring it as well.
+            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            //services.AddScoped<IProductRepository, ProductRepository>();
+            //services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            //// Add Application Layer
+            //services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<ICategoryService, CategoryService>();
 
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
