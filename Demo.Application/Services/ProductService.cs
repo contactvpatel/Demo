@@ -41,6 +41,7 @@ namespace Demo.Application.Services
         {
             var productList = await _productRepository.GetByName(productName);
 
+            // Note: Get the data from Order Microservice. This is an example of how to get data from another Microservice.
             var orderList = await _orderCommunication.GetOrders(productName);
 
             return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
