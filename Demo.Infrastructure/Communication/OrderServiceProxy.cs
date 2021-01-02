@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Demo.Infrastructure.Communication
 {
-    public class OrderCommunication : IOrderCommunication
+    public class OrderServiceProxy : IOrderServiceProxy
     {
         private readonly IRestClient _client;
         private readonly IRestRequest _request;
 
-        public OrderCommunication(IRestClient client)
+        public OrderServiceProxy(IRestClient client)
         {
             _client = client;
             _request = new RestRequest();

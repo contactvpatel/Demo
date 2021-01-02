@@ -16,9 +16,9 @@ namespace Demo.Application.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductService> _logger;
-        private readonly IOrderCommunication _orderCommunication;
+        private readonly IOrderServiceProxy _orderCommunication;
 
-        public ProductService(IProductRepository productRepository, IOrderCommunication orderCommunication, ILogger<ProductService> logger)
+        public ProductService(IProductRepository productRepository, IOrderServiceProxy orderCommunication, ILogger<ProductService> logger)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _orderCommunication = orderCommunication ?? throw new ArgumentNullException(nameof(orderCommunication));
