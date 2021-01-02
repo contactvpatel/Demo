@@ -12,26 +12,26 @@ namespace Demo.Infrastructure.Communication
         private readonly IRestClient _client;
         private readonly IRestRequest _request;
 
-        public OrderCommunication(IRestClient client, IRestRequest request)
+        public OrderCommunication(IRestClient client)
         {
             _client = client;
-            _request = request;
+            _request = new RestRequest();
         }
 
         public async Task<List<long>> GetOrders(string orderedBy)
         {
-            var orderServiceUrl = ""; // Should get the URL from the configuration and append the required API names i.e. http://orderService/api/get
+            var orderServiceUrl = "https://localhost:44339/controller/GetOrders"; // Should get the URL from the configuration and append the required API names i.e. http://orderService/api/get
             var orderInput = new OrderInput() { OrderBy = orderedBy };
-            var response = await Execute(JsonConvert.SerializeObject(orderInput), orderServiceUrl, Method.GET);
+            var response = await Execute(JsonConvert.SerializeObject(orderInput), orderServiceUrl);
             var orderResponse = JsonConvert.DeserializeObject<OrderResponse>(response);
             return orderResponse.Orders;
         }
 
-        private async Task<string> Execute(string input, string url, Method method)
+        private async Task<string> Execute(string input, string url)
         {
             _request.Parameters.Clear();
             _request.Resource = url;
-            _request.Method = method;
+            _request.Method = Method.POST;
             _request.AddHeader("Content-type", "application/json");
 
             if (!string.IsNullOrEmpty(input))
@@ -39,8 +39,12 @@ namespace Demo.Infrastructure.Communication
                 _request.AddJsonBody(input);
             }
 
-            var response = await _client.ExecuteAsync(_request);
-            return response.Content;
+            // Note: Uncomment and call the service to get the data
+          // var response = await _client.ExecuteAsync(_request);
+
+            // Note: Check the status code and take appropriate action if invalid
+            // TODO: should use response.Content
+            return JsonConvert.SerializeObject( new OrderResponse() { Orders = new List<long>() { 101,102 } });
         }
     }
 }

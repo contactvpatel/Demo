@@ -12,6 +12,9 @@ using Demo.Common.Logging;
 using Demo.Core.Configuration;
 using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using RestSharp;
+using Demo.Core.Communication;
+using Demo.Infrastructure.Communication;
 
 namespace Demo.Api.Extensions
 {
@@ -46,6 +49,8 @@ namespace Demo.Api.Extensions
 
             // LoggingHelpers
             services.AddTransient<LoggingDelegatingHandler>();
+
+            services.AddTransient<IRestClient>(c => new RestClient("http://localhost:44339")); // TODO: Read the sercive URL from configuration
 
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoContext>();
