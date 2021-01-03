@@ -8,6 +8,7 @@ using Demo.Application.Mapper;
 using Demo.Application.Interfaces;
 using Demo.Common.Logging;
 using Microsoft.Extensions.Logging;
+using Demo.Core.Communication;
 
 namespace Demo.Application.Services
 {
@@ -15,10 +16,12 @@ namespace Demo.Application.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductService> _logger;
+        private readonly IOrderServiceProxy _orderCommunication;
 
-        public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
+        public ProductService(IProductRepository productRepository, IOrderServiceProxy orderCommunication, ILogger<ProductService> logger)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _orderCommunication = orderCommunication ?? throw new ArgumentNullException(nameof(orderCommunication));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -37,6 +40,10 @@ namespace Demo.Application.Services
         public async Task<IEnumerable<ProductModel>> GetByName(string productName)
         {
             var productList = await _productRepository.GetByName(productName);
+
+            // Note: Get the data from Order Microservice. This is an example of how to get data from another Microservice.
+            var orderList = await _orderCommunication.GetOrders(productName);
+
             return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
         }
 
@@ -83,5 +90,6 @@ namespace Demo.Application.Services
             await _productRepository.DeleteAsync(ObjectMapper.Mapper.Map<Product>(deletedProduct));
             _logger.LogInformationExtension($"Product successfully deleted.");
         }
+              
     }
 }

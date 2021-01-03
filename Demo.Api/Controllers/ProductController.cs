@@ -60,6 +60,20 @@ namespace Demo.Api.Controllers
             return Ok(_mapper.Map<ProductApiModel>(product));
         }
 
+        [HttpGet("GetByName/{name}")]
+        public async Task<ActionResult<ProductApiModel>> GetByName(string name)
+        {
+            _logger.LogInformationExtension($"Get Product By Name: {name}");
+            var product = await _productService.GetByName(name);
+            if (product == null)
+            {
+                _logger.LogInformationExtension("Unable to locate product in the database");
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map<ProductApiModel>(product));
+        }
+
         [HttpGet("categories/{categoryId}")]
         public async Task<ActionResult<ProductApiModel>> GetByCategoryId(int categoryId)
         {
