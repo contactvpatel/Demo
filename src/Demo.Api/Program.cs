@@ -42,8 +42,8 @@ namespace Demo.Api
 
             try
             {
-                var aspnetRunContext = services.GetRequiredService<DemoContext>();
-                DemoContextSeed.SeedAsync(aspnetRunContext, loggerFactory).Wait();
+                var demoDbContext = services.GetRequiredService<DemoContext>();
+                DemoContextSeed.SeedAsync(demoDbContext, loggerFactory).Wait();
             }
             catch (Exception exception)
             {

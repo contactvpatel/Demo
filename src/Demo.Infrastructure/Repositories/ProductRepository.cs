@@ -15,11 +15,14 @@ namespace Demo.Infrastructure.Repositories
     public class ProductRepository : Repository<Product>, IProductRepository
     {
         private readonly DemoContext _demoDbContext;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<ProductRepository> _logger;
 
-        public ProductRepository(DemoContext dbContext, IConfiguration configuration, ILogger<ProductRepository> logger) : base(dbContext, configuration)
+        public ProductRepository(DemoContext dbContext, IConfiguration configuration, ILogger<ProductRepository> logger)
+            : base(dbContext, configuration)
         {
             _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

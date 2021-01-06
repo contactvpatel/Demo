@@ -15,5 +15,23 @@ namespace Demo.Core.Entities
         public int CategoryId { get; set; }
         public string ProductReason { get; set; }
         public Category Category { get; set; }
+
+        public static Product Create(int productId, int categoryId, string name, decimal? unitPrice = null,
+            short? unitsInStock = null, short? unitsOnOrder = null, short? reorderLevel = null,
+            bool discontinued = false)
+        {
+            var product = new Product
+            {
+                ProductId = productId,
+                CategoryId = categoryId,
+                Name = name,
+                UnitPrice = unitPrice,
+                UnitsInStock = unitsInStock,
+                UnitsOnOrder = unitsOnOrder,
+                ReorderLevel = reorderLevel,
+                Discontinued = discontinued
+            };
+            return product;
+        }
     }
 }

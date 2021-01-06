@@ -8,12 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
 using Demo.Api.Extensions.Swagger;
-using Demo.Core.Configuration;
 using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
-using Demo.Core.Communication;
-using Demo.Infrastructure.Communication;
 using Demo.Util.Logging;
 
 namespace Demo.Api.Extensions
@@ -22,20 +19,17 @@ namespace Demo.Api.Extensions
     {
         public static void ConfigureDemoServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add Core Layer
-            services.Configure<DemoSettings>(configuration);
-
             // Add Infrastructure Layer
             ConfigureDatabases(services);
 
             // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
             services.Scan(scan => scan
             .FromCallingAssembly()
-            .FromApplicationDependencies(c => c.FullName.StartsWith("Demo"))
+            .FromApplicationDependencies(c => c.FullName != null && c.FullName.StartsWith("Demo"))
             .AddClasses()
             .AsMatchingInterface().WithScopedLifetime());
 
-            // NOTE: All below dependencies are covered using above use of Scrutor package. User can override scope by expecilty declaring it as well.
+            // NOTE: All below dependencies are covered using above use of Scrutor package. User can override scope by explicitly declaring it as well.
             //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             //services.AddScoped<IProductRepository, ProductRepository>();
             //services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -50,7 +44,8 @@ namespace Demo.Api.Extensions
             // LoggingHelpers
             services.AddTransient<LoggingDelegatingHandler>();
 
-            services.AddTransient<IRestClient>(c => new RestClient("http://localhost:44339")); // TODO: Read the sercive URL from configuration
+            //External Service Dependency (Example: OrderService)
+            services.AddTransient<IRestClient>(c => new RestClient(configuration["OrderServiceEndpoint"]));
 
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoContext>();

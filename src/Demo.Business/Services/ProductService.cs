@@ -18,6 +18,12 @@ namespace Demo.Business.Services
         private readonly ILogger<ProductService> _logger;
         private readonly IOrderServiceProxy _orderCommunication;
 
+        public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
+        {
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public ProductService(IProductRepository productRepository, IOrderServiceProxy orderCommunication, ILogger<ProductService> logger)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
@@ -55,7 +61,7 @@ namespace Demo.Business.Services
 
         public async Task<ProductModel> Create(ProductModel productModel)
         {
-            var newProduct = await _productRepository.GetByName(productModel.Name);
+            var newProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (newProduct != null)
                 throw new ApplicationException($"Product already exits.");
             

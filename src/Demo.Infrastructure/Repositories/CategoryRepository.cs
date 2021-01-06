@@ -15,11 +15,14 @@ namespace Demo.Infrastructure.Repositories
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         private readonly DemoContext _demoDbContext;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<CategoryRepository> _logger;
-        
-        public CategoryRepository(DemoContext dbContext,IConfiguration configuration, ILogger<CategoryRepository> logger) : base(dbContext, configuration)
+
+        public CategoryRepository(DemoContext dbContext, IConfiguration configuration,
+            ILogger<CategoryRepository> logger) : base(dbContext, configuration)
         {
             _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(logger));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
