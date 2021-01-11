@@ -1,26 +1,29 @@
-﻿using Demo.Core.Communication;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Demo.Core.Communication;
 using Demo.Core.Entities;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RestSharp;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace Demo.Infrastructure.Communication
+namespace Demo.Infrastructure.Services
 {
     public class OrderServiceProxy : IOrderServiceProxy
     {
         private readonly IRestClient _client;
+        private readonly IConfiguration _configuration;
         private readonly IRestRequest _request;
 
-        public OrderServiceProxy(IRestClient client)
+        public OrderServiceProxy(IRestClient client, IConfiguration configuration)
         {
             _client = client;
+            _configuration = configuration;
             _request = new RestRequest();
         }
 
         public async Task<List<long>> GetOrders(string orderedBy)
         {
-            var orderServiceUrl = "https://localhost:44339/controller/GetOrders"; // Should get the URL from the configuration and append the required API names i.e. http://orderService/api/get
+            var orderServiceUrl = _configuration["OrderServiceEndpoint"];
             var orderInput = new OrderInput { OrderBy = orderedBy };
             var response = await Execute(JsonConvert.SerializeObject(orderInput), orderServiceUrl);
             var orderResponse = JsonConvert.DeserializeObject<OrderResponse>(response);
