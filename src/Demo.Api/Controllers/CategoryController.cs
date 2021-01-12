@@ -4,9 +4,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
+using Demo.Core.Models;
 using Demo.Util.Logging;
+using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Demo.Api.Controllers
 {
@@ -27,12 +30,33 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryApiModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<CategoryApiModel>>> Get(
+            [FromQuery] QueryStringParameters queryStringParameters)
         {
             _logger.LogInformationExtension("Get Categories");
-            return Ok(_mapper.Map<IEnumerable<CategoryApiModel>>(await _categoryService.GetAll()));
-        }
+            var categories = await _categoryService.Get(queryStringParameters);
+            if (categories == null)
+            {
+                _logger.LogErrorExtension("No categories found", null);
+                return NotFound(new Response<ProductApiModel>(null, false, "No categories found"));
+            }
 
+            _logger.LogInformationExtension($"Found {categories.Count} categories");
+
+            var paginationMetadata = new
+            {
+                categories.TotalCount,
+                categories.PageSize,
+                categories.CurrentPage,
+                categories.TotalPages,
+                categories.HasPreviousPage,
+                categories.HasNextPage
+            };
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(new Response<IEnumerable<CategoryApiModel>>(
+                _mapper.Map<IEnumerable<CategoryApiModel>>(categories)));
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryApiModel>> GetById(int id)
@@ -41,11 +65,11 @@ namespace Demo.Api.Controllers
             var category = await _categoryService.GetById(id);
             if (category == null)
             {
-                _logger.LogInformationExtension($"Category Not Found. CategoryId : {id}");
-                return NotFound();
+                _logger.LogErrorExtension($"No category found with id {id}", null);
+                return NotFound(new Response<ProductApiModel>(null, false, $"No category with id {id}"));
             }
 
-            return Ok(_mapper.Map<CategoryApiModel>(category));
+            return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(category)));
         }
     }
 }

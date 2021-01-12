@@ -2,13 +2,13 @@
 using Demo.Core.Repositories.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Demo.Core.Models;
 
 namespace Demo.Core.Repositories
 {
     public interface IProductRepository : IRepository<Product>
     {
-        Task<IEnumerable<Product>> GetAll();
-        Task<IEnumerable<Product>> GetByName(string productName);
+        Task<PagedList<Product>> Get(QueryStringParameters queryStringParameters);
         Task<IEnumerable<Product>> GetByCategoryId(int categoryId);
     }
 }

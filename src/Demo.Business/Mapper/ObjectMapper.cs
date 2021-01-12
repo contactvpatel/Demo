@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using AutoMapper;
 using Demo.Business.Models;
 using Demo.Core.Entities;
+using Demo.Core.Models;
 
 namespace Demo.Business.Mapper
 {
@@ -19,6 +21,7 @@ namespace Demo.Business.Mapper
             var mapper = config.CreateMapper();
             return mapper;
         });
+
         public static IMapper Mapper => Lazy.Value;
     }
 
@@ -28,6 +31,24 @@ namespace Demo.Business.Mapper
         {
             CreateMap<Product, ProductModel>().ReverseMap();
             CreateMap<Category, CategoryModel>().ReverseMap();
+            CreateMap(typeof(PagedList<>), typeof(PagedList<>)).ConvertUsing(typeof(PagedListConverter<,>));
+        }
+    }
+
+    public class PagedListConverter<TSource, TDestination> : ITypeConverter<PagedList<TSource>, PagedList<TDestination>>
+    {
+        public PagedList<TDestination> Convert(PagedList<TSource> source, PagedList<TDestination> destination,
+            ResolutionContext context)
+        {
+            destination ??= new PagedList<TDestination>();
+            destination.AddRange(source.Select(item => context.Mapper.Map<TSource, TDestination>(item)));
+            destination.CurrentPage = source.CurrentPage;
+            destination.PageSize = source.PageSize;
+            destination.TotalPages = source.TotalPages;
+            destination.TotalCount = source.TotalCount;
+            destination.HasPreviousPage = source.HasPreviousPage;
+            destination.HasNextPage = source.HasNextPage;
+            return destination;
         }
     }
 }

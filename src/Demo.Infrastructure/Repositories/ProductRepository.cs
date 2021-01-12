@@ -5,6 +5,7 @@ using Demo.Infrastructure.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Demo.Core.Models;
 using Demo.Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +27,7 @@ namespace Demo.Infrastructure.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<Product>> GetAll()
+        public async Task<PagedList<Product>> Get(QueryStringParameters queryStringParameters)
         {
             // Option 1: Using Specification & Generic Repository (EFCore)
             //var spec = new ProductSpecification();
@@ -48,17 +49,17 @@ namespace Demo.Infrastructure.Repositories
             //return await QueryAsync<Product>("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT");
 
             // Option 6: Standard EFCore Way
-            return await _demoDbContext.Products
-                .Include(x => x.Category)
-                .ToListAsync();
-        }
 
-        public async Task<IEnumerable<Product>> GetByName(string productName)
-        {
-            return await _demoDbContext.Products
-                .Where(x => x.Name == productName)
+            var pagedData = await _demoDbContext.Products
                 .Include(x => x.Category)
+                .Skip((queryStringParameters.PageNumber - 1) * queryStringParameters.PageSize)
+                .Take(queryStringParameters.PageSize)
                 .ToListAsync();
+
+            var totalRecords = await _demoDbContext.Products.CountAsync();
+
+            return new PagedList<Product>(pagedData, totalRecords, queryStringParameters.PageNumber,
+                queryStringParameters.PageSize);
         }
 
         public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)

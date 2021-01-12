@@ -6,10 +6,14 @@ using AutoMapper;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
+using Demo.Core.Models;
 using Demo.Util.Attributes;
 using Demo.Util.Logging;
+using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Demo.Api.Controllers
 {
@@ -32,46 +36,45 @@ namespace Demo.Api.Controllers
 
         [HttpGet]
         //[TypeFilter(typeof(TrackActionPerformance))] //Track Performance of Individual Action
-        public async Task<ActionResult<IEnumerable<ProductApiModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ProductApiModel>>> Get(
+            [FromQuery] QueryStringParameters queryStringParameters)
         {
             _logger.LogInformationExtension("Get Products");
-            var products = await _productService.GetAll();
+            var products = await _productService.Get(queryStringParameters);
             if (products == null)
             {
-                _logger.LogWarningExtension("Products does not exist");
-                return NotFound();
+                _logger.LogErrorExtension("No products found", null);
+                return NotFound(new Response<ProductApiModel>(null, false, "No products found"));
             }
 
-            _logger.LogInformationExtension($"Found {products.Count()} products");
-            return Ok(_mapper.Map<IEnumerable<ProductApiModel>>(products));
+            _logger.LogInformationExtension($"Found {products.Count} products");
+
+            var paginationMetadata = new
+            {
+                products.TotalCount,
+                products.PageSize,
+                products.CurrentPage,
+                products.TotalPages,
+                products.HasPreviousPage,
+                products.HasNextPage
+            };
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(new Response<IEnumerable<ProductApiModel>>(_mapper.Map<IEnumerable<ProductApiModel>>(products)));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductApiModel>> GetById(int productId)
+        public async Task<ActionResult<ProductApiModel>> GetById(int id)
         {
-            _logger.LogInformationExtension($"Get Product By Id: {productId}");
-            var product = await _productService.GetById(productId);
+            _logger.LogInformationExtension($"Get Product By Id: {id}");
+            var product = await _productService.GetById(id);
             if (product == null)
             {
-                _logger.LogInformationExtension("Unable to locate product in the database");
-                return NotFound();
+                _logger.LogErrorExtension($"No product found with id {id}", null);
+                return NotFound(new Response<ProductApiModel>(null, false, $"No product found with id {id}"));
             }
 
-            return Ok(_mapper.Map<ProductApiModel>(product));
-        }
-
-        [HttpGet("GetByName/{name}")]
-        public async Task<ActionResult<ProductApiModel>> GetByName(string name)
-        {
-            _logger.LogInformationExtension($"Get Product By Name: {name}");
-            var product = await _productService.GetByName(name);
-            if (product == null)
-            {
-                _logger.LogInformationExtension("Unable to locate product in the database");
-                return NotFound();
-            }
-
-            return Ok(_mapper.Map<ProductApiModel>(product));
+            return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(product)));
         }
 
         [HttpGet("categories/{categoryId}")]
@@ -79,14 +82,14 @@ namespace Demo.Api.Controllers
         {
             _logger.LogInformationExtension($"Get Product By Category. CategoryId: {categoryId}");
             var products = await _productService.GetByCategoryId(categoryId);
-            if (products == null)
+            if (!products.Any())
             {
-                _logger.LogInformationExtension(
-                    $"Product By Category Not Found. CategoryId : {categoryId}");
-                return NotFound();
+                _logger.LogInformationExtension($"Product By Category Not Found. CategoryId : {categoryId}");
+                return NotFound(new Response<ProductApiModel>(null, false,
+                    $"Product By Category Not Found. CategoryId : {categoryId}"));
             }
 
-            return Ok(_mapper.Map<IEnumerable<ProductApiModel>>(products));
+            return Ok(new Response<IEnumerable<ProductApiModel>>(_mapper.Map<IEnumerable<ProductApiModel>>(products)));
         }
 
         [HttpPost]
@@ -107,31 +110,59 @@ namespace Demo.Api.Controllers
             return CreatedAtRoute("GetById", new {productId = productApiModel.ProductId}, product);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<ProductApiModel>> Put([FromBody] ProductApiModel productApiModel)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ProductApiModel>> Put(int id, [FromBody] ProductApiModel productApiModel)
         {
             _logger.LogInformationExtension(
                 $"Put Product - Id: {productApiModel.ProductId}, Name: {productApiModel.Name}");
+
+            if (!ModelState.IsValid)
+            {
+                _logger.LogErrorExtension("Invalid product object sent from client.", null);
+                return BadRequest(new Response<ProductApiModel>(null, false, "Invalid model object"));
+            }
+
+            var productEntity = await _productService.GetById(id);
+            if (productEntity == null)
+            {
+                _logger.LogErrorExtension($"Product with id: {id}, hasn't been found in db.", null);
+                return NotFound(new Response<ProductApiModel>(null, false,
+                    $"Product with id: {id}, hasn't been found in db."));
+            }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
 
             productApiModel.LastUpdatedBy = userId;
             productApiModel.LastUpdated = DateTime.Now;
 
-            var product = _mapper.Map<ProductModel>(productApiModel);
+            _mapper.Map(productApiModel, productEntity);
 
-            await _productService.Update(product);
+            await _productService.Update(productEntity);
 
-            return Ok(productApiModel);
+            return Ok(new Response<ProductApiModel>(null));
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<ProductApiModel>> Delete(int id)
         {
             _logger.LogInformationExtension($"Delete Product - Id: {id}");
-            var productModel = new ProductModel {ProductId = id};
-            await _productService.Delete(productModel);
-            return Ok();
+
+            var productEntity = await _productService.GetById(id);
+            if (productEntity == null)
+            {
+                _logger.LogErrorExtension($"Product with id: {id}, hasn't been found in db.", null);
+                return NotFound(new Response<ProductApiModel>(null, false,
+                    $"Product with id: {id}, hasn't been found in db."));
+            }
+
+            var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
+
+            productEntity.LastUpdatedBy = userId;
+            productEntity.LastUpdated = DateTime.Now;
+
+            await _productService.Delete(productEntity);
+
+            return Ok(new Response<ProductApiModel>(null));
         }
     }
 }

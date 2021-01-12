@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Demo.Util
+namespace Demo.Util.Models
 {
     public class UserInfo
     {
