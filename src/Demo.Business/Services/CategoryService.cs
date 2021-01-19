@@ -20,9 +20,9 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PagedList<CategoryModel>> Get(QueryStringParameters queryStringParameters)
+        public async Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery)
         {
-            var category = await _categoryRepository.Get(queryStringParameters);
+            var category = await _categoryRepository.Get(paginationQuery);
             return ObjectMapper.Mapper.Map<PagedList<CategoryModel>>(category);
         }
 

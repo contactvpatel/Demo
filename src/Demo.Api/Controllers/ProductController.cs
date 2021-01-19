@@ -37,10 +37,10 @@ namespace Demo.Api.Controllers
         [HttpGet]
         //[TypeFilter(typeof(TrackActionPerformance))] //Track Performance of Individual Action
         public async Task<ActionResult<IEnumerable<ProductApiModel>>> Get(
-            [FromQuery] QueryStringParameters queryStringParameters)
+            [FromQuery] PaginationQuery paginationQuery)
         {
             _logger.LogInformationExtension("Get Products");
-            var products = await _productService.Get(queryStringParameters);
+            var products = await _productService.Get(paginationQuery);
             if (products == null)
             {
                 _logger.LogErrorExtension("No products found", null);

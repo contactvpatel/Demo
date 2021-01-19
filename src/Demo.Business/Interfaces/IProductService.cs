@@ -7,7 +7,7 @@ namespace Demo.Business.Interfaces
 {
     public interface IProductService
     {
-        Task<PagedList<ProductModel>> Get(QueryStringParameters queryStringParameters);
+        Task<PagedList<ProductModel>> Get(PaginationQuery paginationQuery);
         Task<ProductModel> GetById(int id);
         Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId);
         Task<ProductModel> Create(ProductModel productModel);

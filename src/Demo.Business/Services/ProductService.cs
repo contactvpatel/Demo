@@ -32,9 +32,9 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PagedList<ProductModel>> Get(QueryStringParameters queryStringParameters)
+        public async Task<PagedList<ProductModel>> Get(PaginationQuery paginationQuery)
         {
-            var productList = await _productRepository.Get(queryStringParameters);
+            var productList = await _productRepository.Get(paginationQuery);
             return ObjectMapper.Mapper.Map<PagedList<ProductModel>>(productList);
         }
 

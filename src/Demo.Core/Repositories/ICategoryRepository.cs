@@ -8,7 +8,7 @@ namespace Demo.Core.Repositories
 {
     public interface ICategoryRepository : IRepository<Category>
     {
-        Task<PagedList<Category>> Get(QueryStringParameters queryStringParameters);
+        Task<PagedList<Category>> Get(PaginationQuery paginationQuery);
         Task<Category> GetById(int id);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Demo.Core.Entities;
@@ -28,17 +27,17 @@ namespace Demo.Infrastructure.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PagedList<Category>> Get(QueryStringParameters queryStringParameters)
+        public async Task<PagedList<Category>> Get(PaginationQuery paginationQuery)
         {
             var pagedData = await _demoDbContext.Categories
-                .Skip((queryStringParameters.PageNumber - 1) * queryStringParameters.PageSize)
-                .Take(queryStringParameters.PageSize)
+                .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
+                .Take(paginationQuery.PageSize)
                 .ToListAsync();
 
-            var totalRecords = await _demoDbContext.Products.CountAsync();
+            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoDbContext.Categories.CountAsync() : 0;
 
-            return new PagedList<Category>(pagedData, totalRecords, queryStringParameters.PageNumber,
-                queryStringParameters.PageSize);
+            return new PagedList<Category>(pagedData, totalRecords, paginationQuery.PageNumber,
+                paginationQuery.PageSize);
         }
 
         public async Task<Category> GetById(int id)

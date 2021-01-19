@@ -31,10 +31,10 @@ namespace Demo.Api.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryApiModel>>> Get(
-            [FromQuery] QueryStringParameters queryStringParameters)
+            [FromQuery] PaginationQuery paginationQuery)
         {
             _logger.LogInformationExtension("Get Categories");
-            var categories = await _categoryService.Get(queryStringParameters);
+            var categories = await _categoryService.Get(paginationQuery);
             if (categories == null)
             {
                 _logger.LogErrorExtension("No categories found", null);

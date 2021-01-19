@@ -27,7 +27,7 @@ namespace Demo.Infrastructure.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<PagedList<Product>> Get(QueryStringParameters queryStringParameters)
+        public async Task<PagedList<Product>> Get(PaginationQuery paginationQuery)
         {
             // Option 1: Using Specification & Generic Repository (EFCore)
             //var spec = new ProductSpecification();
@@ -52,14 +52,14 @@ namespace Demo.Infrastructure.Repositories
 
             var pagedData = await _demoDbContext.Products
                 .Include(x => x.Category)
-                .Skip((queryStringParameters.PageNumber - 1) * queryStringParameters.PageSize)
-                .Take(queryStringParameters.PageSize)
+                .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
+                .Take(paginationQuery.PageSize)
                 .ToListAsync();
 
-            var totalRecords = await _demoDbContext.Products.CountAsync();
+            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoDbContext.Products.CountAsync() : 0;
 
-            return new PagedList<Product>(pagedData, totalRecords, queryStringParameters.PageNumber,
-                queryStringParameters.PageSize);
+            return new PagedList<Product>(pagedData, totalRecords, paginationQuery.PageNumber,
+                paginationQuery.PageSize);
         }
 
         public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)

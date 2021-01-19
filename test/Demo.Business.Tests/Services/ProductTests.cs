@@ -41,9 +41,9 @@ namespace Demo.Business.Tests.Services
             _mockProductRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product2);
 
             var productService = new ProductService(_mockProductRepository.Object, _mockLogger.Object);
-            var productList = await productService.Get(new QueryStringParameters());
+            var productList = await productService.Get(new PaginationQuery());
 
-            _mockProductRepository.Verify(x => x.Get(new QueryStringParameters()), Times.Once);
+            _mockProductRepository.Verify(x => x.Get(new PaginationQuery()), Times.Once);
         }
 
         [Fact]

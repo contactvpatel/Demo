@@ -7,7 +7,7 @@ namespace Demo.Business.Interfaces
 {
     public interface ICategoryService
     {
-        Task<PagedList<CategoryModel>> Get(QueryStringParameters queryStringParameters);
+        Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery);
         Task<CategoryModel> GetById(int id);
     }
 }
