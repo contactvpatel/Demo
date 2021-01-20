@@ -58,42 +58,6 @@ namespace Demo.Infrastructure.Tests.Repositories
         }
 
         [Fact]
-        public async Task Get_Product_By_Name()
-        {
-            // GetProductByNameAsync spec required Category, because it is included Category entity so it should be exist
-            var existingCategory = CategoryBuilder.WithDefaultValues();
-
-            var category = _demoDbContext.Categories.SingleOrDefault(f => f.Name == existingCategory.Name);
-
-            if (category != null)
-            {
-                _demoDbContext.Categories.Remove(category);
-                await _demoDbContext.SaveChangesAsync();
-            }
-
-            await _demoDbContext.Categories.AddAsync(existingCategory);
-
-            var existingProduct = ProductBuilder.WithDefaultValues();
-            var product = _demoDbContext.Products.SingleOrDefault(f => f.Name == existingProduct.Name);
-
-            if (product != null)
-            {
-                _demoDbContext.Products.Remove(product);
-                await _demoDbContext.SaveChangesAsync();
-            }
-            
-            await _demoDbContext.Products.AddAsync(existingProduct);
-            
-            await _demoDbContext.SaveChangesAsync();
-            
-            var productName = existingProduct.Name;
-            _output.WriteLine($"ProductName: {productName}");
-            
-            var productListFromRepo = await _productRepository.GetByName(productName);
-            Assert.Equal(ProductBuilder.TestProductName, productListFromRepo.ToList().First().Name);
-        }
-
-        [Fact]
         public async Task Get_Product_By_Category()
         {
             var existingCategory = CategoryBuilder.WithDefaultValues();

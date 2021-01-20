@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Demo.Util.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Demo.Util.Middleware
 {
@@ -35,21 +38,32 @@ namespace Demo.Util.Middleware
 
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var error = new ApiError
+            var errorId = Guid.NewGuid().ToString();
+            var apiErrors = new List<ApiError>
             {
-                Id = Guid.NewGuid().ToString(),
-                Status = (short) HttpStatusCode.InternalServerError,
-                Detail = "Error occurred in the API. Please use the id and contact support team if the problem persists."
+                new()
+                {
+                    ErrorId = errorId,
+                    StatusCode = (short) HttpStatusCode.InternalServerError,
+                    Message =
+                        "Error occurred in the API. Please use the ErrorId and contact support team if the problem persists."
+                }
             };
 
-            _options.AddResponseDetails?.Invoke(context, exception, error);
+            var errorResponse = new Response<ApiError>(null) {Succeeded = false, Errors = apiErrors};
+
+            _options.AddResponseDetails?.Invoke(context, exception, errorResponse);
 
             var innerExMessage = GetInnermostExceptionMessage(exception);
 
             var level = _options.DetermineLogLevel?.Invoke(exception) ?? LogLevel.Error;
-            _logger.Log(level, exception, "Exception Occurred: " + innerExMessage + " -- Error Id: {ErrorId}.", error.Id);
+            _logger.Log(level, exception, $"Exception Occurred: {innerExMessage} -- ErrorId: {errorId}");
 
-            var result = JsonConvert.SerializeObject(error);
+            var serializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            var result = JsonConvert.SerializeObject(errorResponse, serializerSettings);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
             return context.Response.WriteAsync(result);

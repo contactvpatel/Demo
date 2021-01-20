@@ -6,6 +6,7 @@ using Demo.Business.Mapper;
 using Demo.Business.Models;
 using Demo.Core.Communication;
 using Demo.Core.Entities;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Util.Logging;
 using Microsoft.Extensions.Logging;
@@ -31,26 +32,16 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<ProductModel>> GetAll()
+        public async Task<PagedList<ProductModel>> Get(PaginationQuery paginationQuery)
         {
-            var productList = await _productRepository.GetAll();
-            return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
+            var productList = await _productRepository.Get(paginationQuery);
+            return ObjectMapper.Mapper.Map<PagedList<ProductModel>>(productList);
         }
 
         public async Task<ProductModel> GetById(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             return ObjectMapper.Mapper.Map<ProductModel>(product);
-        }
-
-        public async Task<IEnumerable<ProductModel>> GetByName(string productName)
-        {
-            var productList = await _productRepository.GetByName(productName);
-
-            // Note: Get the data from Order Microservice. This is an example of how to get data from another Microservice.
-            var orderList = await _orderCommunication.GetOrders(productName);
-
-            return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
         }
 
         public async Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId)

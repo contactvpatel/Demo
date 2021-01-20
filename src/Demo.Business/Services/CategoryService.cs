@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Demo.Business.Interfaces;
 using Demo.Business.Mapper;
 using Demo.Business.Models;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Microsoft.Extensions.Logging;
 
@@ -20,11 +20,10 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetAll()
+        public async Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery)
         {
-            // Example of using Base Repository method without using Infrastructure Layer's CategoryRepository
-            var category = await _categoryRepository.GetAllAsync();
-            return ObjectMapper.Mapper.Map<IEnumerable<CategoryModel>>(category);
+            var category = await _categoryRepository.Get(paginationQuery);
+            return ObjectMapper.Mapper.Map<PagedList<CategoryModel>>(category);
         }
 
         public async Task<CategoryModel> GetById(int id)

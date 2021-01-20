@@ -137,7 +137,7 @@ namespace Demo.Api.Extensions
             //options.SwaggerDoc("v2", new OpenApiInfo
             //{
             //    Version = "v2",
-            //    Detail = "Demo API"
+            //    Title = "Demo API"
             //});
         }
     }
