@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Routing;
 
-namespace Demo.Util.HealthCheck
+namespace Demo.Api.HealthCheck
 {
     public static class HealthCheckRouteBuilderExtensions
     {

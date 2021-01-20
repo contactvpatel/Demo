@@ -1,10 +1,10 @@
 using System;
 using Demo.Api.Extensions;
-using Demo.Util.Filters;
-using Demo.Util.HealthCheck;
+using Demo.Api.Filters;
+using Demo.Api.HealthCheck;
 using Demo.Util.Middleware;
-using FluentValidation.AspNetCore;
 using Demo.Util.Models;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +44,7 @@ namespace Demo.Api
                     //options.Filters.Add(typeof(TrackActionPerformanceFilter));
                     options.Filters.Add<ValidationFilter>();
                 })
+                .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
                 .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Startup>(); })
                 //.AddXmlDataContractSerializerFormatters()
                 .AddNewtonsoftJson();

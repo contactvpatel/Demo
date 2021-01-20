@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Demo.Api.Validators
 {
-    public class ProductCreateValidator : AbstractValidator<ProductApiModel>
+    public class ProductApiModelValidator : AbstractValidator<ProductApiModel>
     {
-        public ProductCreateValidator()
+        public ProductApiModelValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty() // Shouldn't be empty
