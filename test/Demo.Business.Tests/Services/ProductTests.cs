@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Demo.Business.Services;
 using Demo.Core.Entities;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Core.Repositories.Base;
 using Microsoft.Extensions.Logging;
@@ -32,17 +33,17 @@ namespace Demo.Business.Tests.Services
             var product1 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>());
             var product2 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>());
 
-            //category.AddProduct(product1.Id, It.IsAny<string>());
-            //category.AddProduct(product2.Id, It.IsAny<string>());
+            //category.AddProduct(product1.ProductId, It.IsAny<string>());
+            //category.AddProduct(product2.ProductId, It.IsAny<string>());
 
             _mockCategoryRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(category);
             _mockProductRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product1);
             _mockProductRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product2);
 
             var productService = new ProductService(_mockProductRepository.Object, _mockLogger.Object);
-            var productList = await productService.GetAll();
+            var productList = await productService.Get(new PaginationQuery());
 
-            _mockProductRepository.Verify(x => x.GetAll(), Times.Once);
+            _mockProductRepository.Verify(x => x.Get(new PaginationQuery()), Times.Once);
         }
 
         [Fact]

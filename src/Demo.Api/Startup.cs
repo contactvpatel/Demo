@@ -2,6 +2,7 @@ using System;
 using Demo.Api.Extensions;
 using Demo.Util.HealthCheck;
 using Demo.Util.Middleware;
+using Demo.Util.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -94,11 +95,11 @@ namespace Demo.Api
             return LogLevel.Error;
         }
 
-        private void UpdateApiErrorResponse(HttpContext context, Exception ex, ApiError apiError)
+        private void UpdateApiErrorResponse(HttpContext context, Exception ex, Response<ApiError> apiError)
         {
             if (ex.GetType().Name == nameof(SqlException))
             {
-                apiError.Detail = "Exception was a database exception!";
+                apiError.Message = "Exception was a database exception!";
             }
         }
     }

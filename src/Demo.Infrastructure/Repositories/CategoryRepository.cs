@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Demo.Core.Entities;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Core.Specifications;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -26,9 +27,17 @@ namespace Demo.Infrastructure.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<Category>> GetAll()
+        public async Task<PagedList<Category>> Get(PaginationQuery paginationQuery)
         {
-            return await GetAllAsync();
+            var pagedData = await _demoDbContext.Categories
+                .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
+                .Take(paginationQuery.PageSize)
+                .ToListAsync();
+
+            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoDbContext.Categories.CountAsync() : 0;
+
+            return new PagedList<Category>(pagedData, totalRecords, paginationQuery.PageNumber,
+                paginationQuery.PageSize);
         }
 
         public async Task<Category> GetById(int id)

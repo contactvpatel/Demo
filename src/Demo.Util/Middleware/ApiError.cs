@@ -2,10 +2,10 @@
 {
     public class ApiError
     {
-        public string Id { get; set; }
+        public string ErrorId { get; set; }
 
-        public short Status { get; set; }
+        public short StatusCode { get; set; }
 
-        public string Detail { get; set; }
+        public string Message { get; set; }
     }
 }
