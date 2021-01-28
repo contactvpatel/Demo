@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using Demo.Api.Models;
+using Demo.Api.Dto;
 using Demo.Business.Interfaces;
 using Demo.Core.Models;
 using Demo.Util.Logging;
@@ -30,7 +30,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryApiModel>>> Get(
+        public async Task<ActionResult<IEnumerable<CategoryResponse>>> Get(
             [FromQuery] PaginationQuery paginationQuery)
         {
             _logger.LogInformationExtension("Get Categories");
@@ -38,7 +38,7 @@ namespace Demo.Api.Controllers
             if (categories == null)
             {
                 _logger.LogErrorExtension("No categories found", null);
-                return NotFound(new Response<ProductApiModel>(null, false, "No categories found"));
+                return NotFound(new Response<ProductResponse>(null, false, "No categories found"));
             }
 
             _logger.LogInformationExtension($"Found {categories.Count} categories");
@@ -54,22 +54,22 @@ namespace Demo.Api.Controllers
             };
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(new Response<IEnumerable<CategoryApiModel>>(
-                _mapper.Map<IEnumerable<CategoryApiModel>>(categories)));
+            return Ok(new Response<IEnumerable<CategoryResponse>>(
+                _mapper.Map<IEnumerable<CategoryResponse>>(categories)));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CategoryApiModel>> GetById(int id)
+        public async Task<ActionResult<CategoryResponse>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Category By Id: {id}");
             var category = await _categoryService.GetById(id);
             if (category == null)
             {
                 _logger.LogErrorExtension($"No category found with id {id}", null);
-                return NotFound(new Response<ProductApiModel>(null, false, $"No category with id {id}"));
+                return NotFound(new Response<ProductResponse>(null, false, $"No category with id {id}"));
             }
 
-            return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(category)));
+            return Ok(new Response<CategoryResponse>(_mapper.Map<CategoryResponse>(category)));
         }
     }
 }

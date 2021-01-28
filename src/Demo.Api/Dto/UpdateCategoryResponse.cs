@@ -1,9 +1,10 @@
-﻿namespace Demo.Api.Models
+﻿namespace Demo.Api.Dto
 {
-    public class CategoryApiModel : BaseApiModel
+    public class UpdateCategoryResponse
     {
         public int CategoryId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public int LastUpdatedBy { get; set; }
     }
 }

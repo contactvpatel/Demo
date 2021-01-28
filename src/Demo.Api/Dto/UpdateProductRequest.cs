@@ -1,6 +1,6 @@
-﻿namespace Demo.Api.Models
+﻿namespace Demo.Api.Dto
 {
-    public class ProductApiModel : BaseApiModel
+    public class UpdateProductRequest
     {
         public int ProductId { get; set; }
         public string Name { get; set; }
@@ -11,6 +11,6 @@
         public short? ReorderLevel { get; set; }
         public bool Discontinued { get; set; }
         public int? CategoryId { get; set; }
-        public CategoryApiModel Category { get; set; }
+        public int LastUpdatedBy { get; set; }
     }
 }
