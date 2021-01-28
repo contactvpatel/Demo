@@ -102,11 +102,9 @@ namespace Demo.Api.Controllers
             productApiModel.LastUpdatedBy = userId;
             productApiModel.LastUpdated = DateTime.Now;
 
-            var product = _mapper.Map<ProductModel>(productApiModel);
+            var newProduct = await _productService.Create(_mapper.Map<ProductModel>(productApiModel));
 
-            await _productService.Create(product);
-
-            return CreatedAtRoute("GetById", new {productId = productApiModel.ProductId}, product);
+            return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(newProduct)));
         }
 
         [HttpPut("{id}")]

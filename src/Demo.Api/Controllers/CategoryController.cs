@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
+using Demo.Business.Models;
 using Demo.Core.Models;
 using Demo.Util.Logging;
 using Demo.Util.Models;
@@ -70,6 +72,22 @@ namespace Demo.Api.Controllers
             }
 
             return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(category)));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ProductApiModel>> Post([FromBody] CategoryApiModel categoryApiModel)
+        {
+            _logger.LogInformationExtension($"Post Category - Name: {categoryApiModel.Name}");
+
+            var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
+            categoryApiModel.CreatedBy = userId;
+            categoryApiModel.Created = DateTime.Now;
+            categoryApiModel.LastUpdatedBy = userId;
+            categoryApiModel.LastUpdated = DateTime.Now;
+
+            var newCategory = await _categoryService.Create(_mapper.Map<CategoryModel>(categoryApiModel));
+
+            return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(newCategory)));
         }
     }
 }

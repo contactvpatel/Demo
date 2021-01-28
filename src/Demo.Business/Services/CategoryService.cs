@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Demo.Business.Interfaces;
 using Demo.Business.Mapper;
 using Demo.Business.Models;
+using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
+using Demo.Util.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Demo.Business.Services
@@ -35,6 +37,22 @@ namespace Demo.Business.Services
             //Example of using Infrastructure Layer's CategoryRepository with Specification Pattern
             var category = await _categoryRepository.GetById(id);
             return ObjectMapper.Mapper.Map<CategoryModel>(category);
+        }
+
+        public async Task<CategoryModel> Create(CategoryModel categoryModel)
+        {
+            var newProduct = await _categoryRepository.GetByIdAsync(categoryModel.CategoryId);
+            if (newProduct != null)
+                throw new ApplicationException("Category already exits.");
+
+            var mappedEntity = ObjectMapper.Mapper.Map<Category>(categoryModel);
+            if (mappedEntity == null)
+                throw new ApplicationException("Category could not be mapped.");
+
+            var newEntity = await _categoryRepository.AddAsync(mappedEntity);
+            _logger.LogInformationExtension("Category successfully added.");
+
+            return ObjectMapper.Mapper.Map<CategoryModel>(newEntity);
         }
     }
 }
