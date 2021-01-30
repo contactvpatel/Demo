@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Demo.Api.Attributes;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
-using Demo.Util.Attributes;
 using Demo.Util.Logging;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -103,11 +102,9 @@ namespace Demo.Api.Controllers
             productApiModel.LastUpdatedBy = userId;
             productApiModel.LastUpdated = DateTime.Now;
 
-            var product = _mapper.Map<ProductModel>(productApiModel);
+            var newProduct = await _productService.Create(_mapper.Map<ProductModel>(productApiModel));
 
-            await _productService.Create(product);
-
-            return CreatedAtRoute("GetById", new {productId = productApiModel.ProductId}, product);
+            return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(newProduct)));
         }
 
         [HttpPut("{id}")]
