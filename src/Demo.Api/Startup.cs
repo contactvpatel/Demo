@@ -1,8 +1,10 @@
 using System;
 using Demo.Api.Extensions;
-using Demo.Util.HealthCheck;
+using Demo.Api.Filters;
+using Demo.Api.HealthCheck;
 using Demo.Util.Middleware;
 using Demo.Util.Models;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -40,7 +42,10 @@ namespace Demo.Api
                     //options.ReturnHttpNotAcceptable = true;
                     //Filter to track Action Performance for Entire application's actions
                     //options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                    options.Filters.Add<ValidationFilter>();
                 })
+                .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
+                .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Startup>(); })
                 //.AddXmlDataContractSerializerFormatters()
                 .AddNewtonsoftJson();
         }

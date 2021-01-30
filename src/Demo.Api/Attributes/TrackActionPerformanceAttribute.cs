@@ -6,7 +6,7 @@ using Demo.Util.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace Demo.Util.Attributes
+namespace Demo.Api.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class TrackActionPerformance : ActionFilterAttribute
