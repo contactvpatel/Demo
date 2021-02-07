@@ -8,6 +8,7 @@ namespace Demo.Business.Interfaces
     {
         Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery);
         Task<CategoryModel> GetById(int id);
-        Task<CategoryModel> Create(CategoryModel productModel);
+        Task<CategoryModel> Create(CategoryModel categoryModel);
+        Task Update(CategoryModel categoryModel);
     }
 }

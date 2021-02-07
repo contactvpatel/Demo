@@ -54,5 +54,17 @@ namespace Demo.Business.Services
 
             return ObjectMapper.Mapper.Map<CategoryModel>(newEntity);
         }
+
+        public async Task Update(CategoryModel categoryModel)
+        {
+            var editCategory = await _categoryRepository.GetByIdAsync(categoryModel.CategoryId);
+            if (editCategory == null)
+                throw new ApplicationException($"Category could not be loaded.");
+
+            ObjectMapper.Mapper.Map(categoryModel, editCategory);
+
+            await _categoryRepository.UpdateAsync(editCategory);
+            _logger.LogInformationExtension($"Category successfully updated.");
+        }
     }
 }

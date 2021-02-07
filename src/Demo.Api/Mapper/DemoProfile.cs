@@ -8,12 +8,12 @@ namespace Demo.Api.Mapper
     {
         public DemoProfile()
         {
+            CreateMap<CategoryModel, CategoryCreateRequest>().ReverseMap();
             CreateMap<CategoryModel, CategoryResponse>().ReverseMap();
-            CreateMap<CategoryModel, CreateCategoryResponse>().ReverseMap();
-            CreateMap<CategoryModel, UpdateCategoryResponse>().ReverseMap();
+            CreateMap<CategoryModel, CategoryUpdateRequest>().ReverseMap();
+            CreateMap<ProductModel, ProductCreateRequest>().ReverseMap();
             CreateMap<ProductModel, ProductResponse>().ReverseMap();
-            CreateMap<ProductModel, CreateProductRequest>().ReverseMap();
-            CreateMap<ProductModel, UpdateProductRequest>().ReverseMap();
+            CreateMap<ProductModel, ProductUpdateRequest>().ReverseMap();
         }
     }
 }

@@ -16,12 +16,34 @@ namespace Demo.Util.Models
             Errors = null;
             Data = data;
         }
+        public Response(T data, string message)
+        {
+            Succeeded = true;
+            Message = message;
+            Errors = null;
+            Data = data;
+        }
+
+        public Response(bool succeeded, string message)
+        {
+            Succeeded = succeeded;
+            Message = message;
+            Errors = null;
+        }
 
         public Response(T data, bool succeeded, string message)
         {
             Succeeded = succeeded;
             Message = message;
             Errors = null;
+            Data = data;
+        }
+
+        public Response(T data, bool succeeded, string message, List<ApiError> errors)
+        {
+            Succeeded = succeeded;
+            Message = message;
+            Errors = errors;
             Data = data;
         }
 
