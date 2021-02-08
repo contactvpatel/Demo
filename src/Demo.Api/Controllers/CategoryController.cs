@@ -100,16 +100,16 @@ namespace Demo.Api.Controllers
             {
                 var message = $"Category with id: {categoryUpdateRequest.CategoryId}, hasn't been found in db.";
                 _logger.LogErrorExtension(message, null);
-                return NotFound(new Response<CategoryResponse>(false, message));
+                return UnprocessableEntity(new Response<CategoryResponse>(false, message));
             }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
 
             categoryUpdateRequest.LastUpdatedBy = userId;
 
-            var updatedCategory = _categoryService.Update(_mapper.Map(categoryUpdateRequest, categoryEntity));
+            await _categoryService.Update(_mapper.Map(categoryUpdateRequest, categoryEntity));
 
-            return Ok(new Response<CategoryResponse>(_mapper.Map<CategoryResponse>(updatedCategory)));
+            return Ok(new Response<ProductResponse>(null, true, "Category is successfully updated"));
         }
     }
 }

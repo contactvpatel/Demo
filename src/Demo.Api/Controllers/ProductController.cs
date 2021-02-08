@@ -117,16 +117,16 @@ namespace Demo.Api.Controllers
             {
                 var message = $"Product with id: {productUpdateRequest.ProductId}, hasn't been found in db.";
                 _logger.LogErrorExtension(message, null);
-                return NotFound(new Response<ProductResponse>(false, message));
+                return UnprocessableEntity(new Response<ProductResponse>(false, message));
             }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
 
             productUpdateRequest.LastUpdatedBy = userId;
 
-            var updatedProduct = _productService.Update(_mapper.Map(productUpdateRequest, productEntity));
+            await _productService.Update(_mapper.Map(productUpdateRequest, productEntity));
 
-            return Ok(new Response<ProductResponse>(_mapper.Map<ProductResponse>(updatedProduct)));
+            return Ok(new Response<ProductResponse>(null, true, "Product is successfully updated"));
         }
 
         [HttpDelete("{id}", Name = "DeleteProduct")]
@@ -139,7 +139,7 @@ namespace Demo.Api.Controllers
             {
                 var message = $"Product with id: {id}, hasn't been found in db.";
                 _logger.LogErrorExtension(message, null);
-                return NotFound(new Response<ProductResponse>(false, message));
+                return UnprocessableEntity(new Response<ProductResponse>(false, message));
             }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
@@ -149,7 +149,7 @@ namespace Demo.Api.Controllers
 
             await _productService.Delete(productEntity);
 
-            return Ok(new Response<ProductResponse>(null));
+            return Ok(new Response<ProductResponse>(null, true, "Product is successfully deleted"));
         }
     }
 }
