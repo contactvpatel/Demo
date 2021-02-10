@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Demo.Api.Models
+namespace Demo.Api.Dto
 {
-    public class CategoryApiModel : BaseApiModel
+    public class CategoryUpdateRequest
     {
         public int CategoryId { get; set; }
 
@@ -10,5 +10,7 @@ namespace Demo.Api.Models
         public string Name { get; set; }
 
         public string Description { get; set; }
+
+        public int LastUpdatedBy { get; set; }
     }
 }

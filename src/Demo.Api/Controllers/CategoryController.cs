@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Demo.Api.Models;
+using Demo.Api.Dto;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
@@ -31,16 +31,17 @@ namespace Demo.Api.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryApiModel>>> Get(
+        [HttpGet(Name = "GetAllCategories")]
+        public async Task<ActionResult<IEnumerable<CategoryResponse>>> Get(
             [FromQuery] PaginationQuery paginationQuery)
         {
             _logger.LogInformationExtension("Get Categories");
             var categories = await _categoryService.Get(paginationQuery);
             if (categories == null)
             {
-                _logger.LogErrorExtension("No categories found", null);
-                return NotFound(new Response<ProductApiModel>(null, false, "No categories found"));
+                var message = "No categories found";
+                _logger.LogErrorExtension(message, null);
+                return NotFound(new Response<CategoryResponse>(false, message));
             }
 
             _logger.LogInformationExtension($"Found {categories.Count} categories");
@@ -56,38 +57,59 @@ namespace Demo.Api.Controllers
             };
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(new Response<IEnumerable<CategoryApiModel>>(
-                _mapper.Map<IEnumerable<CategoryApiModel>>(categories)));
+            return Ok(new Response<IEnumerable<CategoryResponse>>(
+                _mapper.Map<IEnumerable<CategoryResponse>>(categories)));
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CategoryApiModel>> GetById(int id)
+        [HttpGet("{id}", Name = "GetCategoryById")]
+        public async Task<ActionResult<CategoryResponse>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Category By Id: {id}");
             var category = await _categoryService.GetById(id);
             if (category == null)
             {
-                _logger.LogErrorExtension($"No category found with id {id}", null);
-                return NotFound(new Response<ProductApiModel>(null, false, $"No category with id {id}"));
+                var message = $"No category found with id {id}";
+                _logger.LogErrorExtension(message, null);
+                return NotFound(new Response<CategoryResponse>(false, message));
             }
 
-            return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(category)));
+            return Ok(new Response<CategoryResponse>(_mapper.Map<CategoryResponse>(category)));
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ProductApiModel>> Post([FromBody] CategoryApiModel categoryApiModel)
+        [HttpPost(Name = "CreateCategory")]
+        public async Task<ActionResult<CategoryResponse>> Create([FromBody] CategoryCreateRequest categoryCreateRequest)
         {
-            _logger.LogInformationExtension($"Post Category - Name: {categoryApiModel.Name}");
+            _logger.LogInformationExtension($"Create Category - Name: {categoryCreateRequest.Name}");
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
-            categoryApiModel.CreatedBy = userId;
-            categoryApiModel.Created = DateTime.Now;
-            categoryApiModel.LastUpdatedBy = userId;
-            categoryApiModel.LastUpdated = DateTime.Now;
+            categoryCreateRequest.CreatedBy = userId;
 
-            var newCategory = await _categoryService.Create(_mapper.Map<CategoryModel>(categoryApiModel));
+            var newCategory = await _categoryService.Create(_mapper.Map<CategoryModel>(categoryCreateRequest));
 
-            return Ok(new Response<CategoryApiModel>(_mapper.Map<CategoryApiModel>(newCategory)));
+            return Ok(new Response<CategoryResponse>(_mapper.Map<CategoryResponse>(newCategory)));
+        }
+
+        [HttpPut(Name = "UpdateCategory")]
+        public async Task<ActionResult<CategoryResponse>> Update([FromBody] CategoryUpdateRequest categoryUpdateRequest)
+        {
+            _logger.LogInformationExtension(
+                $"Update Category - Id: {categoryUpdateRequest.CategoryId}, Name: {categoryUpdateRequest.Name}");
+
+            var categoryEntity = await _categoryService.GetById(categoryUpdateRequest.CategoryId);
+            if (categoryEntity == null)
+            {
+                var message = $"Category with id: {categoryUpdateRequest.CategoryId}, hasn't been found in db.";
+                _logger.LogErrorExtension(message, null);
+                return UnprocessableEntity(new Response<CategoryResponse>(false, message));
+            }
+
+            var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
+
+            categoryUpdateRequest.LastUpdatedBy = userId;
+
+            await _categoryService.Update(_mapper.Map(categoryUpdateRequest, categoryEntity));
+
+            return Ok(new Response<ProductResponse>(null, true, "Category is successfully updated"));
         }
     }
 }
