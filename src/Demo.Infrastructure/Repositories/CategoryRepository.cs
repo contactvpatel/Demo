@@ -30,6 +30,7 @@ namespace Demo.Infrastructure.Repositories
         public async Task<PagedList<Category>> Get(PaginationQuery paginationQuery)
         {
             var pagedData = await _demoDbContext.Categories
+                .OrderBy(x => x.CategoryId)
                 .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
                 .Take(paginationQuery.PageSize)
                 .ToListAsync();

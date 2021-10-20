@@ -42,18 +42,18 @@ namespace Demo.Api.Tests
                 var logger = scopedServices.GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();
 
                 // Ensure the database is created.
-                db.Database.EnsureCreated();
+                //db.Database.EnsureCreated();
 
-                try
-                {
-                    // Seed the database with test data.
-                    DemoContextSeed.SeedAsync(db, loggerFactory).Wait();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex,
-                        $"An error occurred seeding the database with test messages. Error: {ex.Message}");
-                }
+                //try
+                //{
+                //    // Seed the database with test data.
+                //    DemoContextSeed.SeedAsync(db, loggerFactory).Wait();
+                //}
+                //catch (Exception ex)
+                //{
+                //    logger.LogError(ex,
+                //        $"An error occurred seeding the database with test messages. Error: {ex.Message}");
+                //}
             });
         }
     }

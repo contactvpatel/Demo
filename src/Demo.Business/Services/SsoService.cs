@@ -1,0 +1,28 @@
+﻿using System;
+using System.Threading.Tasks;
+using ISsoService = Demo.Core.Services.ISsoService;
+
+namespace Demo.Business.Services
+{
+    public class SsoService : Interfaces.ISsoService
+    {
+        private readonly ISsoService _ssoService;
+        private readonly Interfaces.IRedisCacheService _redisCacheService;
+
+        public SsoService(ISsoService ssoService, Interfaces.IRedisCacheService redisCacheService)
+        {
+            _ssoService = ssoService ?? throw new ArgumentNullException(nameof(ssoService));
+            _redisCacheService = redisCacheService ?? throw new ArgumentNullException(nameof(redisCacheService));
+        }
+
+        public async Task<bool> ValidateToken(string token)
+        {
+            return await _ssoService.ValidateToken(token);
+        }
+
+        public async Task<bool> Logout(string token)
+        {
+            return await _ssoService.Logout(token);
+        }
+    }
+}

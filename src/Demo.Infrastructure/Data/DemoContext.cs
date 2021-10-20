@@ -27,6 +27,9 @@ namespace Demo.Infrastructure.Data
             builder.Property(cb => cb.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(cb => cb.UnitPrice)
+                .HasColumnType("decimal(18,0)");
         }
 
         private void ConfigureCategory(EntityTypeBuilder<Category> builder)

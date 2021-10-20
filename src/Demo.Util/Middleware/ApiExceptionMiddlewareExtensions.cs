@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 namespace Demo.Util.Middleware
 {
     public static class ApiExceptionMiddlewareExtensions
-    {        
+    {
         public static IApplicationBuilder UseApiExceptionHandler(this IApplicationBuilder builder)
         {
             var options = new ApiExceptionOptions();

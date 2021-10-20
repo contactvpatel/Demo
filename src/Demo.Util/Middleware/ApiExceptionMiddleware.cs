@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Demo.Util.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -44,37 +43,43 @@ namespace Demo.Util.Middleware
                 new()
                 {
                     ErrorId = errorId,
-                    StatusCode = (short) HttpStatusCode.InternalServerError,
-                    Message =
-                        "Error occurred in the API. Please use the ErrorId and contact support team if the problem persists."
+                    StatusCode = (short)HttpStatusCode.InternalServerError,
+                    Message = exception.GetType() == typeof(ApplicationException)
+                        ? exception.Message
+                        : $"Error occurred in the API. Please use the ErrorId [{errorId}] and contact support team if the problem persists."
                 }
             };
 
-            var errorResponse = new Response<ApiError>(null) {Succeeded = false, Errors = apiErrors};
+            var errorResponse = new Models.Response<ApiError>(null) { Succeeded = false, Errors = apiErrors };
 
             _options.AddResponseDetails?.Invoke(context, exception, errorResponse);
 
             var innerExMessage = GetInnermostExceptionMessage(exception);
 
             var level = _options.DetermineLogLevel?.Invoke(exception) ?? LogLevel.Error;
+
+            exception.Data.Add("ErrorId", errorId);
+
             _logger.Log(level, exception, $"Exception Occurred: {innerExMessage} -- ErrorId: {errorId}");
 
             var serializerSettings = new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
+
             var result = JsonConvert.SerializeObject(errorResponse, serializerSettings);
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
             return context.Response.WriteAsync(result);
         }
 
-        private string GetInnermostExceptionMessage(Exception exception)
+        private static string GetInnermostExceptionMessage(Exception exception)
         {
-            if (exception.InnerException != null)
-                return GetInnermostExceptionMessage(exception.InnerException);
-
-            return exception.Message;
+            while (true)
+            {
+                if (exception.InnerException == null) return exception.Message;
+                exception = exception.InnerException;
+            }
         }
     }
 }

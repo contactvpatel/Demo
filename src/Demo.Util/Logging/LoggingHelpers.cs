@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Demo.Util.Logging.Enrichers;
+using Demo.Util.Logging.Formatters;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Exceptions;
 using Serilog.Filters;
-using Serilog.Formatting.Elasticsearch;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
 using Serilog.Sinks.File;
@@ -31,135 +31,131 @@ namespace Demo.Util.Logging
             var env = hostingContext.HostingEnvironment;
             var assembly = Assembly.GetExecutingAssembly().GetName();
 
+            var applicationName = config.GetValue<string>("ApplicationName");
+            var applicationVersion = config.GetValue<string>("ApplicationVersion");
+
             loggerConfiguration
                 .ReadFrom.Configuration(config) // minimum log levels defined per project in appsettings.json files 
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty("ApplicationName", env.ApplicationName)
-                .Enrich.WithProperty("EnvironmentName", env.EnvironmentName)
-                .Enrich.WithProperty("Assembly", $"{assembly.Name}")
-                .Enrich.WithProperty("Version", $"{assembly.Version}")
+                .Enrich.WithProperty("ApplicationName", applicationName)
+                .Enrich.WithProperty("ApplicationVersion", applicationVersion)
+                .Enrich.WithProperty("Environment", env.EnvironmentName)
+                .Enrich.WithProperty("LoggerName", assembly.Name)
+                .Enrich.WithHttpContextInfo(provider, (logEvent, propertyFactory, httpContext) =>
+                {
+                    logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("RequestMethod",
+                        httpContext.Request.Method));
+                    logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Referer",
+                        httpContext.Request.Headers["Referer"].ToString()));
+                    if (httpContext.Response.HasStarted)
+                    {
+                        logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("ResponseStatus",
+                            httpContext.Response.StatusCode));
+                    }
+                })
+                .Enrich.WithCorrelationId()
                 .Enrich.WithMachineName()
                 .Enrich.WithClientIp()
                 .Enrich.WithClientAgent()
                 .Enrich.WithProcessId()
                 .Enrich.WithProcessName()
                 .Enrich.WithThreadId()
-                .Enrich.WithThreadName()
-                .Enrich.WithEnvironmentUserName()
-                .Enrich.WithExceptionDetails();
+                .Enrich.WithThreadName();
+
 
             #region Write Logs to Console
-            
-            loggerConfiguration.WriteTo.Console(
-                outputTemplate:
-                "[{Timestamp:HH:mm:ss} {Properties} {SourceContext} [{Level}] {Message}{NewLine}{Exception}");
+
+            var isConsoleLogEnabled = config.GetValue<bool>("Serilog:ConsoleLog:Enabled");
+
+            if (isConsoleLogEnabled)
+                loggerConfiguration.WriteTo.Console(
+                    new CustomElasticSearchJsonFormatter(inlineFields: true, renderMessageTemplate: false,
+                        formatStackTraceAsArray: true));
 
             #endregion
 
             #region Write Logs to File
-            
-            loggerConfiguration.WriteTo.Logger(lc => lc
-                .Filter.ByIncludingOnly(Matching.WithProperty("ElapsedMilliseconds"))
-                .WriteTo.File(new JsonFormatter(),
-                    $"logs/File/performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-.txt",
-                    rollingInterval: RollingInterval.Day, buffered: true)
-            );
 
-            loggerConfiguration.WriteTo.Logger(lc => lc
-                .Filter.ByExcluding(Matching.WithProperty("ElapsedMilliseconds"))
-                .WriteTo.File(new JsonFormatter(),
-                    $"logs/File/usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-.txt",
-                    rollingInterval: RollingInterval.Day, buffered: true)
-            );
+            var isFileLogEnabled = config.GetValue<bool>("Serilog:FileLog:Enabled");
 
-            #endregion
-
-            # region Write Logs to Elastic Search - https://github.com/serilog/serilog-sinks-elasticsearch
-            
-            var elasticUrl = config.GetValue<string>("Serilog:ElasticUrl");
-
-            if (!string.IsNullOrEmpty(elasticUrl))
+            if (isFileLogEnabled)
             {
                 loggerConfiguration.WriteTo.Logger(lc => lc
-                        .Filter.ByIncludingOnly(Matching.WithProperty("ElapsedMilliseconds"))
-                        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticUrl))
-                            {
-                                AutoRegisterTemplate = true,
-                                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                                IndexFormat =
-                                    $"performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-{{0:yyyy.MM.dd}}",
-                                InlineFields = true,
-                                CustomFormatter = new ElasticsearchJsonFormatter(inlineFields: true,
-                                    renderMessageTemplate: false),
-                                FailureCallback = e =>
-                                    Console.WriteLine("Unable to submit log event to ElasticSearch. Log Level - " +
-                                                      e.Level),
-                                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
-                                                   EmitEventFailureHandling.WriteToFailureSink |
-                                                   EmitEventFailureHandling.RaiseCallback,
-                                FailureSink =
-                                    new FileSink(
-                                        $"logs/FailureCallback/performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}/failures.txt",
-                                        new JsonFormatter(), null)
-                            }
-                        ))
-                    .WriteTo.Logger(lc => lc
-                        .Filter.ByExcluding(Matching.WithProperty("ElapsedMilliseconds"))
-                        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticUrl))
-                            {
-                                AutoRegisterTemplate = true,
-                                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                                IndexFormat =
-                                    $"usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-{{0:yyyy.MM.dd}}",
-                                InlineFields = true,
-                                CustomFormatter = new ElasticsearchJsonFormatter(inlineFields: true,
-                                    renderMessageTemplate: false),
-                                FailureCallback = e =>
-                                    Console.WriteLine("Unable to submit log event to ElasticSearch. Log Level - " +
-                                                      e.Level),
-                                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
-                                                   EmitEventFailureHandling.WriteToFailureSink |
-                                                   EmitEventFailureHandling.RaiseCallback,
-                                FailureSink =
-                                    new FileSink(
-                                        $"logs/FailureCallback/usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}/failures.txt",
-                                        new JsonFormatter(), null)
-                            }
-                        ));
+                    .Filter.ByIncludingOnly(Matching.WithProperty("elapsedMilliseconds"))
+                    .WriteTo.File(new CustomLogEntryFormatter(),
+                        $"logs/File/performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-.txt",
+                        rollingInterval: RollingInterval.Day));
+
+                loggerConfiguration.WriteTo.Logger(lc => lc
+                    .Filter.ByExcluding(Matching.WithProperty("elapsedMilliseconds"))
+                    .WriteTo.File(new CustomLogEntryFormatter(),
+                        $"logs/File/usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-.txt",
+                        rollingInterval: RollingInterval.Day)
+                );
             }
 
             #endregion
-        }
 
-        // Future Use for Context Details
-        private static UserInfo AddCustomContextDetails(IHttpContextAccessor ctx)
-        {
-            var excluded = new List<string> {"nbf", "exp", "auth_time", "amr", "sub"};
-            const string userIdClaimType = "sub";
+            # region Write Logs to Elastic Search - https: //github.com/serilog/serilog-sinks-elasticsearch
 
-            var context = ctx.HttpContext;
-            var user = context?.User.Identity;
-            if (user == null || !user.IsAuthenticated) return null;
+            var isElasticLogEnabled = config.GetValue<bool>("Serilog:ElasticLog:Enabled");
 
-            var userId = context.User.Claims.FirstOrDefault(a => a.Type == userIdClaimType)?.Value;
-            var userInfo = new UserInfo
+            if (isElasticLogEnabled)
             {
-                UserName = user.Name,
-                UserId = userId,
-                UserClaims = new Dictionary<string, List<string>>()
-            };
-            foreach (var distinctClaimType in context.User.Claims
-                .Where(a => excluded.All(ex => ex != a.Type))
-                .Select(a => a.Type)
-                .Distinct())
-            {
-                userInfo.UserClaims[distinctClaimType] = context.User.Claims
-                    .Where(a => a.Type == distinctClaimType)
-                    .Select(c => c.Value)
-                    .ToList();
+                var elasticUrl = config.GetValue<string>("Serilog:ElasticUrl");
+
+                if (!string.IsNullOrEmpty(elasticUrl))
+                {
+                    loggerConfiguration.WriteTo.Logger(lc => lc
+                            .Filter.ByIncludingOnly(Matching.WithProperty("elapsedMilliseconds"))
+                            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticUrl))
+                            {
+                                AutoRegisterTemplate = true,
+                                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+                                IndexFormat =
+                                        $"performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-{{0:yyyy.MM.dd}}",
+                                InlineFields = true,
+                                CustomFormatter = new CustomElasticSearchJsonFormatter(inlineFields: true,
+                                        renderMessageTemplate: false, formatStackTraceAsArray: true),
+                                FailureCallback = e =>
+                                    Console.WriteLine("Unable to submit log event to ElasticSearch. Log Level - " +
+                                                      e.Level),
+                                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
+                                                       EmitEventFailureHandling.WriteToFailureSink |
+                                                       EmitEventFailureHandling.RaiseCallback,
+                                FailureSink =
+                                        new FileSink(
+                                            $"logs/FailureCallback/performance-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}/failures.txt",
+                                            new JsonFormatter(), null)
+                            }
+                            ))
+                        .WriteTo.Logger(lc => lc
+                            .Filter.ByExcluding(Matching.WithProperty("elapsedMilliseconds"))
+                            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticUrl))
+                            {
+                                AutoRegisterTemplate = true,
+                                AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+                                IndexFormat =
+                                        $"usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}-{{0:yyyy.MM.dd}}",
+                                InlineFields = true,
+                                CustomFormatter = new CustomElasticSearchJsonFormatter(inlineFields: true,
+                                        renderMessageTemplate: false, formatStackTraceAsArray: true),
+                                FailureCallback = e =>
+                                    Console.WriteLine("Unable to submit log event to ElasticSearch. Log Level - " +
+                                                      e.Level),
+                                EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
+                                                       EmitEventFailureHandling.WriteToFailureSink |
+                                                       EmitEventFailureHandling.RaiseCallback,
+                                FailureSink =
+                                        new FileSink(
+                                            $"logs/FailureCallback/usage-{env.ApplicationName.Replace(".", "-").ToLower()}-{env.EnvironmentName?.ToLower()}/failures.txt",
+                                            new JsonFormatter(), null)
+                            }
+                            ));
+                }
             }
 
-            return userInfo;
+            #endregion
         }
     }
 }

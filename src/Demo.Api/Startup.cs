@@ -29,7 +29,9 @@ namespace Demo.Api
         public void ConfigureServices(IServiceCollection services)
         {
             // service dependencies         
-            services.ConfigureDemoServices(Configuration);
+            services.ConfigureServices(Configuration);
+
+            services.ConfigureRedisCache(Configuration);
 
             services.ConfigureApiVersioning();
 
@@ -39,9 +41,14 @@ namespace Demo.Api
 
             services.AddControllers(options =>
                 {
+                    // Authorization
+                    //options.Filters.Add(typeof(CustomAuthorization));
+
                     //options.ReturnHttpNotAcceptable = true;
+
                     //Filter to track Action Performance for Entire application's actions
-                    //options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                    options.Filters.Add(typeof(TrackActionPerformanceFilter));
+
                     options.Filters.Add<ValidationFilter>();
                 })
                 .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })

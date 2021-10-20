@@ -52,6 +52,7 @@ namespace Demo.Infrastructure.Repositories
 
             var pagedData = await _demoDbContext.Products
                 .Include(x => x.Category)
+                .OrderBy(x => x.ProductId)
                 .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
                 .Take(paginationQuery.PageSize)
                 .ToListAsync();

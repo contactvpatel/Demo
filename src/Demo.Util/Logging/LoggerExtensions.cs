@@ -22,6 +22,8 @@ namespace Demo.Util.Logging
 
         private static readonly Action<ILogger, string, string, long, Exception> RoutePerformance;
 
+        private static readonly Action<ILogger, string, string, Exception> UnauthorizedAccess;
+
         static LoggerExtensions()
         {
             TraceLog = LoggerMessage.Define<string>(LogLevel.Trace, 0, "{logMessage}");
@@ -31,7 +33,10 @@ namespace Demo.Util.Logging
             ErrorLog = LoggerMessage.Define<string>(LogLevel.Error, 0, "{logMessage}");
             CriticalLog = LoggerMessage.Define<string>(LogLevel.Critical, 0, "{logMessage}");
             RoutePerformance = LoggerMessage.Define<string, string, long>(LogLevel.Information, 0,
-                "{RouteName} {Method} code took {ElapsedMilliseconds} Milliseconds.");
+                "{method} - {routeName} - code took {elapsedMilliseconds} milliseconds.");
+            UnauthorizedAccess =
+                LoggerMessage.Define<string, string>(LogLevel.Critical, 0,
+                    "Unauthorized Access - {eventType} - {description}");
         }
 
         public static void LogTraceExtension(this ILogger logger, string logMessage)
@@ -64,10 +69,15 @@ namespace Demo.Util.Logging
             CriticalLog(logger, logMessage, ex);
         }
 
-        public static void LogRoutePerformance(this ILogger logger, string pageName, string method,
+        public static void LogRoutePerformance(this ILogger logger, string method, string routeName,
             long elapsedMilliseconds)
         {
-            RoutePerformance(logger, pageName, method, elapsedMilliseconds, null);
+            RoutePerformance(logger, method, routeName, elapsedMilliseconds, null);
+        }
+
+        public static void LogUnauthorizedAccess(this ILogger logger, string eventType, string description)
+        {
+            UnauthorizedAccess(logger, eventType, description, null);
         }
 
         public static void LogHttpResponse(this ILogger logger, HttpResponseMessage response)
@@ -81,7 +91,7 @@ namespace Demo.Util.Logging
             {
                 if (response.RequestMessage != null)
                     logger.LogWarning("Received a non-success status code {StatusCode} from {Url}",
-                        (int) response.StatusCode, response.RequestMessage.RequestUri);
+                        (int)response.StatusCode, response.RequestMessage.RequestUri);
             }
         }
     }

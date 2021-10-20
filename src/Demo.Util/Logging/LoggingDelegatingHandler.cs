@@ -40,8 +40,8 @@ namespace Demo.Util.Logging
                     : $"{request.RequestUri.DnsSafeHost}:{request.RequestUri.Port}";
 
                 _logger.LogCritical(ex, "Unable to connect to {Host}. Please check the " +
-                                       "configuration to ensure the correct URL for the service " +
-                                       "has been configured.", hostWithPort);
+                                        "configuration to ensure the correct URL for the service " +
+                                        "has been configured.", hostWithPort);
             }
 
             return new HttpResponseMessage(HttpStatusCode.BadGateway)

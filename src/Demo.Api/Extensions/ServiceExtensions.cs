@@ -8,35 +8,48 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using AutoMapper;
 using Demo.Api.Extensions.Swagger;
+using Demo.Core.Models;
 using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
 using Demo.Util.Logging;
+using Demo.Util.Models;
+using Microsoft.Data.SqlClient;
+using Demo.Infrastructure.Repositories.Base;
+using Demo.Core.Repositories.Base;
+using Demo.Infrastructure.Repositories;
+using Demo.Core.Repositories;
+using Demo.Infrastructure.Services;
+using Demo.Core.Services;
+using Demo.Business.Services;
+using Demo.Business.Interfaces;
 
 namespace Demo.Api.Extensions
 {
     public static class ServiceExtensions
     {
-        public static void ConfigureDemoServices(this IServiceCollection services, IConfiguration configuration)
+        public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add Infrastructure Layer
-            ConfigureDatabases(services);
+            // Add Database
+            ConfigureDatabases(services, configuration);
 
             // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
-            services.Scan(scan => scan
-            .FromCallingAssembly()
-            .FromApplicationDependencies(c => c.FullName != null && c.FullName.StartsWith("Demo"))
-            .AddClasses()
-            .AsMatchingInterface().WithScopedLifetime());
+            //services.Scan(scan => scan
+            //.FromCallingAssembly()
+            //.FromApplicationDependencies(c => c.FullName != null && c.FullName.StartsWith("Demo"))
+            //.AddClasses()
+            //.AsMatchingInterface().WithScopedLifetime());
 
-            // NOTE: All below dependencies are covered using above use of Scrutor package. User can override scope by explicitly declaring it as well.
-            //services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            //services.AddScoped<IProductRepository, ProductRepository>();
-            //services.AddScoped<ICategoryRepository, CategoryRepository>();
+            // Add Infrastructure Layer
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
 
-            //// Add Application Layer
-            //services.AddScoped<IProductService, ProductService>();
-            //services.AddScoped<ICategoryService, CategoryService>();
+            // Add Business Layer
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<Business.Interfaces.ISsoService, Business.Services.SsoService>();
 
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -46,20 +59,36 @@ namespace Demo.Api.Extensions
 
             //External Service Dependency (Example: OrderService)
             services.AddTransient<IRestClient>(c => new RestClient(configuration["OrderServiceEndpoint"]));
+            services.Configure<SsoApiModel>(configuration.GetSection("SsoService"));
 
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoContext>();
         }
 
-        public static void ConfigureDatabases(IServiceCollection services)
+        private static void ConfigureDatabases(IServiceCollection services, IConfiguration configuration)
         {
-            // use in-memory database
-            services.AddDbContext<DemoContext>(c =>
-                c.UseInMemoryDatabase("DemoDbConnection"));
+            var databaseConnectionSettings = new DbConnectionSettings();
+            configuration.GetSection(nameof(DbConnectionSettings)).Bind(databaseConnectionSettings);
 
-            //// use real database
-            //services.AddDbContext<DemoContext>(c =>
-            //    c.UseSqlServer(Configuration.GetConnectionString("DemoDbConnection")));
+            services.AddDbContext<DemoContext>(c =>
+                c.UseSqlServer(CreateConnectionString(databaseConnectionSettings)));
+        }
+
+        private static string CreateConnectionString(DbConnectionSettings databaseConnectionSettings)
+        {
+            var builder = new SqlConnectionStringBuilder
+            {
+                DataSource = string.IsNullOrEmpty(databaseConnectionSettings.Port)
+                    ? databaseConnectionSettings.Host
+                    : databaseConnectionSettings.Host + "," + databaseConnectionSettings.Port,
+                InitialCatalog = databaseConnectionSettings.DatabaseName,
+                IntegratedSecurity = databaseConnectionSettings.IntegratedSecurity,
+                MultipleActiveResultSets = databaseConnectionSettings.MultipleActiveResultSets,
+                PersistSecurityInfo = true,
+                UserID = databaseConnectionSettings.UserName,
+                Password = databaseConnectionSettings.Password
+            };
+            return builder.ConnectionString;
         }
 
         public static void ConfigureCors(this IServiceCollection services)
@@ -139,6 +168,24 @@ namespace Demo.Api.Extensions
             //    Version = "v2",
             //    Title = "Demo API"
             //});
+        }
+
+        public static void ConfigureRedisCache(this IServiceCollection services, IConfiguration configuration)
+        {
+            var redisCacheSettings = new RedisCacheSettings();
+
+            configuration.GetSection(nameof(RedisCacheSettings)).Bind(redisCacheSettings);
+
+            services.AddSingleton(redisCacheSettings);
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisCacheSettings.ConnectionString;
+                options.InstanceName = redisCacheSettings.InstanceName;
+            });
+
+            services.AddSingleton<Business.Interfaces.IRedisCacheService, Business.Services.RedisCacheService>();
+            services.AddSingleton<Core.Services.IRedisCacheService, Infrastructure.Services.RedisCacheService>();
         }
     }
 }
