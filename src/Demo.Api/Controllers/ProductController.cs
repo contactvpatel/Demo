@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Demo.Api.Attributes;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
@@ -11,7 +7,6 @@ using Demo.Core.Models;
 using Demo.Util.Logging;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Demo.Api.Controllers

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Demo.Util.Logging
 {

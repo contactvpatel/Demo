@@ -1,5 +1,4 @@
-﻿using System;
-using Demo.Infrastructure.Data;
+﻿using Demo.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;

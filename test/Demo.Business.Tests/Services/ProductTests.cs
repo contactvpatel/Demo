@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Demo.Business.Services;
+﻿using Demo.Business.Services;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;

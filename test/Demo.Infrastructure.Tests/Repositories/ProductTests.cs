@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Demo.Infrastructure.Data;
+﻿using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories;
 using Demo.Infrastructure.Tests.Builders;
 using Microsoft.EntityFrameworkCore;

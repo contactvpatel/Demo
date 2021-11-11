@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Demo.Core.Entities;
+﻿using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Core.Specifications;

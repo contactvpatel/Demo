@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Demo.Core.Models
+﻿namespace Demo.Core.Models
 {
     public class PagedList<T> : List<T>
     {

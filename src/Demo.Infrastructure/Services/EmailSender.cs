@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Demo.Infrastructure.Services
+﻿namespace Demo.Infrastructure.Services
 {
     // This class is used by the application to send email
     // For more details see https://go.microsoft.com/fwlink/?LinkID=532713

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Demo.Core.Services;
+﻿using Demo.Core.Services;
 using Demo.Util.Logging;
 using Demo.Util.Models;
 using Microsoft.Extensions.Caching.Distributed;

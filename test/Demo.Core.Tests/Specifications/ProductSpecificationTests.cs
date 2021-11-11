@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Demo.Core.Specifications;
+﻿using Demo.Core.Specifications;
 using Demo.Core.Tests.Builders;
 using Xunit;
 

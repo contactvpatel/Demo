@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Demo.Business.Interfaces
+﻿namespace Demo.Business.Interfaces
 {
     public interface ISsoService
     {

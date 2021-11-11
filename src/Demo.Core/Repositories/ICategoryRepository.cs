@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Demo.Core.Entities;
+﻿using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories.Base;
 

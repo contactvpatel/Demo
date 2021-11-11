@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Demo.Core.Services
+﻿namespace Demo.Core.Services
 {
     public interface ISsoService
     {

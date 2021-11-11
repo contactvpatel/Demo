@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Demo.Core.Models;
 using Demo.Core.Services;
 using Microsoft.Extensions.Logging;

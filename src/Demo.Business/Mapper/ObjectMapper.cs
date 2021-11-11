@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;

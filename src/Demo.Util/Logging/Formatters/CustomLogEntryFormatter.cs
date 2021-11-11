@@ -14,11 +14,7 @@
 
 // Modifications Copyright 2021 Vishal Patel
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using Serilog.Debugging;
 using Serilog.Events;

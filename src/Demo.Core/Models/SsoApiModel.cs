@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Demo.Core.Models
+﻿namespace Demo.Core.Models
 {
     public class SsoApiModel
     {

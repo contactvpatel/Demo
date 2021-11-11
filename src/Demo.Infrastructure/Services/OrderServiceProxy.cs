@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Demo.Core.Communication;
+﻿using Demo.Core.Communication;
 using Demo.Core.Entities;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;

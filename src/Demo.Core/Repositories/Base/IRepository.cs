@@ -1,11 +1,6 @@
 ﻿using Demo.Core.Entities.Base;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Demo.Core.Specifications.Base;
 
 namespace Demo.Core.Repositories.Base

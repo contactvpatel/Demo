@@ -1,5 +1,4 @@
 ﻿using Demo.Core.Entities.Base;
-using System.Collections.Generic;
 
 namespace Demo.Core.Entities
 {

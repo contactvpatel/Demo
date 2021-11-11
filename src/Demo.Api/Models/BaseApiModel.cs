@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Demo.Api.Models
+﻿namespace Demo.Api.Models
 {
     public class BaseApiModel
     {

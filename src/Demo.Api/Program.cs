@@ -1,8 +1,4 @@
-using System.IO;
 using Demo.Util.Logging;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace Demo.Api

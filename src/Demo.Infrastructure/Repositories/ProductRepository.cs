@@ -1,10 +1,6 @@
-﻿using System;
-using Demo.Core.Entities;
+﻿using Demo.Core.Entities;
 using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Demo.Core.Models;
 using Demo.Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using AutoMapper;
 using Demo.Api.Extensions.Swagger;
 using Demo.Core.Models;
 using Demo.Infrastructure.Data;
@@ -19,8 +14,6 @@ using Demo.Infrastructure.Repositories.Base;
 using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Repositories;
 using Demo.Core.Repositories;
-using Demo.Infrastructure.Services;
-using Demo.Core.Services;
 using Demo.Business.Services;
 using Demo.Business.Interfaces;
 

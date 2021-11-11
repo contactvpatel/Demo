@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Demo.Core.Entities.Base
+﻿namespace Demo.Core.Entities.Base
 {
     public abstract class Entity
     {

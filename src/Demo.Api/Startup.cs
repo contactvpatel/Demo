@@ -1,18 +1,10 @@
-using System;
 using Demo.Api.Extensions;
 using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Util.Middleware;
 using Demo.Util.Models;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Demo.Api
 {

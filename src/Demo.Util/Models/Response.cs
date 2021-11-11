@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Demo.Util.Middleware;
+﻿using Demo.Util.Middleware;
 
 namespace Demo.Util.Models
 {

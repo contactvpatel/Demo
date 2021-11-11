@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Demo.Business.Interfaces;
+﻿using Demo.Business.Interfaces;
 
 namespace Demo.Business.Services
 {

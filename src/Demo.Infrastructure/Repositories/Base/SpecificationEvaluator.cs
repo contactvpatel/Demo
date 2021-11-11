@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Demo.Core.Entities.Base;
+﻿using Demo.Core.Entities.Base;
 using Demo.Core.Specifications.Base;
 using Microsoft.EntityFrameworkCore;
 

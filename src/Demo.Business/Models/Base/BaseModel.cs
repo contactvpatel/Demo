@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Demo.Business.Models.Base
+﻿namespace Demo.Business.Models.Base
 {
     public class BaseModel
     {

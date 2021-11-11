@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Demo.Business.Interfaces;
+﻿using Demo.Business.Interfaces;
 using Demo.Business.Mapper;
 using Demo.Business.Models;
 using Demo.Core.Communication;

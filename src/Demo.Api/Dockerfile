@@ -1,20 +1,20 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Demo.Api/Demo.Api.csproj", "Demo.Api/"]
-COPY ["Demo.Util/Demo.Util.csproj", "Demo.Util/"]
-COPY ["Demo.Business/Demo.Business.csproj", "Demo.Business/"]
-COPY ["Demo.Infrastructure/Demo.Infrastructure.csproj", "Demo.Infrastructure/"]
-COPY ["Demo.Core/Demo.Core.csproj", "Demo.Core/"]
-RUN dotnet restore "Demo.Api/Demo.Api.csproj"
+COPY ["src/Demo.Api/Demo.Api.csproj", "src/Demo.Api/"]
+COPY ["src/Demo.Util/Demo.Util.csproj", "src/Demo.Util/"]
+COPY ["src/Demo.Business/Demo.Business.csproj", "src/Demo.Business/"]
+COPY ["src/Demo.Infrastructure/Demo.Infrastructure.csproj", "src/Demo.Infrastructure/"]
+COPY ["src/Demo.Core/Demo.Core.csproj", "src/Demo.Core/"]
+RUN dotnet restore "src/Demo.Api/Demo.Api.csproj"
 COPY . .
-WORKDIR "/src/Demo.Api"
+WORKDIR "/src/src/Demo.Api"
 RUN dotnet build "Demo.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
