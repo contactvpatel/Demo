@@ -22,7 +22,13 @@ namespace Demo.Api.Tests
 
                 // Add a database context (ApplicationDbContext) using an in-memory 
                 // database for testing.
-                services.AddDbContext<DemoContext>(options =>
+                services.AddDbContext<DemoReadContext>(options =>
+                {
+                    options.UseInMemoryDatabase("Demo");
+                    options.UseInternalServiceProvider(provider);
+                });
+
+                services.AddDbContext<DemoWriteContext>(options =>
                 {
                     options.UseInMemoryDatabase("Demo");
                     options.UseInternalServiceProvider(provider);
@@ -35,7 +41,7 @@ namespace Demo.Api.Tests
                 // context (ApplicationDbContext).
                 using var scope = sp.CreateScope();
                 var scopedServices = scope.ServiceProvider;
-                var db = scopedServices.GetRequiredService<DemoContext>();
+                var db = scopedServices.GetRequiredService<DemoReadContext>();
                 var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
 
                 var logger = scopedServices.GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();

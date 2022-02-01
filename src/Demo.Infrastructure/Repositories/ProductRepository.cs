@@ -11,17 +11,27 @@ namespace Demo.Infrastructure.Repositories
 {
     public class ProductRepository : Repository<Product>, IProductRepository
     {
-        private readonly DemoContext _demoDbContext;
+        private readonly DemoReadContext _demoReadContext;
+        private readonly DemoWriteContext _demoWriteContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ProductRepository> _logger;
 
-        public ProductRepository(DemoContext dbContext, IConfiguration configuration, ILogger<ProductRepository> logger)
-            : base(dbContext, configuration)
+        public ProductRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext,
+            IConfiguration configuration,
+            ILogger<ProductRepository> logger) : base(demoReadContext, demoWriteContext, configuration)
         {
-            _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
+            _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        /* DbContext
+         
+         _demoReadContext -> Use for all read operation (Get)
+         _demoWriteContext -> Use for all write operation (Create, Update. Delete)
+
+         */
 
         public async Task<PagedList<Product>> Get(PaginationQuery paginationQuery)
         {
@@ -39,21 +49,21 @@ namespace Demo.Infrastructure.Repositories
             //return await GetAsync(null, o => o.OrderBy(s => s.Name), "Category", true);
 
             // Option 5: Using Raw SQL (EFCore)
-            //return await _demoDbContext.Products.FromSqlRaw("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT").ToListAsync();
+            //return await _demoReadContext.Products.FromSqlRaw("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT").ToListAsync();
 
             // Option 5: Using Repository Generic Method with QueryAsync (Dapper)
             // return await QueryAsync<Product>("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT");
 
             // Option 6: Standard EFCore Way
 
-            var pagedData = await _demoDbContext.Products
+            var pagedData = await _demoReadContext.Products
                 .Include(x => x.Category)
                 .OrderBy(x => x.ProductId)
                 .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
                 .Take(paginationQuery.PageSize)
                 .ToListAsync();
 
-            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoDbContext.Products.CountAsync() : 0;
+            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Products.CountAsync() : 0;
 
             return new PagedList<Product>(pagedData, totalRecords, paginationQuery.PageNumber,
                 paginationQuery.PageSize);
@@ -61,7 +71,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)
         {
-            return await _demoDbContext.Products
+            return await _demoReadContext.Products
                 .Where(x => x.CategoryId == categoryId)
                 .Include(x => x.Category)
                 .ToListAsync();
