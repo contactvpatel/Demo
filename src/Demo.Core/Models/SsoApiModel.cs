@@ -8,7 +8,6 @@
 
     public class SsoEndpoint
     {
-        public string Application { get; set; }
         public string ValidateToken { get; set; }
         public string Logout { get; set; }
     }

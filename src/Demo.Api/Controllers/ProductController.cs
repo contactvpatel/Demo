@@ -5,7 +5,6 @@ using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
 using Demo.Util.Logging;
-using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -57,21 +56,21 @@ namespace Demo.Api.Controllers
             return Ok(new Response<IEnumerable<ProductApiModel>>(_mapper.Map<IEnumerable<ProductApiModel>>(products)));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductApiModel>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Product By Id: {id}");
             var product = await _productService.GetById(id);
             if (product == null)
             {
-                _logger.LogErrorExtension($"No product found with id {id}", null);
+                _logger.LogInformationExtension($"No product found with id {id}");
                 return NotFound(new Response<ProductApiModel>(null, false, $"No product found with id {id}"));
             }
 
             return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(product)));
         }
 
-        [HttpGet("categories/{categoryId}")]
+        [HttpGet("categories/{categoryId:int}")]
         public async Task<ActionResult<ProductApiModel>> GetByCategoryId(int categoryId)
         {
             _logger.LogInformationExtension($"Get Product By Category. CategoryId: {categoryId}");
@@ -102,7 +101,7 @@ namespace Demo.Api.Controllers
             return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(newProduct)));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult<ProductApiModel>> Put(int id, [FromBody] ProductApiModel productApiModel)
         {
             _logger.LogInformationExtension(
@@ -134,7 +133,7 @@ namespace Demo.Api.Controllers
             return Ok(new Response<ProductApiModel>(null));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<ActionResult<ProductApiModel>> Delete(int id)
         {
             _logger.LogInformationExtension($"Delete Product - Id: {id}");

@@ -1,9 +1,8 @@
 ﻿using System.Net;
-using Demo.Util.Models;
-using Demo.Util.Middleware;
 using Demo.Util.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using ApiError = Demo.Api.Middleware.ApiError;
 
 namespace Demo.Api.Filters
 {
@@ -24,11 +23,11 @@ namespace Demo.Api.Filters
                                             ", Controller - " + context.RouteData.Values["Controller"] + ", Action: " +
                                             context.RouteData.Values["Action"]);
 
-                var errorsInModelState = context.ModelState.Where(x => x.Value.Errors.Count > 0)
-                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(x => x.ErrorMessage)).ToArray();
+                var errorsInModelState = context.ModelState.Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Errors.Select(x => x.ErrorMessage)).ToArray();
 
-                var errorResponse = new Response<ApiError>(null, false, "Model Validation Failed")
-                    {Errors = new List<ApiError>()};
+                var errorResponse = new Models.Response<ApiError>(null, false, "Model Validation Failed")
+                    { Errors = new List<ApiError>() };
 
                 foreach (var error in errorsInModelState)
                 {
@@ -37,7 +36,7 @@ namespace Demo.Api.Filters
                         errorResponse.Errors.Add(new ApiError
                         {
                             ErrorId = error.Key,
-                            StatusCode = (short) HttpStatusCode.BadRequest,
+                            StatusCode = (short)HttpStatusCode.BadRequest,
                             Message = subError
                         });
                     }

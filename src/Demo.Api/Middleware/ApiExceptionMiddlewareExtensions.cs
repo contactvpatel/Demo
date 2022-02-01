@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-
-namespace Demo.Util.Middleware
+﻿namespace Demo.Api.Middleware
 {
     public static class ApiExceptionMiddlewareExtensions
     {

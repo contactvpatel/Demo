@@ -12,17 +12,6 @@ namespace Demo.Util.Logging.Enrichers
         private readonly IServiceProvider _serviceProvider;
         private readonly Action<LogEvent, ILogEventPropertyFactory, HttpContext> _enrichAction;
 
-        public HttpContextEnricher(IServiceProvider serviceProvider)
-        {
-            _enrichAction = (logEvent, propertyFactory, httpContext) =>
-            {
-                logEvent.AddPropertyIfAbsent(
-                    propertyFactory.CreateProperty("RequestMethod", httpContext.Request.Method));
-                logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Referer",
-                    httpContext.Request.Headers["Referer"].ToString()));
-            };
-        }
-
         public HttpContextEnricher(IServiceProvider serviceProvider,
             Action<LogEvent, ILogEventPropertyFactory, HttpContext> enrichAction)
         {
@@ -58,15 +47,6 @@ namespace Demo.Util.Logging.Enrichers
 
     public static class EnricherExtensions
     {
-        public static LoggerConfiguration WithHttpContextInfo(this LoggerEnrichmentConfiguration enrich,
-            IServiceProvider serviceProvider)
-        {
-            if (enrich == null)
-                throw new ArgumentNullException(nameof(enrich));
-
-            return enrich.With(new HttpContextEnricher(serviceProvider));
-        }
-
         public static LoggerConfiguration WithHttpContextInfo(this LoggerEnrichmentConfiguration enrich,
             IServiceProvider serviceProvider, Action<LogEvent, ILogEventPropertyFactory, HttpContext> enrichAction)
         {

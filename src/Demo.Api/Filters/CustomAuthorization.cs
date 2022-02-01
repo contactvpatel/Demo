@@ -11,14 +11,11 @@ namespace Demo.Api.Filters
     {
         private readonly ISsoService _ssoService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger<CustomAuthorization> _logger;
 
-        public CustomAuthorization(ISsoService ssoService, IHttpContextAccessor httpContextAccessor,
-            ILogger<CustomAuthorization> logger)
+        public CustomAuthorization(ISsoService ssoService, IHttpContextAccessor httpContextAccessor)
         {
             _ssoService = ssoService ?? throw new ArgumentNullException(nameof(ssoService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>  

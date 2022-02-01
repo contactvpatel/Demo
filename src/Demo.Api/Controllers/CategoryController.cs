@@ -4,7 +4,6 @@ using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
 using Demo.Util.Logging;
-using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -34,7 +33,7 @@ namespace Demo.Api.Controllers
             var categories = await _categoryService.Get(paginationQuery);
             if (categories == null)
             {
-                _logger.LogErrorExtension("No categories found", null);
+                _logger.LogInformationExtension("No categories found");
                 return NotFound(new Response<ProductApiModel>(null, false, "No categories found"));
             }
 
@@ -55,14 +54,14 @@ namespace Demo.Api.Controllers
                 _mapper.Map<IEnumerable<CategoryApiModel>>(categories)));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<CategoryApiModel>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Category By Id: {id}");
             var category = await _categoryService.GetById(id);
             if (category == null)
             {
-                _logger.LogErrorExtension($"No category found with id {id}", null);
+                _logger.LogInformationExtension($"No category found with id {id}");
                 return NotFound(new Response<ProductApiModel>(null, false, $"No category with id {id}"));
             }
 

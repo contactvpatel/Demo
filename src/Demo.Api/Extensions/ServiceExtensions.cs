@@ -8,7 +8,6 @@ using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
 using Demo.Util.Logging;
-using Demo.Util.Models;
 using Microsoft.Data.SqlClient;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Core.Repositories.Base;
@@ -21,7 +20,7 @@ namespace Demo.Api.Extensions
 {
     public static class ServiceExtensions
     {
-        public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
+        public static void ConfigureDemoServices(this IServiceCollection services, IConfiguration configuration)
         {
             // Add Database
             ConfigureDatabases(services, configuration);
@@ -37,12 +36,14 @@ namespace Demo.Api.Extensions
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<Core.Services.IMisService, Infrastructure.Services.MisService>();
             services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
 
             // Add Business Layer
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<Business.Interfaces.ISsoService, Business.Services.SsoService>();
+            services.AddScoped<IMisService, MisService>();
+            services.AddScoped<ISsoService, SsoService>();
 
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -50,37 +51,51 @@ namespace Demo.Api.Extensions
             // LoggingHelpers
             services.AddTransient<LoggingDelegatingHandler>();
 
-            //External Service Dependency (Example: OrderService)
-            services.AddTransient<IRestClient>(c => new RestClient(configuration["OrderServiceEndpoint"]));
+            //External Service Dependency (Example: MisService, SsoService)
+            services.AddTransient<IRestClient>(_ => new RestClient(configuration.GetSection("MisService:Url").Value));
+            services.Configure<MisApiModel>(configuration.GetSection("MisService"));
             services.Configure<SsoApiModel>(configuration.GetSection("SsoService"));
-
+            
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoContext>();
         }
 
         private static void ConfigureDatabases(IServiceCollection services, IConfiguration configuration)
         {
-            var databaseConnectionSettings = new DbConnectionSettings();
-            configuration.GetSection(nameof(DbConnectionSettings)).Bind(databaseConnectionSettings);
+            var databaseConnectionSettings = new DbConnectionModel();
+            configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
-            services.AddDbContext<DemoContext>(c =>
-                c.UseSqlServer(CreateConnectionString(databaseConnectionSettings)));
+            services.AddDbContextPool<DemoContext>(c =>
+                c.UseSqlServer(CreateConnectionString(databaseConnectionSettings),
+                    o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
+                        maxRetryCount: 4,
+                        maxRetryDelay: TimeSpan.FromSeconds(1),
+                        errorNumbersToAdd: new int[] { }
+                    )).EnableDetailedErrors());
         }
 
-        private static string CreateConnectionString(DbConnectionSettings databaseConnectionSettings)
+        private static string CreateConnectionString(DbConnectionModel databaseConnectionModel)
         {
             var builder = new SqlConnectionStringBuilder
             {
-                DataSource = string.IsNullOrEmpty(databaseConnectionSettings.Port)
-                    ? databaseConnectionSettings.Host
-                    : databaseConnectionSettings.Host + "," + databaseConnectionSettings.Port,
-                InitialCatalog = databaseConnectionSettings.DatabaseName,
-                IntegratedSecurity = databaseConnectionSettings.IntegratedSecurity,
-                MultipleActiveResultSets = databaseConnectionSettings.MultipleActiveResultSets,
-                PersistSecurityInfo = true,
-                UserID = databaseConnectionSettings.UserName,
-                Password = databaseConnectionSettings.Password
+                DataSource = string.IsNullOrEmpty(databaseConnectionModel.Port)
+                    ? databaseConnectionModel.Host
+                    : databaseConnectionModel.Host + "," + databaseConnectionModel.Port,
+                InitialCatalog = databaseConnectionModel.DatabaseName
             };
+
+            if (databaseConnectionModel.IntegratedSecurity)
+            {
+                builder.IntegratedSecurity = true;
+            }
+            else
+            {
+                builder.UserID = databaseConnectionModel.UserName;
+                builder.Password = databaseConnectionModel.Password;
+            }
+
+            builder.MultipleActiveResultSets = databaseConnectionModel.MultipleActiveResultSets;
+
             return builder.ConnectionString;
         }
 
@@ -165,9 +180,9 @@ namespace Demo.Api.Extensions
 
         public static void ConfigureRedisCache(this IServiceCollection services, IConfiguration configuration)
         {
-            var redisCacheSettings = new RedisCacheSettings();
+            var redisCacheSettings = new RedisCacheModel();
 
-            configuration.GetSection(nameof(RedisCacheSettings)).Bind(redisCacheSettings);
+            configuration.GetSection("RedisCacheSettings").Bind(redisCacheSettings);
 
             services.AddSingleton(redisCacheSettings);
 
@@ -177,7 +192,6 @@ namespace Demo.Api.Extensions
                 options.InstanceName = redisCacheSettings.InstanceName;
             });
 
-            services.AddSingleton<Business.Interfaces.IRedisCacheService, Business.Services.RedisCacheService>();
             services.AddSingleton<Core.Services.IRedisCacheService, Infrastructure.Services.RedisCacheService>();
         }
     }

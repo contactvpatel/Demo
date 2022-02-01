@@ -1,4 +1,4 @@
-﻿namespace Demo.Util.Middleware
+﻿namespace Demo.Api.Middleware
 {
     public class ApiError
     {

@@ -1,13 +1,14 @@
-﻿using ISsoService = Demo.Core.Services.ISsoService;
+﻿using Demo.Core.Services;
+using ISsoService = Demo.Core.Services.ISsoService;
 
 namespace Demo.Business.Services
 {
     public class SsoService : Interfaces.ISsoService
     {
         private readonly ISsoService _ssoService;
-        private readonly Interfaces.IRedisCacheService _redisCacheService;
+        private readonly IRedisCacheService _redisCacheService;
 
-        public SsoService(ISsoService ssoService, Interfaces.IRedisCacheService redisCacheService)
+        public SsoService(ISsoService ssoService, IRedisCacheService redisCacheService)
         {
             _ssoService = ssoService ?? throw new ArgumentNullException(nameof(ssoService));
             _redisCacheService = redisCacheService ?? throw new ArgumentNullException(nameof(redisCacheService));

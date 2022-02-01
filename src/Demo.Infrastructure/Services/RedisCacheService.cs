@@ -1,6 +1,6 @@
-﻿using Demo.Core.Services;
+﻿using Demo.Core.Models;
+using Demo.Core.Services;
 using Demo.Util.Logging;
-using Demo.Util.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,21 +10,21 @@ namespace Demo.Infrastructure.Services
     public class RedisCacheService : IRedisCacheService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly RedisCacheSettings _redisCacheSettings;
+        private readonly RedisCacheModel _redisCacheModel;
         private readonly ILogger<RedisCacheService> _logger;
 
-        public RedisCacheService(IDistributedCache distributedCache, RedisCacheSettings redisCacheSettings,
+        public RedisCacheService(IDistributedCache distributedCache, RedisCacheModel redisCacheModel,
             ILogger<RedisCacheService> logger)
         {
             _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
-            _redisCacheSettings = redisCacheSettings ?? throw new ArgumentNullException(nameof(redisCacheSettings));
+            _redisCacheModel = redisCacheModel ?? throw new ArgumentNullException(nameof(redisCacheModel));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task SetCacheData<T>(string cacheKey, T data, TimeSpan? absoluteExpireTime = null,
             TimeSpan? unusedExpireTime = null)
         {
-            if (_redisCacheSettings.Enabled)
+            if (_redisCacheModel.Enabled)
             {
                 if (data == null)
                     return;
@@ -35,7 +35,7 @@ namespace Demo.Infrastructure.Services
                     {
                         AbsoluteExpirationRelativeToNow = absoluteExpireTime ??
                                                           TimeSpan.FromSeconds(
-                                                              _redisCacheSettings.DefaultCacheTimeInSeconds),
+                                                              _redisCacheModel.DefaultCacheTimeInSeconds),
                         SlidingExpiration = unusedExpireTime
                     };
 
@@ -51,7 +51,7 @@ namespace Demo.Infrastructure.Services
 
         public async Task<T> GetCachedData<T>(string cacheKey)
         {
-            if (!_redisCacheSettings.Enabled) return default;
+            if (!_redisCacheModel.Enabled) return default;
             try
             {
                 var jsonData = await _distributedCache.GetStringAsync(cacheKey);

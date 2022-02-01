@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Demo.Core.Entities;
+﻿using Demo.Core.Entities;
 
 namespace Demo.Core.Tests.Builders
 {

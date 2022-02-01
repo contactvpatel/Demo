@@ -1,6 +1,6 @@
-﻿namespace Demo.Util.Models
+﻿namespace Demo.Core.Models
 {
-    public class RedisCacheSettings
+    public class RedisCacheModel
     {
         public bool Enabled { get; set; }
         public string ConnectionString { get; set; }

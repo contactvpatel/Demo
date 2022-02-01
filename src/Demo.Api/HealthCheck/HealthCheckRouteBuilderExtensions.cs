@@ -6,10 +6,9 @@ namespace Demo.Api.HealthCheck
     {
         public static IEndpointRouteBuilder MapDefaultHealthChecks(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapHealthChecks("/health/live", new HealthCheckOptions
+            endpoints.MapHealthChecks("/health", new HealthCheckOptions
             {
-                Predicate = _ => false,
-                ResponseWriter = HealthCheckResponses.WriteJsonResponse
+                Predicate = _ => false
             });
 
             endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions

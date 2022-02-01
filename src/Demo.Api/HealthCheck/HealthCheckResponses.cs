@@ -9,7 +9,7 @@ namespace Demo.Api.HealthCheck
         {
             context.Response.ContentType = "application/json; charset=utf-8";
 
-            var options = new JsonWriterOptions {Indented = true};
+            var options = new JsonWriterOptions { Indented = true };
 
             using var writer = new Utf8JsonWriter(context.Response.BodyWriter, options);
 
@@ -27,7 +27,7 @@ namespace Demo.Api.HealthCheck
                     writer.WriteString("status", value.Status.ToString());
                     writer.WriteString("description", value.Description);
                     writer.WriteStartArray("data");
-                    foreach (var (dataKey, dataValue) in value.Data.Where(d => d.Value != null))
+                    foreach (var (dataKey, dataValue) in value.Data)
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName(dataKey);

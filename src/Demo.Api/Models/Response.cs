@@ -1,6 +1,6 @@
-﻿using Demo.Util.Middleware;
+﻿using Demo.Api.Middleware;
 
-namespace Demo.Util.Models
+namespace Demo.Api.Models
 {
     public class Response<T>
     {

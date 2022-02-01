@@ -1,7 +1,6 @@
 ﻿using Demo.Business.Interfaces;
 using Demo.Business.Mapper;
 using Demo.Business.Models;
-using Demo.Core.Communication;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
@@ -14,18 +13,10 @@ namespace Demo.Business.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductService> _logger;
-        private readonly IOrderServiceProxy _orderCommunication;
 
         public ProductService(IProductRepository productRepository, ILogger<ProductService> logger)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public ProductService(IProductRepository productRepository, IOrderServiceProxy orderCommunication, ILogger<ProductService> logger)
-        {
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _orderCommunication = orderCommunication ?? throw new ArgumentNullException(nameof(orderCommunication));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

@@ -1,10 +1,8 @@
 ﻿using System.Net;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Demo.Util.Middleware
+namespace Demo.Api.Middleware
 {
     public class ApiExceptionMiddleware
     {
@@ -20,7 +18,7 @@ namespace Demo.Util.Middleware
             _options = options;
         }
 
-        public async Task Invoke(HttpContext context /* other dependencies */)
+        public async Task Invoke(HttpContext context)
         {
             try
             {
@@ -34,7 +32,10 @@ namespace Demo.Util.Middleware
 
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var errorId = Guid.NewGuid().ToString();
+            var errorId = !string.IsNullOrEmpty(exception.Data["ErrorId"]?.ToString())
+                ? exception.Data["ErrorId"]?.ToString()
+                : Guid.NewGuid().ToString();
+
             var apiErrors = new List<ApiError>
             {
                 new()
@@ -55,7 +56,8 @@ namespace Demo.Util.Middleware
 
             var level = _options.DetermineLogLevel?.Invoke(exception) ?? LogLevel.Error;
 
-            exception.Data.Add("ErrorId", errorId);
+            if (string.IsNullOrEmpty(exception.Data["ErrorId"]?.ToString()))
+                exception.Data.Add("ErrorId", errorId);
 
             _logger.Log(level, exception, $"Exception Occurred: {innerExMessage} -- ErrorId: {errorId}");
 
