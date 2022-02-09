@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Demo.Api.Filters;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
@@ -26,6 +27,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet]
+        //[AsmAuthorization(ModuleCode.Category, AccessType.View)]
         public async Task<ActionResult<IEnumerable<CategoryApiModel>>> Get(
             [FromQuery] PaginationQuery paginationQuery)
         {
@@ -55,6 +57,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        //[AsmAuthorization(ModuleCode.Category, AccessType.View)]
         public async Task<ActionResult<CategoryApiModel>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Category By Id: {id}");
@@ -69,6 +72,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpPost]
+        //[AsmAuthorization(ModuleCode.Category, AccessType.Create)]
         public async Task<ActionResult<ProductApiModel>> Post([FromBody] CategoryApiModel categoryApiModel)
         {
             _logger.LogInformationExtension($"Post Category - Name: {categoryApiModel.Name}");

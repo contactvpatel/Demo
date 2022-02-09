@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Demo.Api.Attributes;
+using Demo.Api.Filters;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
@@ -29,6 +30,7 @@ namespace Demo.Api.Controllers
 
         [HttpGet]
         //[TypeFilter(typeof(TrackActionPerformance))] //Track Performance of Individual Action
+        //[AsmAuthorization(ModuleCode.Product, AccessType.View)]
         public async Task<ActionResult<IEnumerable<ProductApiModel>>> Get(
             [FromQuery] PaginationQuery paginationQuery)
         {
@@ -57,6 +59,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        //[AsmAuthorization(ModuleCode.Product, AccessType.View)]
         public async Task<ActionResult<ProductApiModel>> GetById(int id)
         {
             _logger.LogInformationExtension($"Get Product By Id: {id}");
@@ -71,6 +74,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpGet("categories/{categoryId:int}")]
+        //[AsmAuthorization(ModuleCode.Product, AccessType.View)]
         public async Task<ActionResult<ProductApiModel>> GetByCategoryId(int categoryId)
         {
             _logger.LogInformationExtension($"Get Product By Category. CategoryId: {categoryId}");
@@ -86,6 +90,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpPost]
+        //[AsmAuthorization(ModuleCode.Product, AccessType.Create)]
         public async Task<ActionResult<ProductApiModel>> Post([FromBody] ProductApiModel productApiModel)
         {
             _logger.LogInformationExtension($"Post Product - Name: {productApiModel.Name}");
@@ -102,6 +107,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        //[AsmAuthorization(ModuleCode.Product, AccessType.Update)]
         public async Task<ActionResult<ProductApiModel>> Put(int id, [FromBody] ProductApiModel productApiModel)
         {
             _logger.LogInformationExtension(
@@ -134,6 +140,7 @@ namespace Demo.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        //[AsmAuthorization(ModuleCode.Product, AccessType.Delete)]
         public async Task<ActionResult<ProductApiModel>> Delete(int id)
         {
             _logger.LogInformationExtension($"Delete Product - Id: {id}");

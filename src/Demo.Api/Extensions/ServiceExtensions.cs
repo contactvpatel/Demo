@@ -14,6 +14,7 @@ using Demo.Infrastructure.Repositories;
 using Demo.Core.Repositories;
 using Demo.Business.Services;
 using Demo.Business.Interfaces;
+using Demo.Util.Models;
 
 namespace Demo.Api.Extensions
 {
@@ -35,12 +36,14 @@ namespace Demo.Api.Extensions
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<Core.Services.IAsmService, Infrastructure.Services.AsmService>();
             services.AddScoped<Core.Services.IMisService, Infrastructure.Services.MisService>();
             services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
 
             // Add Business Layer
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IAsmService, AsmService>();
             services.AddScoped<IMisService, MisService>();
             services.AddScoped<ISsoService, SsoService>();
 
@@ -54,6 +57,10 @@ namespace Demo.Api.Extensions
             services.AddTransient<IRestClient>(_ => new RestClient(configuration.GetSection("MisService:Url").Value));
             services.Configure<MisApiModel>(configuration.GetSection("MisService"));
             services.Configure<SsoApiModel>(configuration.GetSection("SsoService"));
+            services.Configure<AsmApiModel>(configuration.GetSection("AsmService"));
+
+            // Configure AppSettings Object
+            services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoReadContext>().AddDbContextCheck<DemoWriteContext>();
