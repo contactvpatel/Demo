@@ -2,6 +2,7 @@ using Demo.Api.Extensions;
 using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Api.Middleware;
+using Demo.Util.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.Data.SqlClient;
 using ApiError = Demo.Api.Middleware.ApiError;
@@ -35,6 +36,9 @@ namespace Demo.Api
 
             services.ConfigureSwagger();
 
+            var appSettings = new AppSettings();
+            Configuration.GetSection("AppSettings").Bind(appSettings);
+
             services.AddControllers(options =>
                 {
                     // Token Authorization
@@ -43,18 +47,20 @@ namespace Demo.Api
                     //options.ReturnHttpNotAcceptable = true;
 
                     //Filter to track Action Performance for Entire application's actions
-                    options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                    if (appSettings.EnablePerformanceFilterLogging)
+                    {
+                        options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                    }
 
                     options.Filters.Add<ValidationFilter>();
                 })
                 .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
                 .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Startup>(); })
-                //.AddXmlDataContractSerializerFormatters()
                 .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             // Global Exception Handler Middleware
             app.UseApiExceptionHandler(options =>
