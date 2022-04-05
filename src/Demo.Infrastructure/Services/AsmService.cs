@@ -11,17 +11,15 @@ namespace Demo.Infrastructure.Services
 {
     public class AsmService : IAsmService
     {
-        private readonly IRestClient _client;
-        private readonly IRestRequest _request;
+        private readonly RestClient _client;
         private readonly IOptions<AsmApiModel> _asmApiModel;
         private readonly ILogger<AsmService> _logger;
 
-        public AsmService(IRestClient client, IOptions<AsmApiModel> asmApiModel, ILogger<AsmService> logger)
+        public AsmService(RestClient client, IOptions<AsmApiModel> asmApiModel, ILogger<AsmService> logger)
         {
             _asmApiModel = asmApiModel ?? throw new ArgumentNullException(nameof(asmApiModel));
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _request = new RestRequest();
         }
 
         public async Task<IEnumerable<ApplicationSecurityResponseModel>> Get(
@@ -41,15 +39,17 @@ namespace Demo.Infrastructure.Services
 
         private async Task<T> Execute<T>(string url, ApplicationSecurityRequestModel data)
         {
-            _request.Parameters.Clear();
-            _request.Resource = url;
-            _request.Method = Method.POST;
-            _request.AddJsonBody(JsonConvert.SerializeObject(data));
-            _request.AddHeader("Content-type", "application/json");
-            var response = await _client.ExecuteAsync(_request);
+            var request = new RestRequest(url)
+            {
+                Method = Method.Post
+            };
+            request.AddBody(JsonConvert.SerializeObject(data), "application/json");
+            request.AddHeader("Content-type", "application/json");
+            var response = await _client.ExecuteAsync(request);
 
             if (response.StatusCode == HttpStatusCode.OK)
-                return JsonConvert.DeserializeObject<T>(response.Content);
+                if (response.Content != null)
+                    return JsonConvert.DeserializeObject<T>(response.Content);
 
             throw new ApplicationException(response.Content);
         }

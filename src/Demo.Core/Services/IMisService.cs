@@ -12,6 +12,7 @@ namespace Demo.Core.Services
         Task<RoleModel> GetRoleById(int id);
         Task<IEnumerable<RoleModel>> GetRolesByDepartmentId(int departmentId);
         Task<IEnumerable<RoleModel>> GetRolesByDepartments(int[] departmentIds);
+        Task<IEnumerable<PositionModel>> GetAllPositions(int divisionId);
         Task<IEnumerable<PositionModel>> GetPositions(int[] positions);
         Task<IEnumerable<PositionModel>> GetPositionsByRoleId(int roleId);
         Task<IEnumerable<PersonPositionModel>> GetPersonPosition(int personId);

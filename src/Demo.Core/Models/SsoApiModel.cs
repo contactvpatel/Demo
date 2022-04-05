@@ -9,6 +9,7 @@
     public class SsoEndpoint
     {
         public string ValidateToken { get; set; }
+        public string RenewToken { get; set; }
         public string Logout { get; set; }
     }
 }

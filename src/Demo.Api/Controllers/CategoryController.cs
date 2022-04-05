@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Demo.Api.Filters;
 using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;

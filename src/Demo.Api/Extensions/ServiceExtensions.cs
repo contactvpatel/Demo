@@ -55,7 +55,7 @@ namespace Demo.Api.Extensions
             services.AddTransient<LoggingDelegatingHandler>();
 
             //External Service Dependency (Example: MisService, SsoService)
-            services.AddTransient<IRestClient>(_ => new RestClient(configuration.GetSection("MisService:Url").Value));
+            services.AddScoped<RestClient>();
             services.Configure<MisApiModel>(configuration.GetSection("MisService"));
             services.Configure<SsoApiModel>(configuration.GetSection("SsoService"));
             services.Configure<AsmApiModel>(configuration.GetSection("AsmService"));
