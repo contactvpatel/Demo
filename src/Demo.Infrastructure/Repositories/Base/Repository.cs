@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Dapper;
 using Demo.Core.Entities.Base;
+using Demo.Core.Models;
 using Demo.Core.Repositories.Base;
 using Demo.Core.Specifications.Base;
 using Demo.Infrastructure.Data;
@@ -13,23 +14,26 @@ namespace Demo.Infrastructure.Repositories.Base
 {
     public class Repository<T> : IRepository<T> where T : Entity
     {
-        private readonly DemoContext _demoDbContext;
+        private readonly DemoReadContext _demoReadContext;
+        private readonly DemoWriteContext _demoWriteContext;
         private readonly IConfiguration _configuration;
 
-        public Repository(DemoContext dbContext, IConfiguration configuration)
+        protected Repository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext,
+            IConfiguration configuration)
         {
-            _demoDbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
+            _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
-            return SpecificationEvaluator<T>.GetQuery(_demoDbContext.Set<T>().AsQueryable(), spec);
+            return SpecificationEvaluator<T>.GetQuery(_demoReadContext.Set<T>().AsQueryable(), spec);
         }
 
         public async Task<IReadOnlyList<T>> GetAllAsync()
         {
-            return await _demoDbContext.Set<T>().ToListAsync();
+            return await _demoReadContext.Set<T>().ToListAsync();
         }
 
         public async Task<IReadOnlyList<T>> GetAsync(ISpecification<T> spec)
@@ -44,13 +48,13 @@ namespace Demo.Infrastructure.Repositories.Base
 
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> condition)
         {
-            return await _demoDbContext.Set<T>().Where(condition).ToListAsync();
+            return await _demoReadContext.Set<T>().Where(condition).ToListAsync();
         }
 
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy, string includeString = null, bool disableTracking = true)
         {
-            IQueryable<T> query = _demoDbContext.Set<T>();
+            IQueryable<T> query = _demoReadContext.Set<T>();
             if (disableTracking) query = query.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(includeString)) query = query.Include(includeString);
@@ -66,7 +70,7 @@ namespace Demo.Infrastructure.Repositories.Base
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy, List<Expression<Func<T, object>>> includes = null,
             bool disableTracking = true)
         {
-            IQueryable<T> query = _demoDbContext.Set<T>();
+            IQueryable<T> query = _demoReadContext.Set<T>();
             if (disableTracking) query = query.AsNoTracking();
 
             if (includes != null) query = includes.Aggregate(query, (current, include) => current.Include(include));
@@ -80,32 +84,36 @@ namespace Demo.Infrastructure.Repositories.Base
 
         public virtual async Task<T> GetByIdAsync(int id)
         {
-            return await _demoDbContext.Set<T>().FindAsync(id);
+            return await _demoReadContext.Set<T>().FindAsync(id);
         }
 
         public async Task<T> AddAsync(T entity)
         {
-            await _demoDbContext.Set<T>().AddAsync(entity);
-            await _demoDbContext.SaveChangesAsync();
+            await _demoWriteContext.Set<T>().AddAsync(entity);
+            await _demoWriteContext.SaveChangesAsync();
             return entity;
         }
 
         public async Task UpdateAsync(T entity)
         {
-            _demoDbContext.Entry(entity).State = EntityState.Modified;
-            await _demoDbContext.SaveChangesAsync();
+            _demoWriteContext.Entry(entity).State = EntityState.Modified;
+            await _demoWriteContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(T entity)
         {
-            _demoDbContext.Set<T>().Remove(entity);
-            await _demoDbContext.SaveChangesAsync();
+            _demoWriteContext.Set<T>().Remove(entity);
+            await _demoWriteContext.SaveChangesAsync();
         }
-        
+
         public async Task<IReadOnlyList<T>> QueryAsync<T>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
-            await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
+            var databaseConnectionSettings = new DbConnectionModel();
+            _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
+
+            await using var connection =
+                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return (await connection.QueryAsync<T>(sql, param, transaction)).ToList();
         }
@@ -113,7 +121,11 @@ namespace Demo.Infrastructure.Repositories.Base
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
-            await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
+            var databaseConnectionSettings = new DbConnectionModel();
+            _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
+
+            await using var connection =
+                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return await connection.QueryFirstOrDefaultAsync<T>(sql, param, transaction);
         }
@@ -121,7 +133,11 @@ namespace Demo.Infrastructure.Repositories.Base
         public async Task<T> QuerySingleAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
-            await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
+            var databaseConnectionSettings = new DbConnectionModel();
+            _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
+
+            await using var connection =
+                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return await connection.QuerySingleAsync<T>(sql, param, transaction);
         }
@@ -129,7 +145,11 @@ namespace Demo.Infrastructure.Repositories.Base
         public async Task<int> ExecuteAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
-            await using var connection = new SqlConnection(_configuration.GetConnectionString("DemoDbConnection"));
+            var databaseConnectionSettings = new DbConnectionModel();
+            _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
+
+            await using var connection =
+                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write));
             await connection.OpenAsync(cancellationToken);
             return await connection.ExecuteAsync(sql, param, transaction);
         }

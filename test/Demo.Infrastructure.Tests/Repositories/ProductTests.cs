@@ -12,7 +12,9 @@ namespace Demo.Infrastructure.Tests.Repositories
 {
     public class ProductTests
     {
-        private readonly DemoContext _demoDbContext;
+        private readonly DemoReadContext _demoReadContext;
+        private readonly DemoWriteContext _demoWriteContext;
+
         private readonly ProductRepository _productRepository;
         private readonly ITestOutputHelper _output;
         private ProductBuilder ProductBuilder { get; } = new();
@@ -21,31 +23,38 @@ namespace Demo.Infrastructure.Tests.Repositories
         public ProductTests(ITestOutputHelper output)
         {
             _output = output;
-            
-            var dbOptions = new DbContextOptionsBuilder<DemoContext>()
+
+            var dbReadOptions = new DbContextOptionsBuilder<DemoContext>()
                 .UseInMemoryDatabase(databaseName: "Demo")
                 .Options;
-            _demoDbContext = new DemoContext(dbOptions);
+
+            var dbWriteOptions = new DbContextOptionsBuilder<DemoContext>()
+                .UseInMemoryDatabase(databaseName: "Demo")
+                .Options;
+
+            _demoReadContext = new DemoReadContext(dbReadOptions);
+            _demoWriteContext = new DemoWriteContext(dbWriteOptions);
 
             var mockConfiguration = new Mock<IConfiguration>();
             var mockLogger = new Mock<ILogger<ProductRepository>>();
-            _productRepository = new ProductRepository(_demoDbContext, mockConfiguration.Object, mockLogger.Object);
+            _productRepository = new ProductRepository(_demoReadContext, _demoWriteContext, mockConfiguration.Object,
+                mockLogger.Object);
         }
 
         [Fact]
         public async Task Get_Existing_Product()
         {
             var existingProduct = ProductBuilder.WithDefaultValues();
-            var product = _demoDbContext.Products.SingleOrDefault(f => f.Name == existingProduct.Name);
+            var product = _demoWriteContext.Products.SingleOrDefault(f => f.Name == existingProduct.Name);
 
             if (product != null)
             {
-                _demoDbContext.Products.Remove(product);
-                await _demoDbContext.SaveChangesAsync();
+                _demoWriteContext.Products.Remove(product);
+                await _demoWriteContext.SaveChangesAsync();
             }
-            
-            await _demoDbContext.Products.AddAsync(existingProduct);           
-            await _demoDbContext.SaveChangesAsync();
+
+            await _demoWriteContext.Products.AddAsync(existingProduct);
+            await _demoWriteContext.SaveChangesAsync();
 
             var productId = existingProduct.ProductId;
             _output.WriteLine($"ProductId: {productId}");
@@ -60,27 +69,27 @@ namespace Demo.Infrastructure.Tests.Repositories
         {
             var existingCategory = CategoryBuilder.WithDefaultValues();
 
-            var category = _demoDbContext.Categories.SingleOrDefault(f => f.Name == existingCategory.Name);
+            var category = _demoWriteContext.Categories.SingleOrDefault(f => f.Name == existingCategory.Name);
 
             if (category != null)
             {
-                _demoDbContext.Categories.Remove(category);
-                await _demoDbContext.SaveChangesAsync();
+                _demoWriteContext.Categories.Remove(category);
+                await _demoWriteContext.SaveChangesAsync();
             }
 
-            await _demoDbContext.Categories.AddAsync(existingCategory);
+            await _demoWriteContext.Categories.AddAsync(existingCategory);
 
             var existingProduct = ProductBuilder.WithDefaultValues();
-            var product = _demoDbContext.Products.SingleOrDefault(f => f.Name == existingProduct.Name);
+            var product = _demoWriteContext.Products.SingleOrDefault(f => f.Name == existingProduct.Name);
 
             if (product != null)
             {
-                _demoDbContext.Products.Remove(product);
-                await _demoDbContext.SaveChangesAsync();
+                _demoWriteContext.Products.Remove(product);
+                await _demoWriteContext.SaveChangesAsync();
             }
 
-            await _demoDbContext.Products.AddAsync(existingProduct);
-            await _demoDbContext.SaveChangesAsync();
+            await _demoWriteContext.Products.AddAsync(existingProduct);
+            await _demoWriteContext.SaveChangesAsync();
             var categoryId = existingProduct.CategoryId;
             _output.WriteLine($"CategoryId: {categoryId}");
 

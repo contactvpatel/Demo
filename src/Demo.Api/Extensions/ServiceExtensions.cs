@@ -8,7 +8,6 @@ using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
 using Demo.Util.Logging;
-using Microsoft.Data.SqlClient;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Repositories;
@@ -64,7 +63,7 @@ namespace Demo.Api.Extensions
             services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
             // HealthChecks
-            services.AddHealthChecks().AddDbContextCheck<DemoContext>();
+            services.AddHealthChecks().AddDbContextCheck<DemoReadContext>().AddDbContextCheck<DemoWriteContext>();
         }
 
         private static void ConfigureDatabases(IServiceCollection services, IConfiguration configuration)
@@ -72,38 +71,21 @@ namespace Demo.Api.Extensions
             var databaseConnectionSettings = new DbConnectionModel();
             configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
-            services.AddDbContextPool<DemoContext>(c =>
-                c.UseSqlServer(CreateConnectionString(databaseConnectionSettings),
+            services.AddDbContext<DemoReadContext>(c =>
+                c.UseSqlServer(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
                         errorNumbersToAdd: new int[] { }
                     )).EnableDetailedErrors());
-        }
 
-        private static string CreateConnectionString(DbConnectionModel databaseConnectionModel)
-        {
-            var builder = new SqlConnectionStringBuilder
-            {
-                DataSource = string.IsNullOrEmpty(databaseConnectionModel.Port)
-                    ? databaseConnectionModel.Host
-                    : databaseConnectionModel.Host + "," + databaseConnectionModel.Port,
-                InitialCatalog = databaseConnectionModel.DatabaseName
-            };
-
-            if (databaseConnectionModel.IntegratedSecurity)
-            {
-                builder.IntegratedSecurity = true;
-            }
-            else
-            {
-                builder.UserID = databaseConnectionModel.UserName;
-                builder.Password = databaseConnectionModel.Password;
-            }
-
-            builder.MultipleActiveResultSets = databaseConnectionModel.MultipleActiveResultSets;
-
-            return builder.ConnectionString;
+            services.AddDbContext<DemoWriteContext>(c =>
+                c.UseSqlServer(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write),
+                    o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
+                        maxRetryCount: 4,
+                        maxRetryDelay: TimeSpan.FromSeconds(1),
+                        errorNumbersToAdd: new int[] { }
+                    )).EnableDetailedErrors());
         }
 
         public static void ConfigureCors(this IServiceCollection services)
