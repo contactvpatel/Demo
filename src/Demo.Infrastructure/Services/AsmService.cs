@@ -12,10 +12,10 @@ namespace Demo.Infrastructure.Services
     public class AsmService : IAsmService
     {
         private readonly RestClient _client;
-        private readonly IOptions<AsmApiModel> _asmApiModel;
+        private readonly IOptionsMonitor<AsmApiModel> _asmApiModel;
         private readonly ILogger<AsmService> _logger;
 
-        public AsmService(RestClient client, IOptions<AsmApiModel> asmApiModel, ILogger<AsmService> logger)
+        public AsmService(RestClient client, IOptionsMonitor<AsmApiModel> asmApiModel, ILogger<AsmService> logger)
         {
             _asmApiModel = asmApiModel ?? throw new ArgumentNullException(nameof(asmApiModel));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -25,8 +25,8 @@ namespace Demo.Infrastructure.Services
         public async Task<IEnumerable<ApplicationSecurityResponseModel>> Get(
             ApplicationSecurityRequestModel applicationSecurityRequestModel)
         {
-            var asmApiUrl = _asmApiModel.Value.Url;
-            var endPoint = _asmApiModel.Value.Endpoint.ApplicationSecurity;
+            var asmApiUrl = _asmApiModel.CurrentValue.Url;
+            var endPoint = _asmApiModel.CurrentValue.Endpoint.ApplicationSecurity;
             var response =
                 await Execute<AsmResponse<ApplicationSecurityResponseModel>>(asmApiUrl + endPoint,
                     applicationSecurityRequestModel);

@@ -11,10 +11,10 @@ namespace Demo.Infrastructure.Services
     public class SsoService : ISsoService
     {
         private readonly RestClient _client;
-        private readonly IOptions<SsoApiModel> _ssoApiModel;
+        private readonly IOptionsMonitor<SsoApiModel> _ssoApiModel;
         private readonly ILogger<SsoService> _logger;
 
-        public SsoService(RestClient client, IOptions<SsoApiModel> ssoApiModel, ILogger<SsoService> logger)
+        public SsoService(RestClient client, IOptionsMonitor<SsoApiModel> ssoApiModel, ILogger<SsoService> logger)
         {
             _ssoApiModel = ssoApiModel ?? throw new ArgumentNullException(nameof(ssoApiModel));
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -23,8 +23,8 @@ namespace Demo.Infrastructure.Services
 
         public async Task<bool> ValidateToken(string token)
         {
-            var ssoApiUrl = _ssoApiModel.Value.Url;
-            var endPoint = _ssoApiModel.Value.Endpoint.ValidateToken;
+            var ssoApiUrl = _ssoApiModel.CurrentValue.Url;
+            var endPoint = _ssoApiModel.CurrentValue.Endpoint.ValidateToken;
             var request = new RestRequest(ssoApiUrl + endPoint)
             {
                 Method = Method.Post
@@ -41,8 +41,8 @@ namespace Demo.Infrastructure.Services
 
         public async Task<SsoAuthModel> RenewToken(string token, string refreshToken)
         {
-            var ssoApiUrl = _ssoApiModel.Value.Url;
-            var endPoint = _ssoApiModel.Value.Endpoint.RenewToken;
+            var ssoApiUrl = _ssoApiModel.CurrentValue.Url;
+            var endPoint = _ssoApiModel.CurrentValue.Endpoint.RenewToken;
             var request = new RestRequest(ssoApiUrl + endPoint)
             {
                 Method = Method.Post
@@ -61,8 +61,8 @@ namespace Demo.Infrastructure.Services
 
         public async Task<bool> Logout(string token)
         {
-            var ssoApiUrl = _ssoApiModel.Value.Url;
-            var endPoint = _ssoApiModel.Value.Endpoint.Logout;
+            var ssoApiUrl = _ssoApiModel.CurrentValue.Url;
+            var endPoint = _ssoApiModel.CurrentValue.Endpoint.Logout;
             var request = new RestRequest(ssoApiUrl + endPoint)
             {
                 Method = Method.Post
