@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Core", "src\Demo.Core\Demo.Core.csproj", "{AAD9D1A2-999B-4952-A693-8DDB1C9AC197}"
 EndProject
@@ -17,13 +17,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9562AAEA-B54
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AB717298-6244-4156-9168-0DFF5ACCF85C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Core.Tests", "test\Demo.Core.Tests\Demo.Core.Tests.csproj", "{9E252C87-6EA5-4121-9C8A-FA837D707EB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Core.Tests", "test\Demo.Core.Tests\Demo.Core.Tests.csproj", "{9E252C87-6EA5-4121-9C8A-FA837D707EB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Business.Tests", "test\Demo.Business.Tests\Demo.Business.Tests.csproj", "{6A6C07C9-688C-48D3-8C46-EC9FC3ABA76F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Business.Tests", "test\Demo.Business.Tests\Demo.Business.Tests.csproj", "{6A6C07C9-688C-48D3-8C46-EC9FC3ABA76F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Infrastructure.Tests", "test\Demo.Infrastructure.Tests\Demo.Infrastructure.Tests.csproj", "{FC919C90-1A83-40BF-8555-368DB2A23F48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Infrastructure.Tests", "test\Demo.Infrastructure.Tests\Demo.Infrastructure.Tests.csproj", "{FC919C90-1A83-40BF-8555-368DB2A23F48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Api.Tests", "test\Demo.Api.Tests\Demo.Api.Tests.csproj", "{30E749DA-C60B-4C8F-B5D8-EFF281BECAB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Api.Tests", "test\Demo.Api.Tests\Demo.Api.Tests.csproj", "{30E749DA-C60B-4C8F-B5D8-EFF281BECAB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{99164252-AC4F-472D-AE41-6D69D5F2747A}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -3,6 +3,8 @@ using Demo.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
+using Util.Application.Setting.Configuration;
 
 namespace Demo.Infrastructure.Data
 {
@@ -55,11 +57,14 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
+                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
+                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddEnvironmentVariables()
-                    .Build();
+                                    .SetBasePath(Directory.GetCurrentDirectory())
+                                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
+                                    .AddEnvironmentVariables()
+                                    .Build();
 
                 var databaseConnectionSettings = new DbConnectionModel();
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
@@ -100,11 +105,14 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
+                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
+                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddEnvironmentVariables()
-                    .Build();
+                                    .SetBasePath(Directory.GetCurrentDirectory())
+                                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
+                                    .AddEnvironmentVariables()
+                                    .Build();
 
                 var databaseConnectionSettings = new DbConnectionModel();
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
@@ -134,11 +142,14 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
+                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
+                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddEnvironmentVariables()
-                    .Build();
+                                    .SetBasePath(Directory.GetCurrentDirectory())
+                                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
+                                    .AddEnvironmentVariables()
+                                    .Build();
 
                 var databaseConnectionSettings = new DbConnectionModel();
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);

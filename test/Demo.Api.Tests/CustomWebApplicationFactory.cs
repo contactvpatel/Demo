@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Demo.Api.Tests
 {
-    public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<Startup>
+    public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

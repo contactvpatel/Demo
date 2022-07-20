@@ -2,11 +2,11 @@
 
 namespace Demo.Api.Tests.Controllers
 {
-    public class ProductControllerTests : IClassFixture<CustomWebApplicationFactory<Startup>>
+    public class ProductControllerTests : IClassFixture<CustomWebApplicationFactory<Program>>
     {
         public HttpClient Client { get; }
 
-        public ProductControllerTests(CustomWebApplicationFactory<Startup> factory)
+        public ProductControllerTests(CustomWebApplicationFactory<Program> factory)
         {
             Client = factory.CreateClient();
         }
