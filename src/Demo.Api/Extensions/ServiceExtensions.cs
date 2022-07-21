@@ -7,7 +7,7 @@ using Demo.Core.Models;
 using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Repositories;

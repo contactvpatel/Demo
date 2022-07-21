@@ -3,7 +3,7 @@ using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Api.Middleware;
 using Demo.Api.Models;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Demo.Util.Models;
 using FluentValidation.AspNetCore;
 using Serilog;

@@ -1,7 +1,7 @@
 ﻿using Demo.Api.Extensions;
 using Demo.Api.Models;
 using Demo.Core.Models;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

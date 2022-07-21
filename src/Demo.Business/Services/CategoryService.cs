@@ -4,8 +4,9 @@ using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.Extensions.Logging;
+using Util.Application.Logging;
 
 namespace Demo.Business.Services
 {

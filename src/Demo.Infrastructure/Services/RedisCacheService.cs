@@ -1,6 +1,6 @@
 ﻿using Demo.Core.Models;
 using Demo.Core.Services;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

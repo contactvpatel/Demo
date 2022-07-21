@@ -4,7 +4,7 @@ using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -37,7 +37,7 @@ namespace Demo.Api.Controllers
             var products = await _productService.Get(paginationQuery);
             if (products == null)
             {
-                _logger.LogErrorExtension("No products found", null);
+                _logger.LogInformationExtension("No products found");
                 return NotFound(new Response<ProductApiModel>(null, false, "No products found"));
             }
 
@@ -63,13 +63,11 @@ namespace Demo.Api.Controllers
         {
             _logger.LogInformationExtension($"Get Product By Id: {id}");
             var product = await _productService.GetById(id);
-            if (product == null)
-            {
-                _logger.LogInformationExtension($"No product found with id {id}");
-                return NotFound(new Response<ProductApiModel>(null, false, $"No product found with id {id}"));
-            }
+            if (product != null)
+                return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(product)));
 
-            return Ok(new Response<ProductApiModel>(_mapper.Map<ProductApiModel>(product)));
+            _logger.LogInformationExtension($"No product found with id {id}");
+            return NotFound(new Response<ProductApiModel>(null, false, $"No product found with id {id}"));
         }
 
         [HttpGet("categories/{categoryId:int}")]
@@ -78,14 +76,11 @@ namespace Demo.Api.Controllers
         {
             _logger.LogInformationExtension($"Get Product By Category. CategoryId: {categoryId}");
             var products = await _productService.GetByCategoryId(categoryId);
-            if (!products.Any())
-            {
-                _logger.LogInformationExtension($"Product By Category Not Found. CategoryId : {categoryId}");
-                return NotFound(new Response<ProductApiModel>(null, false,
-                    $"Product By Category Not Found. CategoryId : {categoryId}"));
-            }
-
-            return Ok(new Response<IEnumerable<ProductApiModel>>(_mapper.Map<IEnumerable<ProductApiModel>>(products)));
+            if (products.Any())
+                return Ok(new Response<IEnumerable<ProductApiModel>>(_mapper.Map<IEnumerable<ProductApiModel>>(products)));
+            
+            _logger.LogInformationExtension($"Product By Category Not Found. CategoryId : {categoryId}");
+            return NotFound(new Response<ProductApiModel>(null, false, $"Product By Category Not Found. CategoryId : {categoryId}"));
         }
 
         [HttpPost]
@@ -109,8 +104,7 @@ namespace Demo.Api.Controllers
         //[AsmAuthorization(ModuleCode.Product, AccessType.Update)]
         public async Task<ActionResult<ProductApiModel>> Put(int id, [FromBody] ProductApiModel productApiModel)
         {
-            _logger.LogInformationExtension(
-                $"Put Product - Id: {productApiModel.ProductId}, Name: {productApiModel.Name}");
+            _logger.LogInformationExtension($"Put Product - Id: {productApiModel.ProductId}, Name: {productApiModel.Name}");
 
             if (!ModelState.IsValid)
             {
@@ -122,8 +116,7 @@ namespace Demo.Api.Controllers
             if (productEntity == null)
             {
                 _logger.LogErrorExtension($"Product with id: {id}, hasn't been found in db.", null);
-                return NotFound(new Response<ProductApiModel>(null, false,
-                    $"Product with id: {id}, hasn't been found in db."));
+                return NotFound(new Response<ProductApiModel>(null, false, $"Product with id: {id}, hasn't been found in db."));
             }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);
@@ -148,8 +141,7 @@ namespace Demo.Api.Controllers
             if (productEntity == null)
             {
                 _logger.LogErrorExtension($"Product with id: {id}, hasn't been found in db.", null);
-                return NotFound(new Response<ProductApiModel>(null, false,
-                    $"Product with id: {id}, hasn't been found in db."));
+                return NotFound(new Response<ProductApiModel>(null, false, $"Product with id: {id}, hasn't been found in db."));
             }
 
             var userId = Convert.ToInt32(User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value);

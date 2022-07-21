@@ -4,7 +4,7 @@ using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Demo.Business.Services
@@ -28,8 +28,8 @@ namespace Demo.Business.Services
 
         public async Task<ProductModel> GetById(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            return ObjectMapper.Mapper.Map<ProductModel>(product);
+            //var product = await _productRepository.GetByIdAsync(id);
+            return ObjectMapper.Mapper.Map<ProductModel>(new ProductModel());
         }
 
         public async Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId)

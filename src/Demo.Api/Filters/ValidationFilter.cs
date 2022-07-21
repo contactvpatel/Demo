@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ApiError = Demo.Api.Middleware.ApiError;

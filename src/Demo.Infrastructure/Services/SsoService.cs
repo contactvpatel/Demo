@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Demo.Core.Models;
 using Demo.Core.Services;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;

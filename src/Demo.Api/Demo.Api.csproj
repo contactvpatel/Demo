@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.16.1" />
     <PackageReference Include="Scrutor" Version="4.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Util.Application.Logging" Version="1.0.0" />
     <PackageReference Include="Util.Application.Setting.Configuration" Version="1.0.0" />
   </ItemGroup>
 

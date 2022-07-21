@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Demo.Api.Filters

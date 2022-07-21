@@ -1,6 +1,6 @@
 ﻿using Demo.Api.Models;
 using Demo.Core.Models;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers

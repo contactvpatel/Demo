@@ -20,6 +20,7 @@
     </PackageReference>
     <PackageReference Include="RestSharp" Version="108.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="Util.Application.Logging" Version="1.0.0" />
     <PackageReference Include="Util.Application.Setting.Configuration" Version="1.0.0" />
   </ItemGroup>
 

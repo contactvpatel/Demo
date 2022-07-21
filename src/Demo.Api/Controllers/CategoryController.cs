@@ -3,7 +3,7 @@ using Demo.Api.Models;
 using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
-using Demo.Util.Logging;
+using Util.Application.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
