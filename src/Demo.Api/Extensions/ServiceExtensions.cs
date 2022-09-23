@@ -15,6 +15,7 @@ using Demo.Core.Repositories;
 using Demo.Business.Services;
 using Demo.Business.Interfaces;
 using Demo.Util.Models;
+using Demo.Infrastructure.Configurations;
 
 namespace Demo.Api.Extensions
 {
@@ -24,6 +25,9 @@ namespace Demo.Api.Extensions
         {
             // Add Database
             ConfigureDatabases(services, configuration);
+
+            // Apply Database Migration
+            services.AddTransient<IStartupFilter, DatabaseScriptInit>();
 
             // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
             //services.Scan(scan => scan

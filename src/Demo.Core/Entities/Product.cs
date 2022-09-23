@@ -6,7 +6,7 @@ namespace Demo.Core.Entities
     {
         public int ProductId { get; set; }
         public string Name { get; set; }
-        public string QuantityPerUnit { get; set; }
+        public int QuantityPerUnit { get; set; }
         public decimal? UnitPrice { get; set; }
         public short? UnitsInStock { get; set; }
         public short? UnitsOnOrder { get; set; }
