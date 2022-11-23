@@ -1,6 +1,6 @@
 ﻿using Demo.Api.Models;
 using Demo.Core.Models;
-using Util.Application.Logging;
+using Demo.Util.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers
@@ -10,7 +10,7 @@ namespace Demo.Api.Controllers
     /// </summary>
     [Route("api/v{version:apiVersion}/mis")]
     [ApiController]
-    [ApiVersion("1.0")]
+    [ApiVersion("1")]
     public class MisController : ControllerBase
     {
         private readonly Business.Interfaces.IMisService _misService;
@@ -41,7 +41,7 @@ namespace Demo.Api.Controllers
 
             _logger.LogInformationExtension(message);
 
-            return Ok(new Response<IEnumerable<DepartmentModel>>(departments, true, message));
+            return Ok(new Response<IEnumerable<DepartmentModel>>(departments, message));
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Demo.Api.Controllers
             {
                 var message = $"No department found with id {id}";
                 _logger.LogInformationExtension(message);
-                return Ok(new Response<DepartmentModel>(null, true, message));
+                return Ok(new Response<DepartmentModel>(null, message));
             }
 
             return Ok(new Response<DepartmentModel>(department));
@@ -77,7 +77,7 @@ namespace Demo.Api.Controllers
 
             _logger.LogInformationExtension(message);
 
-            return Ok(new Response<IEnumerable<RoleTypeModel>>(roleTypes, true, message));
+            return Ok(new Response<IEnumerable<RoleTypeModel>>(roleTypes, message));
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Demo.Api.Controllers
 
             _logger.LogInformationExtension(message);
 
-            return Ok(new Response<IEnumerable<RoleModel>>(roles, true, message));
+            return Ok(new Response<IEnumerable<RoleModel>>(roles, message));
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Demo.Api.Controllers
 
             _logger.LogInformationExtension(message);
 
-            return Ok(new Response<IEnumerable<RoleModel>>(roles, true, message));
+            return Ok(new Response<IEnumerable<RoleModel>>(roles, message));
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Demo.Api.Controllers
 
             _logger.LogInformationExtension(message);
 
-            return Ok(new Response<IEnumerable<PositionModel>>(positions, true, message));
+            return Ok(new Response<IEnumerable<PositionModel>>(positions, message));
         }
 
         [HttpGet("person-positions/{id:int}", Name = "GetPersonPosition")]

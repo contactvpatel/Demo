@@ -4,7 +4,7 @@ using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
-using Util.Application.Logging;
+using Demo.Util.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Demo.Business.Services
@@ -20,6 +20,12 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        public async Task<IEnumerable<ProductModel>> Get()
+        {
+            var productList = await _productRepository.GetAllAsync();
+            return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
+        }
+
         public async Task<PagedList<ProductModel>> Get(PaginationQuery paginationQuery)
         {
             var productList = await _productRepository.Get(paginationQuery);
@@ -28,8 +34,7 @@ namespace Demo.Business.Services
 
         public async Task<ProductModel> GetById(int id)
         {
-            //var product = await _productRepository.GetByIdAsync(id);
-            return ObjectMapper.Mapper.Map<ProductModel>(new ProductModel());
+            return ObjectMapper.Mapper.Map<ProductModel>(await _productRepository.GetByIdAsync(id));
         }
 
         public async Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId)
@@ -43,10 +48,10 @@ namespace Demo.Business.Services
             var newProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (newProduct != null)
                 throw new ApplicationException($"Product already exits.");
-            
+
             var mappedEntity = ObjectMapper.Mapper.Map<Product>(productModel);
             if (mappedEntity == null)
-                throw new ApplicationException($"Product could not be mapped."); 
+                throw new ApplicationException($"Product could not be mapped.");
 
             var newEntity = await _productRepository.AddAsync(mappedEntity);
             _logger.LogInformationExtension($"Product successfully added.");
@@ -75,6 +80,5 @@ namespace Demo.Business.Services
             await _productRepository.DeleteAsync(ObjectMapper.Mapper.Map<Product>(deletedProduct));
             _logger.LogInformationExtension($"Product successfully deleted.");
         }
-              
     }
 }

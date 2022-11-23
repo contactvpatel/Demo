@@ -7,14 +7,18 @@ using Demo.Core.Models;
 using Demo.Infrastructure.Data;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using RestSharp;
-using Util.Application.Logging;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Repositories;
 using Demo.Core.Repositories;
 using Demo.Business.Services;
 using Demo.Business.Interfaces;
+using Demo.Util.Logging;
 using Demo.Util.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using StackExchange.Redis;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Demo.Api.Extensions
 {
@@ -24,13 +28,6 @@ namespace Demo.Api.Extensions
         {
             // Add Database
             ConfigureDatabases(services, configuration);
-
-            // Using Scrutor to map the dependencies with scoped lifetime (https://github.com/khellang/Scrutor)
-            //services.Scan(scan => scan
-            //.FromCallingAssembly()
-            //.FromApplicationDependencies(c => c.FullName != null && c.FullName.StartsWith("Demo"))
-            //.AddClasses()
-            //.AsMatchingInterface().WithScopedLifetime());
 
             // Add Infrastructure Layer
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -53,14 +50,14 @@ namespace Demo.Api.Extensions
             // LoggingHelpers
             services.AddTransient<LoggingDelegatingHandler>();
 
-            //External Service Dependency (Example: MisService, SsoService)
+            //External Service Dependency (Example: MisService, SsoService, AsmService)
             services.AddScoped<RestClient>();
             services.Configure<MisApiModel>(configuration.GetSection("MisService"));
             services.Configure<SsoApiModel>(configuration.GetSection("SsoService"));
             services.Configure<AsmApiModel>(configuration.GetSection("AsmService"));
 
             // Configure AppSettings Object
-            services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+            services.Configure<AppSettingModel>(configuration.GetSection("AppSettings"));
 
             // HealthChecks
             services.AddHealthChecks().AddDbContextCheck<DemoReadContext>().AddDbContextCheck<DemoWriteContext>();
@@ -72,7 +69,7 @@ namespace Demo.Api.Extensions
             configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
             services.AddDbContext<DemoReadContext>(c =>
-                c.UseSqlServer(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read),
+                c.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
@@ -80,7 +77,7 @@ namespace Demo.Api.Extensions
                     )).EnableDetailedErrors());
 
             services.AddDbContext<DemoWriteContext>(c =>
-                c.UseSqlServer(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write),
+                c.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
@@ -149,13 +146,34 @@ namespace Demo.Api.Extensions
                 return versions?.Any(v => $"v{v}" == version) == true
                        && (!maps.Any() || maps.Any(v => $"v{v}" == version));
             });
+
+            // Add JWT Authentication
+            var securityScheme = new OpenApiSecurityScheme
+            {
+                Name = "JWT Authentication",
+                Description = "Enter JWT Bearer token **_only_**",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer", // must be lower case
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Id = JwtBearerDefaults.AuthenticationScheme,
+                    Type = ReferenceType.SecurityScheme
+                }
+            };
+            options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                { securityScheme, new string[] { } }
+            });
         }
 
         private static void AddSwaggerDocs(SwaggerGenOptions options)
         {
-            options.SwaggerDoc("v1.0", new OpenApiInfo
+            options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Version = "v1.0",
+                Version = "v1",
                 Title = "Demo API"
             });
 
@@ -177,11 +195,24 @@ namespace Demo.Api.Extensions
 
             services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = redisCacheSettings.ConnectionString;
                 options.InstanceName = redisCacheSettings.InstanceName;
+                options.ConfigurationOptions = ConfigurationOptions.Parse(redisCacheSettings.ConnectionString);
+                if (options.ConfigurationOptions != null)
+                    options.ConfigurationOptions.CertificateValidation += ValidateServerCertificate;
             });
 
             services.AddSingleton<Core.Services.IRedisCacheService, Infrastructure.Services.RedisCacheService>();
+        }
+
+        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+                return true;
+
+            Console.WriteLine("Certificate error: {0}", sslPolicyErrors);
+
+            return false;
         }
     }
 }

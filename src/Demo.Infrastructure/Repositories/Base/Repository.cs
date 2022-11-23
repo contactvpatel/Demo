@@ -113,7 +113,7 @@ namespace Demo.Infrastructure.Repositories.Base
             _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
             await using var connection =
-                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
+                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return (await connection.QueryAsync<T>(sql, param, transaction)).ToList();
         }
@@ -125,7 +125,7 @@ namespace Demo.Infrastructure.Repositories.Base
             _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
             await using var connection =
-                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
+                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return await connection.QueryFirstOrDefaultAsync<T>(sql, param, transaction);
         }
@@ -137,7 +137,7 @@ namespace Demo.Infrastructure.Repositories.Base
             _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
             await using var connection =
-                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read));
+                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read));
             await connection.OpenAsync(cancellationToken);
             return await connection.QuerySingleAsync<T>(sql, param, transaction);
         }
@@ -149,7 +149,7 @@ namespace Demo.Infrastructure.Repositories.Base
             _configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
             await using var connection =
-                new SqlConnection(databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write));
+                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write));
             await connection.OpenAsync(cancellationToken);
             return await connection.ExecuteAsync(sql, param, transaction);
         }

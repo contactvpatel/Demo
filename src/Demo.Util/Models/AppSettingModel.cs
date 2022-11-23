@@ -1,6 +1,6 @@
 ﻿namespace Demo.Util.Models
 {
-    public class AppSettings
+    public class AppSettingModel
     {
         public string ApplicationId { get; set; }
         public string ApplicationName { get; set; }

@@ -2,17 +2,16 @@
 
 namespace Demo.Core.Entities
 {
-    public class Category : Entity
+    public partial class Category : Entity
     {
-        public Category()
-        {
-            Products = new HashSet<Product>();
-        }
-
         public int CategoryId { get; set; }
+
         public string Name { get; set; }
+
         public string Description { get; set; }
-        public ICollection<Product> Products { get; private set; }
+
+
+        public virtual ICollection<Product> Products { get; } = new List<Product>();
 
         public static Category Create(int categoryId, string name, string description = null)
         {

@@ -5,7 +5,8 @@ namespace Demo.Business.Interfaces
 {
     public interface ICategoryService
     {
-        Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery);
+        Task<IEnumerable<CategoryModel>> Get();
+        Task<PagedList<CategoryModel>> Get(PaginationQuery paginationQuery); 
         Task<CategoryModel> GetById(int id);
         Task<CategoryModel> Create(CategoryModel productModel);
     }

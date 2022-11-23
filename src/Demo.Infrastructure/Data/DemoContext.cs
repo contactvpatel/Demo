@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
-using Util.Application.Setting.Configuration;
+using Demo.Util.ApplicationSettingConfiguration;
+using System.Reflection.Emit;
 
 namespace Demo.Infrastructure.Data
 {
-    public class DemoContext : DbContext
+    public partial class DemoContext : DbContext
     {
         public DemoContext()
         {
@@ -19,38 +20,49 @@ namespace Demo.Infrastructure.Data
         {
         }
 
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Category> Categories { get; set; }
+        public virtual DbSet<Category> Categories { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        public virtual DbSet<Product> Products { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            builder.Entity<Product>(ConfigureProduct);
-            builder.Entity<Category>(ConfigureCategory);
-        }
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.ToTable("Category");
 
-        private void ConfigureProduct(EntityTypeBuilder<Product> builder)
-        {
-            builder.ToTable("Product");
+                entity.Property(e => e.Created)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+                entity.Property(e => e.LastUpdated)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.Name)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
 
-            builder.HasKey(ci => ci.ProductId);
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.ToTable("Product");
 
-            builder.Property(cb => cb.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+                entity.Property(e => e.Created)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.LastUpdated)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(40);
+                entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 0)");
 
-            builder.Property(cb => cb.UnitPrice)
-                .HasColumnType("decimal(18,0)");
-        }
-
-        private void ConfigureCategory(EntityTypeBuilder<Category> builder)
-        {
-            builder.ToTable("Category");
-
-            builder.HasKey(ci => ci.CategoryId);
-
-            builder.Property(cb => cb.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+                entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                    .HasForeignKey(d => d.CategoryId)
+                    .HasConstraintName("FK_Product_Category");
+            });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -70,7 +82,7 @@ namespace Demo.Infrastructure.Data
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
                 optionsBuilder.UseSqlServer(
-                    databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write),
+                    DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
@@ -118,7 +130,7 @@ namespace Demo.Infrastructure.Data
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
                 optionsBuilder.UseSqlServer(
-                    databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Read),
+                    DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
@@ -155,7 +167,7 @@ namespace Demo.Infrastructure.Data
                 configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
                 optionsBuilder.UseSqlServer(
-                    databaseConnectionSettings.CreateConnectionString(databaseConnectionSettings.Write),
+                    DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),

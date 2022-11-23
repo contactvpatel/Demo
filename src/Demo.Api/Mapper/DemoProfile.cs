@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Demo.Api.Models;
+using Demo.Api.Dto;
 using Demo.Business.Models;
 
 namespace Demo.Api.Mapper
@@ -8,8 +8,11 @@ namespace Demo.Api.Mapper
     {
         public DemoProfile()
         {
-            CreateMap<ProductModel, ProductApiModel>().ReverseMap();
-            CreateMap<CategoryModel, CategoryApiModel>().ReverseMap();
+            CreateMap<CategoryRequestModel, CategoryModel>();
+            CreateMap<CategoryModel, CategoryResponseModel>();
+
+            CreateMap<ProductRequestModel, ProductModel>();
+            CreateMap<ProductModel, ProductResponseModel>();
         }
     }
 }

@@ -10,21 +10,17 @@ namespace Demo.Api.Models
 
         public Response(T data)
         {
-            Succeeded = true;
             Message = string.Empty;
             Errors = null;
             Data = data;
         }
 
-        public Response(T data, bool succeeded, string message)
+        public Response(T data, string message)
         {
-            Succeeded = succeeded;
             Message = message;
             Errors = null;
             Data = data;
         }
-
-        public bool Succeeded { get; set; }
 
         public T Data { get; set; }
 

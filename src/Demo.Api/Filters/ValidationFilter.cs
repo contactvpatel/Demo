@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Util.Application.Logging;
+using Demo.Util.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ApiError = Demo.Api.Middleware.ApiError;
@@ -26,7 +26,7 @@ namespace Demo.Api.Filters
                 var errorsInModelState = context.ModelState.Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Errors.Select(x => x.ErrorMessage)).ToArray();
 
-                var errorResponse = new Models.Response<ApiError>(null, false, "Model Validation Failed")
+                var errorResponse = new Models.Response<ApiError>(null, "Model Validation Failed")
                     { Errors = new List<ApiError>() };
 
                 foreach (var error in errorsInModelState)

@@ -3,13 +3,13 @@ using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Api.Middleware;
 using Demo.Api.Models;
-using Util.Application.Logging;
 using Demo.Util.Models;
 using FluentValidation.AspNetCore;
 using Serilog;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using Util.Application.Setting.Configuration;
+using Demo.Util.ApplicationSettingConfiguration;
+using Demo.Util.Logging;
 
 public class Program
 {
@@ -45,15 +45,13 @@ public class Program
 
         builder.Services.ConfigureSwagger();
 
-        var appSettings = new AppSettings();
+        var appSettings = new AppSettingModel();
         builder.Configuration.GetSection("AppSettings").Bind(appSettings);
 
         builder.Services.AddControllers(options =>
         {
-            // Token Authorization
+            // SSO Token Authorization
             //options.Filters.Add(typeof(CustomAuthorization));
-
-            //options.ReturnHttpNotAcceptable = true;
 
             //Filter to track Action Performance for Entire application's actions
             if (appSettings.EnablePerformanceFilterLogging)
@@ -80,7 +78,7 @@ public class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("v1.0/swagger.json", "v1.0");
+            options.SwaggerEndpoint("v1/swagger.json", "v1");
             //options.SwaggerEndpoint("/v2/swagger.json", "v2"); // Future Version
         });
 

@@ -110,14 +110,13 @@ GO
 CREATE TABLE [dbo].[Product](
 	[ProductId] [int] IDENTITY(1,1) NOT NULL,
 	[Name] [nvarchar](40) NOT NULL,
-	[QuantityPerUnit] [nvarchar](20) NULL,
-	[UnitPrice] [decimal](18, 0) NULL,
-	[UnitsInStock] [smallint] NULL,
+	[QuantityPerUnit] [int] NOT NULL,
+	[UnitPrice] [decimal](18, 0) NOT NULL,
+	[UnitsInStock] [smallint] NOT NULL,
 	[UnitsOnOrder] [smallint] NULL,
-	[ReorderLevel] [smallint] NULL,
+	[ReorderLevel] [smallint] NOT NULL,
 	[Discontinued] [bit] NOT NULL,
 	[CategoryId] [int] NULL,
-	[ProductReason] [varchar](500) NULL,
 	[IsDeleted] [bit] NOT NULL,
 	[Created] [datetime] NOT NULL,
 	[CreatedBy] [int] NOT NULL,
@@ -139,11 +138,11 @@ SET IDENTITY_INSERT [dbo].[Category] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Product] ON 
 GO
-INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [ProductReason], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (1, N'iPhone', N'1', CAST(1000 AS Decimal(18, 0)), 10, 5, 1, 0, 1, NULL, 0, CAST(N'2021-10-19T21:28:54.700' AS DateTime), 1, CAST(N'2021-10-19T21:28:54.700' AS DateTime), 1)
+INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (1, N'iPhone', 1, CAST(1000 AS Decimal(18, 0)), 10, 5, 1, 0, 1, 0, CAST(N'2021-10-19T21:28:54.700' AS DateTime), 1, CAST(N'2021-10-19T21:28:54.700' AS DateTime), 1)
 GO
-INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [ProductReason], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (2, N'Samsung Galaxy', N'1', CAST(900 AS Decimal(18, 0)), 15, 10, 1, 0, 1, NULL, 0, CAST(N'2021-10-19T21:29:22.787' AS DateTime), 1, CAST(N'2021-10-19T21:29:22.787' AS DateTime), 1)
+INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (2, N'Samsung Galaxy', 1, CAST(900 AS Decimal(18, 0)), 15, 10, 1, 0, 1, 0, CAST(N'2021-10-19T21:29:22.787' AS DateTime), 1, CAST(N'2021-10-19T21:29:22.787' AS DateTime), 1)
 GO
-INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [ProductReason], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (3, N'LG TV', N'1', CAST(1500 AS Decimal(18, 0)), 10, 5, 1, 0, 2, NULL, 0, CAST(N'2021-10-19T21:29:45.417' AS DateTime), 1, CAST(N'2021-10-19T21:29:45.417' AS DateTime), 1)
+INSERT [dbo].[Product] ([ProductId], [Name], [QuantityPerUnit], [UnitPrice], [UnitsInStock], [UnitsOnOrder], [ReorderLevel], [Discontinued], [CategoryId], [IsDeleted], [Created], [CreatedBy], [LastUpdated], [LastUpdatedBy]) VALUES (3, N'LG TV', 1, CAST(1500 AS Decimal(18, 0)), 10, 5, 1, 0, 2, 0, CAST(N'2021-10-19T21:29:45.417' AS DateTime), 1, CAST(N'2021-10-19T21:29:45.417' AS DateTime), 1)
 GO
 SET IDENTITY_INSERT [dbo].[Product] OFF
 GO

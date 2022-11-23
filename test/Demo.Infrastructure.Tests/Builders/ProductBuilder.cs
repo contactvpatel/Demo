@@ -28,7 +28,7 @@ namespace Demo.Infrastructure.Tests.Builders
 
         public Product WithDefaultValues()
         {
-            return Product.Create(TestProductId, TestCategoryId, TestProductName);
+            return Product.Create(TestProductId, TestCategoryId, TestProductName, TestUnitPrice, TestUnitInStock, TestUnitsOnOrder, ReOrderLevel, Discontinued);
         }
 
         public Product WithAllValues()

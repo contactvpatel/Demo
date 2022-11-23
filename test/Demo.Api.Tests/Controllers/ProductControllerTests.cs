@@ -15,7 +15,7 @@ namespace Demo.Api.Tests.Controllers
         public async Task Product_Test()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("/api/v1.0/products");
+            var response = await Client.GetAsync("/api/v1/products");
             response.EnsureSuccessStatusCode();
             var stringResponse = await response.Content.ReadAsStringAsync();
 

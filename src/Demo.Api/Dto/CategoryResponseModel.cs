@@ -1,7 +1,10 @@
-﻿namespace Demo.Api.Models
+﻿namespace Demo.Api.Dto
 {
-    public class BaseApiModel
+    public class CategoryResponseModel
     {
+        public int CategoryId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public DateTime Created { get; set; }
         public int CreatedBy { get; set; }
         public DateTime LastUpdated { get; set; }

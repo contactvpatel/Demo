@@ -28,8 +28,8 @@ namespace Demo.Business.Tests.Services
         public async Task Get_Product_List()
         {
             var category = Category.Create(It.IsAny<int>(), It.IsAny<string>());
-            var product1 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>());
-            var product2 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>());
+            var product1 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<short>(), It.IsAny<short?>(), It.IsAny<short>());
+            var product2 = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<short>(), It.IsAny<short?>(), It.IsAny<short>());
 
             //category.AddProduct(product1.ProductId, It.IsAny<string>());
             //category.AddProduct(product2.ProductId, It.IsAny<string>());
@@ -48,7 +48,7 @@ namespace Demo.Business.Tests.Services
         public async Task Create_New_Product_Validate_If_Exist()
         {
             var category = Category.Create(It.IsAny<int>(), It.IsAny<string>());
-            var product = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>());            
+            var product = Product.Create(It.IsAny<int>(), category.CategoryId, It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<short>(), It.IsAny<short?>(), It.IsAny<short>());
 
             _mockProductRepository.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
             _mockProductRepository.Setup(x => x.AddAsync(product)).ReturnsAsync(product);

@@ -41,14 +41,17 @@ namespace Demo.Api.Middleware
                 new()
                 {
                     ErrorId = errorId,
-                    StatusCode = (short)HttpStatusCode.InternalServerError,
-                    Message = exception.GetType() == typeof(ApplicationException)
+                    StatusCode = exception.GetType() == typeof(UnauthorizedAccessException)
+                        ? (short)HttpStatusCode.Forbidden
+                        : (short)HttpStatusCode.InternalServerError,
+                    Message = exception.GetType() == typeof(ApplicationException) ||
+                              exception.GetType() == typeof(UnauthorizedAccessException)
                         ? exception.Message
                         : $"Error occurred in the API. Please use the ErrorId [{errorId}] and contact support team if the problem persists."
                 }
             };
 
-            var errorResponse = new Models.Response<ApiError>(null) { Succeeded = false, Errors = apiErrors };
+            var errorResponse = new Models.Response<ApiError>(null) { Errors = apiErrors };
 
             _options.AddResponseDetails?.Invoke(context, exception, errorResponse);
 
@@ -67,7 +70,9 @@ namespace Demo.Api.Middleware
             };
 
             var result = JsonConvert.SerializeObject(errorResponse, serializerSettings);
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = exception.GetType() == typeof(UnauthorizedAccessException)
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
             return context.Response.WriteAsync(result);
         }
@@ -76,7 +81,8 @@ namespace Demo.Api.Middleware
         {
             while (true)
             {
-                if (exception.InnerException == null) return exception.Message;
+                if (exception.InnerException == null)
+                    return exception.Message;
                 exception = exception.InnerException;
             }
         }

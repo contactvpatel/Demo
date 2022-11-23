@@ -7,7 +7,7 @@ namespace Demo.Core.Models
         public ConnectionModel Read { get; set; }
         public ConnectionModel Write { get; set; }
 
-        public string CreateConnectionString(ConnectionModel databaseConnectionModel)
+        public static string CreateConnectionString(ConnectionModel databaseConnectionModel)
         {
             var builder = new SqlConnectionStringBuilder
             {
@@ -28,6 +28,7 @@ namespace Demo.Core.Models
             }
 
             builder.MultipleActiveResultSets = databaseConnectionModel.MultipleActiveResultSets;
+            builder.TrustServerCertificate = true;
 
             return builder.ConnectionString;
         }

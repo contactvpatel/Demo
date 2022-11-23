@@ -15,7 +15,7 @@ namespace Demo.Api.Tests.Controllers
         public async Task Category_Test()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("/api/v1.0/categories");
+            var response = await Client.GetAsync("/api/v1/categories");
             response.EnsureSuccessStatusCode();
             var stringResponse = await response.Content.ReadAsStringAsync();
 

@@ -15,9 +15,9 @@ namespace Demo.Core.Tests.Builders
         {
             return new()
             {
-                Product.Create(ProductId1, 1, ProductName1),
-                Product.Create(ProductId2, 1, ProductName2),
-                Product.Create(ProductId3, 1, ProductName3)
+                Product.Create(ProductId1, 1, ProductName1, 100, 10, 5, 2, false),
+                Product.Create(ProductId2, 1, ProductName2, 200, 10, 5, 2, false),
+                Product.Create(ProductId3, 1, ProductName3, 300, 10, 5, 2, false)
             };
         }
     }

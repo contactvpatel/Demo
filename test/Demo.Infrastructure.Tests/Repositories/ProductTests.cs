@@ -93,7 +93,7 @@ namespace Demo.Infrastructure.Tests.Repositories
             var categoryId = existingProduct.CategoryId;
             _output.WriteLine($"CategoryId: {categoryId}");
 
-            var productListFromRepo = await _productRepository.GetByCategoryId(categoryId);
+            var productListFromRepo = await _productRepository.GetByCategoryId(categoryId ?? 0);
             Assert.Equal(ProductBuilder.TestCategoryId, productListFromRepo.ToList().First().CategoryId);
         }
     }

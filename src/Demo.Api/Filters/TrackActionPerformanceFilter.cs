@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Util.Application.Logging;
+using Demo.Util.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Demo.Api.Filters
@@ -8,7 +8,6 @@ namespace Demo.Api.Filters
     {
         private Stopwatch _timer;
         private readonly ILogger<TrackActionPerformanceFilter> _logger;
-        private IDisposable _userScope;
 
         public TrackActionPerformanceFilter(ILogger<TrackActionPerformanceFilter> logger)
         {
@@ -18,18 +17,6 @@ namespace Demo.Api.Filters
         public void OnActionExecuting(ActionExecutingContext context)
         {
             _timer = new Stopwatch();
-
-            var userDict = new Dictionary<string, string>
-            {
-                {"UserId", context.HttpContext.User.Claims.FirstOrDefault(a => a.Type == "sub")?.Value},
-                {
-                    "OAuth2 Scopes",
-                    string.Join(",", context.HttpContext.User.Claims.Where(c => c.Type == "scope").Select(c => c.Value))
-                },
-                {"ClientIP", context.HttpContext.Connection.RemoteIpAddress?.ToString()},
-                {"UserAgent", context.HttpContext.Request.Headers["User-Agent"]}
-            };
-            _userScope = _logger.BeginScope(userDict);
             _timer.Start();
         }
 
@@ -38,11 +25,9 @@ namespace Demo.Api.Filters
             _timer.Stop();
             if (context.Exception == null)
             {
-                _logger.LogRoutePerformance(context.HttpContext.Request.Path, context.HttpContext.Request.Method,
+                _logger.LogRoutePerformance(context.HttpContext.Request.Method, context.HttpContext.Request.Path,
                     _timer.ElapsedMilliseconds);
             }
-
-            _userScope?.Dispose();
         }
     }
 }
