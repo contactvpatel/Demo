@@ -49,21 +49,20 @@ public class Program
         builder.Configuration.GetSection("AppSettings").Bind(appSettings);
 
         builder.Services.AddControllers(options =>
-        {
-            // SSO Token Authorization
-            //options.Filters.Add(typeof(CustomAuthorization));
-
-            //Filter to track Action Performance for Entire application's actions
-            if (appSettings.EnablePerformanceFilterLogging)
             {
-                options.Filters.Add(typeof(TrackActionPerformanceFilter));
-            }
+                // SSO Token Authorization
+                //options.Filters.Add(typeof(CustomAuthorization));
 
-            options.Filters.Add<ValidationFilter>();
-        })
-        .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
-        .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Program>(); })
-        .AddNewtonsoftJson();
+                //Filter to track Action Performance for Entire application's actions
+                if (appSettings.EnablePerformanceFilterLogging)
+                {
+                    options.Filters.Add(typeof(TrackActionPerformanceFilter));
+                }
+
+                options.Filters.Add<ValidationFilter>();
+            })
+            .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
+            .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Program>(); });
 
         var app = builder.Build();
 
