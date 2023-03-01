@@ -3,7 +3,7 @@ using Demo.Core.Specifications.Base;
 
 namespace Demo.Core.Specifications
 {
-    public class ProductSpecification : BaseSpecification<Product>
+    public sealed class ProductSpecification : BaseSpecification<Product>
     {
         public ProductSpecification() : base(p => !p.IsDeleted)
         {

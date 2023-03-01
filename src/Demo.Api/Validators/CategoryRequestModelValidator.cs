@@ -1,5 +1,4 @@
 ﻿using Demo.Api.Dto;
-using Demo.Api.Models;
 using FluentValidation;
 
 namespace Demo.Api.Validators

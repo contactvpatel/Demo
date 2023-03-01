@@ -2,7 +2,7 @@
 
 namespace Demo.Core.Entities
 {
-    public partial class Product : Entity
+    public class Product : Entity
     {
         public int ProductId { get; set; }
 

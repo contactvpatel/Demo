@@ -33,7 +33,7 @@ namespace Demo.Util.Logging
                 .Enrich.WithProperty("ApplicationName", appSettings.ApplicationName)
                 .Enrich.WithProperty("ApplicationVersion", appSettings.ApplicationVersion)
                 .Enrich.WithProperty("Environment", env.EnvironmentName)
-                .Enrich.WithProperty("LoggerName", assembly.Name)
+                .Enrich.WithProperty("LoggerName", assembly.Name ?? string.Empty)
                 .Enrich.WithHttpContextInfo(provider, (logEvent, propertyFactory, httpContext) =>
                 {
                     logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("RequestMethod",

@@ -171,27 +171,28 @@ namespace Demo.Util.Logging.Formatters
             output.Write(':');
             JsonValueFormatter.WriteQuotedJsonString(exception.GetType().Name, output);
 
-            output.Write(delimiter);
-            JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
-            output.Write(':');
-            JsonValueFormatter.WriteQuotedJsonString(source, output);
+            if (source != null)
+            {
+                output.Write(delimiter);
+                JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
+                output.Write(':');
+                JsonValueFormatter.WriteQuotedJsonString(source, output);
+            }
 
-            output.Write(delimiter);
-            JsonValueFormatter.WriteQuotedJsonString("StackTrace", output);
-            output.Write(':');
-            JsonValueFormatter.WriteQuotedJsonString(stackTrace, output);
-
-            output.Write(delimiter);
-            JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
-            output.Write(':');
-            JsonValueFormatter.WriteQuotedJsonString(source, output);
+            if (stackTrace != null)
+            {
+                output.Write(delimiter);
+                JsonValueFormatter.WriteQuotedJsonString("StackTrace", output);
+                output.Write(':');
+                JsonValueFormatter.WriteQuotedJsonString(stackTrace, output);
+            }
 
             foreach (DictionaryEntry currentData in exception.Data)
             {
                 output.Write(delimiter);
-                JsonValueFormatter.WriteQuotedJsonString(currentData.Key.ToString(), output);
+                JsonValueFormatter.WriteQuotedJsonString(currentData.Key.ToString() ?? string.Empty, output);
                 output.Write(':');
-                JsonValueFormatter.WriteQuotedJsonString(currentData.Value?.ToString(), output);
+                JsonValueFormatter.WriteQuotedJsonString(currentData.Value?.ToString() ?? string.Empty, output);
             }
         }
 
@@ -202,23 +203,23 @@ namespace Demo.Util.Logging.Formatters
         {
             output.Write(",\"Renderings\":{");
 
-            var rdelim = "";
-            foreach (var ptoken in tokensWithFormat)
+            var rightDelimiter = "";
+            foreach (var pToken in tokensWithFormat)
             {
-                output.Write(rdelim);
-                rdelim = ",";
+                output.Write(rightDelimiter);
+                rightDelimiter = ",";
 
-                JsonValueFormatter.WriteQuotedJsonString(ptoken.Key, output);
+                JsonValueFormatter.WriteQuotedJsonString(pToken.Key, output);
                 output.Write(":[");
 
-                var fdelim = "";
-                foreach (var format in ptoken)
+                var delimit = "";
+                foreach (var format in pToken)
                 {
-                    output.Write(fdelim);
-                    fdelim = ",";
+                    output.Write(delimit);
+                    delimit = ",";
 
                     output.Write("{\"Format\":");
-                    JsonValueFormatter.WriteQuotedJsonString(format.Format, output);
+                    if (format.Format != null) JsonValueFormatter.WriteQuotedJsonString(format.Format, output);
 
                     output.Write(",\"Rendering\":");
                     var sw = new StringWriter();

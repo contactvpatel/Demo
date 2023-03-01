@@ -7,13 +7,12 @@ using Demo.Business.Interfaces;
 using Demo.Business.Models;
 using Demo.Core.Models;
 using Demo.Util.Logging;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace Demo.Api.Controllers
 {
-    [Route("api/v{version:apiVersion}/categories")]
+    [Route("/categories")]
     [ApiController]
     [ApiVersion("1")]
     public class CategoryController : ControllerBase

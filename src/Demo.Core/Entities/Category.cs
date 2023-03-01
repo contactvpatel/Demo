@@ -2,7 +2,7 @@
 
 namespace Demo.Core.Entities
 {
-    public partial class Category : Entity
+    public class Category : Entity
     {
         public int CategoryId { get; set; }
 

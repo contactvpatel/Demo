@@ -1,15 +1,13 @@
 ﻿using Demo.Core.Entities;
 using Demo.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using Demo.Util.ApplicationSettingConfiguration;
-using System.Reflection.Emit;
 
 namespace Demo.Infrastructure.Data
 {
-    public partial class DemoContext : DbContext
+    public class DemoContext : DbContext
     {
         public DemoContext()
         {

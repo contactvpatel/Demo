@@ -11,7 +11,7 @@ namespace Demo.Api.Controllers
     /// SSO Controller. 
     /// Contain SSO API
     /// </summary>
-    [Route("api/v{version:apiVersion}/sso")]
+    [Route("/sso")]
     [ApiController]
     [ApiVersion("1")]
     public class SsoController : ControllerBase

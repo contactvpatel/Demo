@@ -1,15 +1,17 @@
-﻿using Demo.Api.Extensions;
+﻿using System.Data.SqlClient;
+using System.Diagnostics;
+using Demo.Api.Extensions;
 using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Api.Middleware;
 using Demo.Api.Models;
+using Demo.Util.ApplicationSettingConfiguration;
+using Demo.Util.Logging;
 using Demo.Util.Models;
 using FluentValidation.AspNetCore;
 using Serilog;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using Demo.Util.ApplicationSettingConfiguration;
-using Demo.Util.Logging;
+
+namespace Demo.Api;
 
 public class Program
 {
@@ -21,9 +23,9 @@ public class Program
         // Cloud Deployment uses secret file specified inside AddApplicationSetting.
         // For Local Development, AddApplicationSetting's Optional property should be true.
         builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                            .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
-                            .AddEnvironmentVariables();
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
+            .AddEnvironmentVariables();
 
         builder.Host.UseSerilog((context, provider, loggerConfig) =>
         {

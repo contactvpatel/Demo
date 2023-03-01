@@ -103,14 +103,9 @@ namespace Demo.Api.Extensions
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
-                // Supporting multiple versioning scheme
-                // Route (api/v1/accounts)
-                // Header (X-version=1)
-                // Querystring (api/accounts?api-version=1)
-                // Media Type (application/json;v=1)
-                options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
-                    new HeaderApiVersionReader("X-version"), new QueryStringApiVersionReader("api-version"),
-                    new MediaTypeApiVersionReader("v"));
+                // Supporting Header version scheme
+                // Header (x-api-version=1)
+                options.ApiVersionReader = ApiVersionReader.Combine(new HeaderApiVersionReader("x-api-version"));
             });
         }
 
@@ -123,8 +118,8 @@ namespace Demo.Api.Extensions
         {
             AddSwaggerDocs(options);
 
-            options.OperationFilter<RemoveVersionFromParameter>();
-            options.DocumentFilter<ReplaceVersionWithExactValueInPath>();
+            //options.OperationFilter<RemoveVersionFromParameter>();
+            //options.DocumentFilter<ReplaceVersionWithExactValueInPath>();
 
             options.DocInclusionPredicate((version, desc) =>
             {
