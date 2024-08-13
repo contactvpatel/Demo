@@ -29,8 +29,4 @@
     <EditorConfigFiles Remove="C:\Bhavesh\BAPS_NA_IT_PROJ\Demo\src\Demo.Api\.editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="C:\Bhavesh\BAPS_NA_IT_PROJ\Demo\src\Demo.Api\.editorconfig" />
-  </ItemGroup>
-
 </Project>
