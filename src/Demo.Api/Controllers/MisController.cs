@@ -38,7 +38,7 @@ namespace Demo.Api.Controllers
 
             var departments = (await _misService.GetAllDepartments(divisionId)).ToList();
 
-            var message = !departments.Any() ? "No departments found" : $"Found {departments.Count} departments";
+            var message = departments?.Count == 0 ? "No departments found" : $"Found {departments.Count} departments";
 
             _logger.LogInformationExtension(message);
 
@@ -74,7 +74,7 @@ namespace Demo.Api.Controllers
 
             var roleTypes = (await _misService.GetAllRoleTypes(divisionId)).ToList();
 
-            var message = !roleTypes.Any() ? "No role types found" : $"Found {roleTypes.Count} role types";
+            var message = roleTypes.Count == 0 ? "No role types found" : $"Found {roleTypes.Count} role types";
 
             _logger.LogInformationExtension(message);
 
@@ -91,7 +91,7 @@ namespace Demo.Api.Controllers
 
             var roles = (await _misService.GetAllRoles(divisionId)).ToList();
 
-            var message = !roles.Any() ? "No roles found" : $"Found {roles.Count} roles";
+            var message = roles?.Count == 0 ? "No roles found" : $"Found {roles.Count} roles";
 
             _logger.LogInformationExtension(message);
 
@@ -125,7 +125,7 @@ namespace Demo.Api.Controllers
 
             var roles = (await _misService.GetRolesByDepartmentId(departmentId)).ToList();
 
-            var message = !roles.Any()
+            var message = roles?.Count == 0
                 ? $"No roles found for department id: {departmentId}"
                 : $"Found {roles.Count} roles for department id: {departmentId}";
 
@@ -144,7 +144,7 @@ namespace Demo.Api.Controllers
 
             var positions = (await _misService.GetPositionsByRoleId(roleId)).ToList();
 
-            var message = !positions.Any()
+            var message = positions?.Count == 0
                 ? $"No positions found for role id: {roleId}"
                 : $"Found {positions.Count} positions for role id: {roleId}";
 

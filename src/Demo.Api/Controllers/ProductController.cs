@@ -84,7 +84,7 @@ namespace Demo.Api.Controllers
         {
             _logger.LogInformationExtension($"Get Product By Category. CategoryId: {categoryId}");
             var products = await _productService.GetByCategoryId(categoryId);
-            if (products.Any())
+            if (products?.Count() > 0)
                 return Ok(new Response<IEnumerable<ProductResponseModel>>(
                     _mapper.Map<IEnumerable<ProductResponseModel>>(products)));
 

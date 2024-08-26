@@ -71,7 +71,7 @@ namespace Demo.Api.Extensions
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
-                        errorNumbersToAdd: new int[] { }
+                        errorNumbersToAdd: []
                     )).EnableDetailedErrors());
 
             services.AddDbContext<DemoWriteContext>(c =>
@@ -79,7 +79,7 @@ namespace Demo.Api.Extensions
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
-                        errorNumbersToAdd: new int[] { }
+                        errorNumbersToAdd: []
                     )).EnableDetailedErrors());
         }
 
@@ -139,7 +139,7 @@ namespace Demo.Api.Extensions
                     .ToList();
 
                 return versions?.Any(v => $"v{v}" == version) == true
-                       && (!maps.Any() || maps.Any(v => $"v{v}" == version));
+                       && (maps.Count == 0 || maps.Any(v => $"v{v}" == version));
             });
 
             // Add JWT Authentication
@@ -160,7 +160,7 @@ namespace Demo.Api.Extensions
             options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
-                { securityScheme, new string[] { } }
+                { securityScheme, Array.Empty<string>() }
             });
         }
 

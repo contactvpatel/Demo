@@ -166,15 +166,21 @@ namespace Demo.Util.Logging.Formatters
             output.Write(':');
             JsonValueFormatter.WriteQuotedJsonString(exception.GetType().Name, output);
 
-            output.Write(delimiter);
-            JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
-            output.Write(':');
-            JsonValueFormatter.WriteQuotedJsonString(exception?.Source, output);
+            if (exception?.Source != null)
+            {
+                output.Write(delimiter);
+                JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
+                output.Write(':');
+                JsonValueFormatter.WriteQuotedJsonString(exception?.Source, output);
+            }
 
-            output.Write(delimiter);
-            JsonValueFormatter.WriteQuotedJsonString("StackTrace", output);
-            output.Write(':');
-            JsonValueFormatter.WriteQuotedJsonString(exception?.StackTrace, output);
+            if (exception?.StackTrace != null)
+            {
+                output.Write(delimiter);
+                JsonValueFormatter.WriteQuotedJsonString("StackTrace", output);
+                output.Write(':');
+                JsonValueFormatter.WriteQuotedJsonString(exception?.StackTrace, output);
+            }
 
             foreach (DictionaryEntry currentData in exception.Data)
             {
