@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Demo.Api.Attributes;
 using Demo.Api.Dto;
 using Demo.Api.Extensions;
@@ -58,7 +59,7 @@ namespace Demo.Api.Controllers
                 products.HasPreviousPage,
                 products.HasNextPage
             };
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
 
             return Ok(new Response<IEnumerable<ProductResponseModel>>(
                 _mapper.Map<IEnumerable<ProductResponseModel>>(products)));

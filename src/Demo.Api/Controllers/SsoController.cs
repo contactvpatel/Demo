@@ -1,4 +1,5 @@
-﻿using Demo.Api.Extensions;
+﻿using Asp.Versioning;
+using Demo.Api.Extensions;
 using Demo.Api.Models;
 using Demo.Core.Models;
 using Demo.Util.Logging;

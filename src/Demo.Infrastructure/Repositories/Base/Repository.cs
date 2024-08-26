@@ -1,6 +1,4 @@
-﻿using System.Data;
-using System.Linq.Expressions;
-using Dapper;
+﻿using Dapper;
 using Demo.Core.Entities.Base;
 using Demo.Core.Models;
 using Demo.Core.Repositories.Base;
@@ -9,6 +7,8 @@ using Demo.Infrastructure.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Data;
+using System.Linq.Expressions;
 
 namespace Demo.Infrastructure.Repositories.Base
 {
@@ -106,7 +106,7 @@ namespace Demo.Infrastructure.Repositories.Base
             await _demoWriteContext.SaveChangesAsync();
         }
 
-        public async Task<IReadOnlyList<T>> QueryAsync<T>(string sql, object param = null,
+        public async Task<IReadOnlyList<T>> QueryAsync<TObject>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
             var databaseConnectionSettings = new DbConnectionModel();
@@ -118,7 +118,7 @@ namespace Demo.Infrastructure.Repositories.Base
             return (await connection.QueryAsync<T>(sql, param, transaction)).ToList();
         }
 
-        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null,
+        public async Task<T> QueryFirstOrDefaultAsync<TObject>(string sql, object param = null,
             IDbTransaction transaction = null, CancellationToken cancellationToken = default)
         {
             var databaseConnectionSettings = new DbConnectionModel();
@@ -130,7 +130,7 @@ namespace Demo.Infrastructure.Repositories.Base
             return await connection.QueryFirstOrDefaultAsync<T>(sql, param, transaction);
         }
 
-        public async Task<T> QuerySingleAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        public async Task<T> QuerySingleAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
             var databaseConnectionSettings = new DbConnectionModel();
@@ -142,7 +142,7 @@ namespace Demo.Infrastructure.Repositories.Base
             return await connection.QuerySingleAsync<T>(sql, param, transaction);
         }
 
-        public async Task<int> ExecuteAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        public async Task<int> ExecuteAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default)
         {
             var databaseConnectionSettings = new DbConnectionModel();

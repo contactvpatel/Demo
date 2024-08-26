@@ -1,7 +1,7 @@
 ﻿using Demo.Core.Entities.Base;
+using Demo.Core.Specifications.Base;
 using System.Data;
 using System.Linq.Expressions;
-using Demo.Core.Specifications.Base;
 
 namespace Demo.Core.Repositories.Base
 {
@@ -27,16 +27,16 @@ namespace Demo.Core.Repositories.Base
         Task DeleteAsync(T entity);
         Task<int> CountAsync(ISpecification<T> spec);
 
-        Task<IReadOnlyList<T>> QueryAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        Task<IReadOnlyList<T>> QueryAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
 
-        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        Task<T> QueryFirstOrDefaultAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
 
-        Task<T> QuerySingleAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        Task<T> QuerySingleAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
 
-        Task<int> ExecuteAsync<T>(string sql, object param = null, IDbTransaction transaction = null,
+        Task<int> ExecuteAsync<TObject>(string sql, object param = null, IDbTransaction transaction = null,
             CancellationToken cancellationToken = default);
     }
 }

@@ -1,11 +1,11 @@
-﻿using System.Reflection;
-using Demo.Util.Logging.Enrichers;
+﻿using Demo.Util.Logging.Enrichers;
 using Demo.Util.Logging.Formatters;
 using Demo.Util.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Filters;
+using System.Reflection;
 
 namespace Demo.Util.Logging
 {
@@ -49,7 +49,6 @@ namespace Demo.Util.Logging
                 .Enrich.WithCorrelationId()
                 .Enrich.WithMachineName()
                 .Enrich.WithClientIp()
-                .Enrich.WithClientAgent()
                 .Enrich.WithProcessId()
                 .Enrich.WithProcessName()
                 .Enrich.WithThreadId()
@@ -62,7 +61,7 @@ namespace Demo.Util.Logging
 
             if (isConsoleLogEnabled)
                 loggerConfiguration.WriteTo.Console(
-                    new CustomElasticSearchJsonFormatter(inlineFields: true, renderMessageTemplate: false,
+                    new CustomConsoleJsonFormatter(inlineFields: true, renderMessageTemplate: false,
                         formatStackTraceAsArray: true));
 
             #endregion

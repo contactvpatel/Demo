@@ -14,13 +14,12 @@
 
 // Modifications Copyright 2021 Vishal Patel
 
-using System.Collections;
-using System.Globalization;
-using System.Reflection;
-using System.Runtime.Serialization;
 using Serilog.Events;
 using Serilog.Formatting.Elasticsearch;
 using Serilog.Parsing;
+using System.Collections;
+using System.Globalization;
+using System.Reflection;
 #if !NO_SERIALIZATION
 #endif
 
@@ -29,7 +28,7 @@ namespace Demo.Util.Logging.Formatters
     /// <summary>
     /// Custom Json formatter that respects the configured property name handling and forces 'Timestamp' to @timestamp
     /// </summary>
-    public class CustomElasticSearchJsonFormatter : DefaultJsonFormatter
+    public class CustomConsoleJsonFormatter : DefaultJsonFormatter
     {
         readonly ISerializer _serializer;
         readonly bool _inlineFields;
@@ -79,7 +78,7 @@ namespace Demo.Util.Logging.Formatters
         /// <param name="renderMessageTemplate">If true, the message template will be rendered and written to the output as a
         /// property named RenderedMessageTemplate.</param>
         /// <param name="formatStackTraceAsArray">If true, splits the StackTrace by new line and writes it as a an array of strings</param>
-        public CustomElasticSearchJsonFormatter(
+        public CustomConsoleJsonFormatter(
             bool omitEnclosingObject = false,
             string closingDelimiter = null,
             bool renderMessage = true,
@@ -157,7 +156,7 @@ namespace Demo.Util.Logging.Formatters
                 if (!string.IsNullOrEmpty(requestPath.ToString()))
                 {
                     var requestPathValues = requestPath.ToString().Replace("\"", "").Split("/").ToArray();
-                    if (requestPathValues.Length != 0)
+                    if (requestPathValues.Length > 3)
                     {
                         WriteJsonProperty("ServiceName", requestPathValues[3], ref delimiter, output);
                         WriteJsonProperty("ServiceVersion", requestPathValues[2].Replace("v", ""), ref delimiter,
@@ -219,36 +218,14 @@ namespace Demo.Util.Logging.Formatters
         /// <param name="depth"></param>
         private void WriteSingleException(Exception exception, ref string delim, TextWriter output, int depth)
         {
-#if NO_SERIALIZATION
-
-                        var helpUrl = exception.HelpLink;
-                        var stackTrace = exception.StackTrace;
-                        var remoteStackTrace = string.Empty;
-                        var remoteStackIndex = -1;
-                        var exceptionMethod = string.Empty;
-                        var hresult = exception.HResult;
-                        var source = exception.Source;
-                        var className = string.Empty;
-
-#else
-
-            var si = new SerializationInfo(exception.GetType(), new FormatterConverter());
-            var sc = new StreamingContext();
-            exception.GetObjectData(si, sc);
-
-            var helpUrl = si.GetString("HelpURL");
-            var stackTrace = si.GetString("StackTraceString");
-            var remoteStackTrace = si.GetString("RemoteStackTraceString");
-            var remoteStackIndex = si.GetInt32("RemoteStackIndex");
-            var exceptionMethod = si.GetString("ExceptionMethod");
-            var hresult = si.GetInt32("HResult");
-            var source = si.GetString("Source");
-            var className = si.GetString("ClassName");
-
-#endif
-
-            //TODO Loop over ISerializable data
-
+            var helpUrl = exception.HelpLink;
+            var stackTrace = exception.StackTrace;
+            var remoteStackTrace = string.Empty;
+            var remoteStackIndex = -1;
+            var exceptionMethod = string.Empty;
+            var hresult = exception.HResult;
+            var source = exception.Source;
+            var className = string.Empty;
 
             WriteJsonProperty("Depth", depth, ref delim, output);
             WriteJsonProperty("ExceptionName", exception.GetType().Name, ref delim, output);
@@ -279,28 +256,9 @@ namespace Demo.Util.Logging.Formatters
 
         private void WriteCustomInnermostException(Exception exception, ref string delim, TextWriter output)
         {
-#if NO_SERIALIZATION
-
-            var helpUrl = exception.HelpLink;
             var stackTrace = exception.StackTrace;
-            var remoteStackTrace = string.Empty;
-            var remoteStackIndex = -1;
             var exceptionMethod = string.Empty;
-            var hresult = exception.HResult;
             var source = exception.Source;
-            var className = string.Empty;
-
-#else
-
-            var si = new SerializationInfo(exception.GetType(), new FormatterConverter());
-            var sc = new StreamingContext();
-            exception.GetObjectData(si, sc);
-
-            var stackTrace = si.GetString("StackTraceString");
-            var exceptionMethod = si.GetString("ExceptionMethod");
-            var source = si.GetString("Source");
-
-#endif
 
             WriteJsonProperty("ExceptionName", exception.GetType().Name, ref delim, output);
             WriteJsonProperty("ExceptionSource", source, ref delim, output);

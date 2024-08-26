@@ -1,22 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Demo.Api.Extensions.Swagger;
-using Demo.Core.Models;
-using Demo.Infrastructure.Data;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using RestSharp;
-using Demo.Infrastructure.Repositories.Base;
-using Demo.Core.Repositories.Base;
-using Demo.Infrastructure.Repositories;
-using Demo.Core.Repositories;
-using Demo.Business.Services;
+﻿using Asp.Versioning;
 using Demo.Business.Interfaces;
+using Demo.Business.Services;
+using Demo.Core.Models;
+using Demo.Core.Repositories;
+using Demo.Core.Repositories.Base;
+using Demo.Infrastructure.Data;
+using Demo.Infrastructure.Repositories;
+using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.Logging;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using RestSharp;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -103,9 +101,11 @@ namespace Demo.Api.Extensions
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
-                // Supporting Header version scheme
+                // Supporting multiple versioning scheme
+                // Route (api/v1/accounts)
                 // Header (x-api-version=1)
-                options.ApiVersionReader = ApiVersionReader.Combine(new HeaderApiVersionReader("x-api-version"));
+                options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
+                    new HeaderApiVersionReader("x-api-version"));
             });
         }
 

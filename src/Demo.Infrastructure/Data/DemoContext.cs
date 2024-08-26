@@ -2,8 +2,7 @@
 using Demo.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
-using Demo.Util.ApplicationSettingConfiguration;
+
 
 namespace Demo.Infrastructure.Data
 {
@@ -67,12 +66,9 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
-                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
                                     .SetBasePath(Directory.GetCurrentDirectory())
                                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
                                     .AddEnvironmentVariables()
                                     .Build();
 
@@ -115,12 +111,9 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
-                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
                                     .SetBasePath(Directory.GetCurrentDirectory())
                                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
                                     .AddEnvironmentVariables()
                                     .Build();
 
@@ -152,12 +145,9 @@ namespace Demo.Infrastructure.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Cloud Deployment uses secret file specified inside AddApplicationSetting.
-                // For Local Development, AddApplicationSetting's Optional property should be true.
                 var configuration = new ConfigurationBuilder()
                                     .SetBasePath(Directory.GetCurrentDirectory())
                                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                                    .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
                                     .AddEnvironmentVariables()
                                     .Build();
 

@@ -1,17 +1,14 @@
-﻿using System.Data.SqlClient;
-using System.Diagnostics;
-using Demo.Api.Extensions;
+﻿using Demo.Api.Extensions;
 using Demo.Api.Filters;
 using Demo.Api.HealthCheck;
 using Demo.Api.Middleware;
 using Demo.Api.Models;
-using Demo.Util.ApplicationSettingConfiguration;
 using Demo.Util.Logging;
 using Demo.Util.Models;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Serilog;
-
-namespace Demo.Api;
+using System.Data.SqlClient;
 
 public class Program
 {
@@ -20,11 +17,8 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // Cloud Deployment uses secret file specified inside AddApplicationSetting.
-        // For Local Development, AddApplicationSetting's Optional property should be true.
         builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddApplicationSetting("/vault/secrets/", optional: Debugger.IsAttached, reloadOnChange: true)
             .AddEnvironmentVariables();
 
         builder.Host.UseSerilog((context, provider, loggerConfig) =>
@@ -51,20 +45,23 @@ public class Program
         builder.Configuration.GetSection("AppSettings").Bind(appSettings);
 
         builder.Services.AddControllers(options =>
+        {
+            // SSO Token Authorization
+            //options.Filters.Add(typeof(CustomAuthorization));
+
+            //Filter to track Action Performance for Entire application's actions
+            if (appSettings.EnablePerformanceFilterLogging)
             {
-                // SSO Token Authorization
-                //options.Filters.Add(typeof(CustomAuthorization));
+                options.Filters.Add(typeof(TrackActionPerformanceFilter));
+            }
 
-                //Filter to track Action Performance for Entire application's actions
-                if (appSettings.EnablePerformanceFilterLogging)
-                {
-                    options.Filters.Add(typeof(TrackActionPerformanceFilter));
-                }
+            options.Filters.Add<ValidationFilter>();
+        })
+        .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; });
 
-                options.Filters.Add<ValidationFilter>();
-            })
-            .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
-            .AddFluentValidation(options => { options.RegisterValidatorsFromAssemblyContaining<Program>(); });
+        builder.Services.AddFluentValidationAutoValidation()
+                        .AddFluentValidationClientsideAdapters()
+                        .AddValidatorsFromAssemblyContaining<Program>();
 
         var app = builder.Build();
 
@@ -91,11 +88,9 @@ public class Program
 
         app.UseAuthorization();
 
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapDefaultHealthChecks();
-            endpoints.MapControllers();
-        });
+        app.MapDefaultHealthChecks();
+
+        app.MapControllers();
 
         app.Run();
 
