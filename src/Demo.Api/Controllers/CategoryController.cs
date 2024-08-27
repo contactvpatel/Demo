@@ -79,7 +79,7 @@ namespace Demo.Api.Controllers
 
         [HttpPost]
         [AsmAuthorization(ModuleCode.Category, AccessType.Create)]
-        public async Task<ActionResult<ProductResponseModel>> Create(
+        public async Task<ActionResult<Dto.ProductResponseModel>> Create(
             [FromBody] CategoryRequestModel categoryRequestModel)
         {
             _logger.LogInformationExtension($"Create Category - Name: {categoryRequestModel.Name}");

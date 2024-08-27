@@ -29,6 +29,9 @@ namespace Demo.Api.Extensions
 
             // Add Infrastructure Layer
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
+            services.AddScoped<ISalesOrderHeaderRepository, SalesOrderHeaderRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<Core.Services.IAsmService, Infrastructure.Services.AsmService>();
@@ -36,6 +39,9 @@ namespace Demo.Api.Extensions
             services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
 
             // Add Business Layer
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<ISalesOrderHeaderService, SalesOrderHeaderService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IAsmService, AsmService>();

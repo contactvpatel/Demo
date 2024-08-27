@@ -218,13 +218,13 @@ namespace Demo.Util.Logging.Formatters
         /// <param name="depth"></param>
         private void WriteSingleException(Exception exception, ref string delim, TextWriter output, int depth)
         {
-            var helpUrl = exception.HelpLink;
-            var stackTrace = exception.StackTrace;
+            var helpUrl = exception.HelpLink ?? "";
+            var stackTrace = exception.StackTrace ?? "";
             var remoteStackTrace = string.Empty;
             var remoteStackIndex = -1;
             var exceptionMethod = string.Empty;
             var hresult = exception.HResult;
-            var source = exception.Source;
+            var source = exception.Source ?? "";
             var className = string.Empty;
 
             WriteJsonProperty("Depth", depth, ref delim, output);
@@ -256,9 +256,9 @@ namespace Demo.Util.Logging.Formatters
 
         private void WriteCustomInnermostException(Exception exception, ref string delim, TextWriter output)
         {
-            var stackTrace = exception.StackTrace;
+            var stackTrace = exception.StackTrace ?? "";
             var exceptionMethod = string.Empty;
-            var source = exception.Source;
+            var source = exception.Source ?? "";
 
             WriteJsonProperty("ExceptionName", exception.GetType().Name, ref delim, output);
             WriteJsonProperty("ExceptionSource", source, ref delim, output);

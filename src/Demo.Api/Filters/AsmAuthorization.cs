@@ -1,14 +1,14 @@
-﻿using System.ComponentModel;
-using System.Net;
-using System.Text;
-using Demo.Api.Extensions;
+﻿using Demo.Api.Extensions;
 using Demo.Business.Interfaces;
 using Demo.Core.Models;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.ComponentModel;
+using System.Net;
+using System.Text;
 
 namespace Demo.Api.Filters
 {
@@ -130,7 +130,7 @@ namespace Demo.Api.Filters
                     ApplicationId = Guid.Parse(appSettings.ApplicationId),
                     PersonId = int.Parse(userId),
                     Positions = positions.Select(currentPosition => new PositionRequestModel
-                        { RoleId = currentPosition.RoleId, PositionId = currentPosition.PositionId }).ToList()
+                    { RoleId = currentPosition.RoleId, PositionId = currentPosition.PositionId }).ToList()
                 };
 
                 var accessPermissions = _asmService.Get(applicationSecurityRequestModel).Result.ToList();
@@ -237,6 +237,9 @@ namespace Demo.Api.Filters
     {
         [Description("PROD")] Product,
         [Description("CATE")] Category,
+        [Description("ADDR")] Address,
+        [Description("CUST")] Customer,
+        [Description("SAOR")] SalesOrderHeader
     }
 
     public enum AccessType

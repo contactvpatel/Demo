@@ -4,7 +4,6 @@ using Demo.Core.Repositories;
 using Demo.Core.Specifications;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -36,16 +35,17 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<PagedList<Category>> Get(PaginationQuery paginationQuery)
         {
-            var pagedData = await _demoReadContext.Categories
-                .OrderBy(x => x.CategoryId)
-                .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
-                .Take(paginationQuery.PageSize)
-                .ToListAsync();
+            return null;
+            //var pagedData = await _demoReadContext.Categories
+            //    .OrderBy(x => x.CategoryId)
+            //    .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
+            //    .Take(paginationQuery.PageSize)
+            //    .ToListAsync();
 
-            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Categories.CountAsync() : 0;
+            //var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Categories.CountAsync() : 0;
 
-            return new PagedList<Category>(pagedData, totalRecords, paginationQuery.PageNumber,
-                paginationQuery.PageSize);
+            //return new PagedList<Category>(pagedData, totalRecords, paginationQuery.PageNumber,
+            //    paginationQuery.PageSize);
         }
 
         public async Task<Category> GetById(int id)

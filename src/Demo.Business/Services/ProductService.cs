@@ -1,9 +1,9 @@
 ﻿using Demo.Business.Interfaces;
 using Demo.Business.Mapper;
-using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 using Demo.Core.Repositories;
+using Demo.Util.FIQL;
 using Demo.Util.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -20,30 +20,30 @@ namespace Demo.Business.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<ProductModel>> Get()
+        public async Task<IEnumerable<Models.ProductModel>> Get()
         {
             var productList = await _productRepository.GetAllAsync();
-            return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
+            return ObjectMapper.Mapper.Map<IEnumerable<Models.ProductModel>>(productList);
         }
 
-        public async Task<PagedList<ProductModel>> Get(PaginationQuery paginationQuery)
+        public async Task<PagedList<Models.ProductModel>> Get(PaginationQuery paginationQuery)
         {
             var productList = await _productRepository.Get(paginationQuery);
-            return ObjectMapper.Mapper.Map<PagedList<ProductModel>>(productList);
+            return ObjectMapper.Mapper.Map<PagedList<Models.ProductModel>>(productList);
         }
 
-        public async Task<ProductModel> GetById(int id)
+        public async Task<Models.ProductModel> GetById(int id)
         {
-            return ObjectMapper.Mapper.Map<ProductModel>(await _productRepository.GetByIdAsync(id));
+            return ObjectMapper.Mapper.Map<Models.ProductModel>(await _productRepository.GetByIdAsync(id));
         }
 
-        public async Task<IEnumerable<ProductModel>> GetByCategoryId(int categoryId)
+        public async Task<IEnumerable<Models.ProductModel>> GetByCategoryId(int categoryId)
         {
             var productList = await _productRepository.GetByCategoryId(categoryId);
-            return ObjectMapper.Mapper.Map<IEnumerable<ProductModel>>(productList);
+            return ObjectMapper.Mapper.Map<IEnumerable<Models.ProductModel>>(productList);
         }
 
-        public async Task<ProductModel> Create(ProductModel productModel)
+        public async Task<Models.ProductModel> Create(Models.ProductModel productModel)
         {
             var newProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (newProduct != null)
@@ -56,10 +56,10 @@ namespace Demo.Business.Services
             var newEntity = await _productRepository.AddAsync(mappedEntity);
             _logger.LogInformationExtension($"Product successfully added.");
 
-            return ObjectMapper.Mapper.Map<ProductModel>(newEntity);
+            return ObjectMapper.Mapper.Map<Models.ProductModel>(newEntity);
         }
 
-        public async Task Update(ProductModel productModel)
+        public async Task Update(Models.ProductModel productModel)
         {
             var editProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (editProduct == null)
@@ -71,7 +71,7 @@ namespace Demo.Business.Services
             _logger.LogInformationExtension($"Product successfully updated.");
         }
 
-        public async Task Delete(ProductModel productModel)
+        public async Task Delete(Models.ProductModel productModel)
         {
             var deletedProduct = await _productRepository.GetByIdAsync(productModel.ProductId);
             if (deletedProduct == null)
@@ -79,6 +79,11 @@ namespace Demo.Business.Services
 
             await _productRepository.DeleteAsync(ObjectMapper.Mapper.Map<Product>(deletedProduct));
             _logger.LogInformationExtension($"Product successfully deleted.");
+        }
+
+        public async Task<dynamic> Get(QueryParam queryParam)
+        {
+            return await _productRepository.GetDynamic(queryParam.Fields, queryParam.Filters, queryParam.Include, queryParam.Sort, queryParam.PageNo, queryParam.PageSize);
         }
     }
 }

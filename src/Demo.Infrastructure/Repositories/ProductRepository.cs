@@ -1,11 +1,12 @@
 ﻿using Demo.Core.Entities;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
-using Demo.Core.Models;
 using Demo.Infrastructure.Repositories.Base;
-using Microsoft.EntityFrameworkCore;
+using Demo.Util.FIQL;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
 {
@@ -56,25 +57,63 @@ namespace Demo.Infrastructure.Repositories
 
             // Option 6: Standard EFCore Way
 
-            var pagedData = await _demoReadContext.Products
-                .Include(x => x.Category)
-                .OrderBy(x => x.ProductId)
-                .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
-                .Take(paginationQuery.PageSize)
-                .ToListAsync();
+            return null;
 
-            var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Products.CountAsync() : 0;
+            //var pagedData = await _demoReadContext.Products
+            //    .Include(x => x.Category)
+            //    .OrderBy(x => x.ProductId)
+            //    .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
+            //    .Take(paginationQuery.PageSize)
+            //    .ToListAsync();
 
-            return new PagedList<Product>(pagedData, totalRecords, paginationQuery.PageNumber,
-                paginationQuery.PageSize);
+            //var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Products.CountAsync() : 0;
+
+            //return new PagedList<Product>(pagedData, totalRecords, paginationQuery.PageNumber,
+            //    paginationQuery.PageSize);
         }
 
         public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)
         {
-            return await _demoReadContext.Products
-                .Where(x => x.CategoryId == categoryId)
-                .Include(x => x.Category)
-                .ToListAsync();
+            //return await _demoReadContext.Products
+            //    .Where(x => x.CategoryId == categoryId)
+            //    .Include(x => x.Category)
+            //    .ToListAsync();
+            return null;
+        }
+
+        public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        {
+            var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
+            dynamic dynamicResponse = ResponseToDynamic.ConvertTo(retVal, fields ?? "");
+            return dynamicResponse;
+        }
+
+        public async Task<List<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        {
+            IQueryable<ProductResponseModel> result = _demoReadContext.Products
+                                                .Select(data => new ProductResponseModel()
+                                                {
+                                                    ProductId = data.ProductId,
+                                                    Name = data.Name,
+                                                    ProductNumber = data.ProductNumber,
+                                                    Color = data.Color,
+                                                    StandardCost = data.StandardCost,
+                                                    ListPrice = data.ListPrice,
+                                                    Size = data.Size,
+                                                    Weight = data.Weight,
+                                                    ProductCategory = data.ProductCategory.Name,
+                                                    ProductModel = data.ProductModel.Name,
+                                                    SellStartDate = data.SellStartDate,
+                                                    SellEndDate = data.SellEndDate,
+                                                    DiscontinuedDate = data.DiscontinuedDate,
+                                                    ThumbnailPhotoFileName = data.ThumbnailPhotoFileName,
+                                                    Rowguid = data.Rowguid,
+                                                    ModifiedDate = data.ModifiedDate,
+                                                });
+
+            var productResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse))) ?? new List<ProductResponseModel>();
+            return retVal;
         }
     }
 }

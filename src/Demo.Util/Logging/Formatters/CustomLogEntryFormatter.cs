@@ -171,7 +171,7 @@ namespace Demo.Util.Logging.Formatters
                 output.Write(delimiter);
                 JsonValueFormatter.WriteQuotedJsonString("ExceptionSource", output);
                 output.Write(':');
-                JsonValueFormatter.WriteQuotedJsonString(exception?.Source, output);
+                JsonValueFormatter.WriteQuotedJsonString(exception.Source, output);
             }
 
             if (exception?.StackTrace != null)
@@ -179,15 +179,17 @@ namespace Demo.Util.Logging.Formatters
                 output.Write(delimiter);
                 JsonValueFormatter.WriteQuotedJsonString("StackTrace", output);
                 output.Write(':');
-                JsonValueFormatter.WriteQuotedJsonString(exception?.StackTrace, output);
+                JsonValueFormatter.WriteQuotedJsonString(exception.StackTrace, output);
             }
-
-            foreach (DictionaryEntry currentData in exception.Data)
+            if (exception != null)
             {
-                output.Write(delimiter);
-                JsonValueFormatter.WriteQuotedJsonString(currentData.Key.ToString(), output);
-                output.Write(':');
-                JsonValueFormatter.WriteQuotedJsonString(currentData.Value?.ToString(), output);
+                foreach (DictionaryEntry currentData in exception.Data)
+                {
+                    output.Write(delimiter);
+                    JsonValueFormatter.WriteQuotedJsonString(currentData.Key.ToString() ?? "", output);
+                    output.Write(':');
+                    JsonValueFormatter.WriteQuotedJsonString(currentData.Value?.ToString() ?? "", output);
+                }
             }
         }
 
@@ -214,7 +216,7 @@ namespace Demo.Util.Logging.Formatters
                     fdelim = ",";
 
                     output.Write("{\"Format\":");
-                    JsonValueFormatter.WriteQuotedJsonString(format.Format, output);
+                    JsonValueFormatter.WriteQuotedJsonString(format.Format ?? "", output);
 
                     output.Write(",\"Rendering\":");
                     var sw = new StringWriter();

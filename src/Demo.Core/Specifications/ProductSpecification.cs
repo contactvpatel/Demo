@@ -7,13 +7,13 @@ namespace Demo.Core.Specifications
     {
         public ProductSpecification() : base(p => !p.IsDeleted)
         {
-            AddInclude(p => p.Category);
+            //AddInclude(p => p.Category);
         }
 
         public ProductSpecification(string productName)
             : base(p => !p.IsDeleted && p.Name.ToLower().Contains(productName.ToLower()))
         {
-            AddInclude(p => p.Category);
+            //AddInclude(p => p.Category);
         }
     }
 }

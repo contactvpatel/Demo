@@ -1,46 +1,100 @@
 ﻿using Demo.Core.Entities.Base;
 
-namespace Demo.Core.Entities
+namespace Demo.Core.Entities;
+
+/// <summary>
+/// Products sold or used in the manfacturing of sold products.
+/// </summary>
+public partial class Product : Entity
 {
-    public class Product : Entity
-    {
-        public int ProductId { get; set; }
+    /// <summary>
+    /// Primary key for Product records.
+    /// </summary>
+    public int ProductId { get; set; }
 
-        public string Name { get; set; }
+    /// <summary>
+    /// Name of the product.
+    /// </summary>
+    public string Name { get; set; }
 
-        public int QuantityPerUnit { get; set; }
+    /// <summary>
+    /// Unique product identification number.
+    /// </summary>
+    public string ProductNumber { get; set; }
 
-        public decimal UnitPrice { get; set; }
+    /// <summary>
+    /// Product color.
+    /// </summary>
+    public string Color { get; set; }
 
-        public short UnitsInStock { get; set; }
+    /// <summary>
+    /// Standard cost of the product.
+    /// </summary>
+    public decimal StandardCost { get; set; }
 
-        public short? UnitsOnOrder { get; set; }
+    /// <summary>
+    /// Selling price.
+    /// </summary>
+    public decimal ListPrice { get; set; }
 
-        public short ReorderLevel { get; set; }
+    /// <summary>
+    /// Product size.
+    /// </summary>
+    public string Size { get; set; }
 
-        public bool Discontinued { get; set; }
+    /// <summary>
+    /// Product weight.
+    /// </summary>
+    public decimal? Weight { get; set; }
 
-        public int? CategoryId { get; set; }
+    /// <summary>
+    /// Product is a member of this product category. Foreign key to ProductCategory.ProductCategoryID. 
+    /// </summary>
+    public int? ProductCategoryId { get; set; }
 
-        public virtual Category Category { get; set; }
+    /// <summary>
+    /// Product is a member of this product model. Foreign key to ProductModel.ProductModelID.
+    /// </summary>
+    public int? ProductModelId { get; set; }
 
+    /// <summary>
+    /// Date the product was available for sale.
+    /// </summary>
+    public DateTime SellStartDate { get; set; }
 
-        public static Product Create(int productId, int categoryId, string name, decimal unitPrice,
-            short unitsInStock, short? unitsOnOrder, short reorderLevel,
-            bool discontinued = false)
-        {
-            var product = new Product
-            {
-                ProductId = productId,
-                CategoryId = categoryId,
-                Name = name,
-                UnitPrice = unitPrice,
-                UnitsInStock = unitsInStock,
-                UnitsOnOrder = unitsOnOrder,
-                ReorderLevel = reorderLevel,
-                Discontinued = discontinued
-            };
-            return product;
-        }
-    }
+    /// <summary>
+    /// Date the product was no longer available for sale.
+    /// </summary>
+    public DateTime? SellEndDate { get; set; }
+
+    /// <summary>
+    /// Date the product was discontinued.
+    /// </summary>
+    public DateTime? DiscontinuedDate { get; set; }
+
+    /// <summary>
+    /// Small image of the product.
+    /// </summary>
+    public byte[] ThumbNailPhoto { get; set; }
+
+    /// <summary>
+    /// Small image file name.
+    /// </summary>
+    public string ThumbnailPhotoFileName { get; set; }
+
+    /// <summary>
+    /// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.
+    /// </summary>
+    public Guid Rowguid { get; set; }
+
+    /// <summary>
+    /// Date and time the record was last updated.
+    /// </summary>
+    public DateTime ModifiedDate { get; set; }
+
+    public virtual ProductCategory ProductCategory { get; set; }
+
+    public virtual ProductModel ProductModel { get; set; }
+
+    public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
 }

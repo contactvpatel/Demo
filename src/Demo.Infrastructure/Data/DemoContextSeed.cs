@@ -17,17 +17,17 @@ namespace Demo.Infrastructure.Data
                     // demoContext.Database.Migrate();
                     // demoContext.Database.EnsureCreated();
 
-                    if (!demoContext.Categories.Any())
-                    {
-                        await demoContext.Categories.AddRangeAsync(GetPreconfiguredCategories());
-                        await demoContext.SaveChangesAsync();
-                    }
+                    //if (!demoContext.Categories.Any())
+                    //{
+                    //    await demoContext.Categories.AddRangeAsync(GetPreconfiguredCategories());
+                    //    await demoContext.SaveChangesAsync();
+                    //}
 
-                    if (!demoContext.Products.Any())
-                    {
-                        await demoContext.Products.AddRangeAsync(GetPreconfiguredProducts());
-                        await demoContext.SaveChangesAsync();
-                    }
+                    //if (!demoContext.Products.Any())
+                    //{
+                    //    await demoContext.Products.AddRangeAsync(GetPreconfiguredProducts());
+                    //    await demoContext.SaveChangesAsync();
+                    //}
                 }
                 catch (Exception exception)
                 {
@@ -52,14 +52,14 @@ namespace Demo.Infrastructure.Data
             };
         }
 
-        private static IEnumerable<Product> GetPreconfiguredProducts()
-        {
-            return new List<Product>
-            {
-                new() { Name = "IPhone", CategoryId = 1 , UnitPrice = 19.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false },
-                new() { Name = "Samsung", CategoryId = 1 , UnitPrice = 33.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false },
-                new() { Name = "LG TV", CategoryId = 2 , UnitPrice = 33.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false }
-            };
-        }
+        //private static IEnumerable<Product> GetPreconfiguredProducts()
+        //{
+        //    return new List<Product>
+        //    {
+        //        new() { Name = "IPhone", CategoryId = 1 , UnitPrice = 19.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false },
+        //        new() { Name = "Samsung", CategoryId = 1 , UnitPrice = 33.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false },
+        //        new() { Name = "LG TV", CategoryId = 2 , UnitPrice = 33.5M , UnitsInStock = 10, QuantityPerUnit = 2, UnitsOnOrder = 1, ReorderLevel = 1, Discontinued = false }
+        //    };
+        //}
     }
 }
