@@ -1,12 +1,21 @@
 ﻿using Demo.Core.Entities;
 using Demo.Core.Models;
+using Demo.Util.FIQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Demo.Infrastructure.Data
 {
     public partial class DemoContext : DbContext
     {
+        private readonly QueryCountInterceptor queryCountInterceptor;
+
+        public DemoContext(IServiceProvider serviceProvider)
+        {
+            queryCountInterceptor = serviceProvider.GetService<QueryCountInterceptor>();
+        }
+
         public DemoContext()
         {
         }
@@ -62,6 +71,8 @@ namespace Demo.Infrastructure.Data
                         maxRetryDelay: TimeSpan.FromSeconds(1),
                         errorNumbersToAdd: []
                     )).EnableDetailedErrors();
+
+                optionsBuilder.AddInterceptors(queryCountInterceptor);
             }
         }
 
@@ -639,6 +650,12 @@ namespace Demo.Infrastructure.Data
         {
 
         }
+        private readonly QueryCountInterceptor queryCountInterceptor;
+
+        public DemoReadContext(IServiceProvider serviceProvider)
+        {
+            queryCountInterceptor = serviceProvider.GetService<QueryCountInterceptor>();
+        }
 
         public DemoReadContext(DbContextOptions<DemoContext> options) : base(options)
         {
@@ -672,8 +689,10 @@ namespace Demo.Infrastructure.Data
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
-                        errorNumbersToAdd: new int[] { }
-                    )).EnableDetailedErrors();
+                        errorNumbersToAdd: []
+                    ));
+
+                optionsBuilder.AddInterceptors(queryCountInterceptor);
             }
         }
     }
@@ -684,6 +703,14 @@ namespace Demo.Infrastructure.Data
         {
 
         }
+
+        private readonly QueryCountInterceptor queryCountInterceptor;
+
+        public DemoWriteContext(IServiceProvider serviceProvider)
+        {
+            queryCountInterceptor = serviceProvider.GetService<QueryCountInterceptor>();
+        }
+
         public DemoWriteContext(DbContextOptions<DemoContext> options) : base(options)
         {
         }
@@ -706,8 +733,12 @@ namespace Demo.Infrastructure.Data
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
-                        errorNumbersToAdd: new int[] { }
-                    )).EnableDetailedErrors();
+                    errorNumbersToAdd: []
+                    ));
+
+                optionsBuilder.EnableDetailedErrors();
+
+                optionsBuilder.AddInterceptors(queryCountInterceptor);
             }
         }
     }

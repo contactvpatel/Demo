@@ -7,6 +7,7 @@ using Demo.Core.Repositories.Base;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories;
 using Demo.Infrastructure.Repositories.Base;
+using Demo.Util.FIQL;
 using Demo.Util.Logging;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -48,6 +49,9 @@ namespace Demo.Api.Extensions
             services.AddScoped<IMisService, MisService>();
             services.AddScoped<ISsoService, SsoService>();
 
+            services.AddScoped<QueryTrackerService>();
+            services.AddScoped<QueryCountInterceptor>();
+
             // Add AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -72,21 +76,29 @@ namespace Demo.Api.Extensions
             var databaseConnectionSettings = new DbConnectionModel();
             configuration.GetSection("DbConnectionSettings").Bind(databaseConnectionSettings);
 
-            services.AddDbContext<DemoReadContext>(c =>
-                c.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read),
+            services.AddDbContext<DemoReadContext>((serviceProvider, options) =>
+            {
+                options.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
                         errorNumbersToAdd: []
-                    )).EnableDetailedErrors());
+                    ));
+                options.EnableDetailedErrors();
+                options.AddInterceptors(serviceProvider.GetRequiredService<QueryCountInterceptor>());
+            });
 
-            services.AddDbContext<DemoWriteContext>(c =>
-                c.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write),
+            services.AddDbContext<DemoWriteContext>((serviceProvider, options) =>
+            {
+                options.UseSqlServer(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write),
                     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery).EnableRetryOnFailure(
                         maxRetryCount: 4,
                         maxRetryDelay: TimeSpan.FromSeconds(1),
                         errorNumbersToAdd: []
-                    )).EnableDetailedErrors());
+                    ));
+                options.EnableDetailedErrors();
+                options.AddInterceptors(serviceProvider.GetRequiredService<QueryCountInterceptor>());
+            });
         }
 
         public static void ConfigureCors(this IServiceCollection services)
