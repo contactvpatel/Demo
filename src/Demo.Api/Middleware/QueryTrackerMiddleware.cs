@@ -1,3 +1,4 @@
+using Demo.Business.Models;
 using Demo.Util.FIQL;
 using System.Text.Json;
 
@@ -32,18 +33,37 @@ namespace Demo.Api.Middleware
                     context.Response.Body.Seek(0, SeekOrigin.Begin);
 
                     // Deserialize the original response body
-                    var originalResponse = JsonSerializer.Deserialize<dynamic>(responseBodyContent);
+                    var originalResponse = JsonSerializer.Deserialize<ResponseModel>(responseBodyContent);
 
-                    // Create the modified response by adding the sqlQueryCount
-                    var modifiedResponse = new
+                    var includeSqlQueryCount = context.Request.Query.Any(x => x.Key.ToLower() == "include" && x.Value.ToString().ToLower().Contains("sqlquerycount"));
+
+                    if (includeSqlQueryCount)
                     {
-                        data = originalResponse,
-                        sqlQueryCount = queryTracker.QueryCount
+                        var modifiedResponse = new
+                        {
+                            status = originalResponse.status,
+                            message = originalResponse.message,
+                            sqlQueryCount = queryTracker.QueryCount,
+                            data = originalResponse.data
+                        };
+                        // Serialize the modified response and write it back to the response body
+                        var modifiedResponseBody = JsonSerializer.Serialize(modifiedResponse);
+                        await context.Response.WriteAsync(modifiedResponseBody);
+                    }
+                    else
+                    {
+                        var modifiedResponse = new
+                        {
+                            status = originalResponse.status,
+                            message = originalResponse.message,
+                            data = originalResponse.data
+                        };
+                        // Serialize the modified response and write it back to the response body
+                        var modifiedResponseBody = JsonSerializer.Serialize(modifiedResponse);
+                        await context.Response.WriteAsync(modifiedResponseBody);
                     };
 
-                    // Serialize the modified response and write it back to the response body
-                    var modifiedResponseBody = JsonSerializer.Serialize(modifiedResponse);
-                    await context.Response.WriteAsync(modifiedResponseBody);
+
 
                     context.Response.Body.Seek(0, SeekOrigin.Begin);
                 }

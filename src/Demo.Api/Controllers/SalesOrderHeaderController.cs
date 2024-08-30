@@ -2,6 +2,7 @@
 using AutoMapper;
 using Demo.Api.Filters;
 using Demo.Business.Interfaces;
+using Demo.Business.Models;
 using Demo.Util.FIQL;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +32,10 @@ namespace Demo.Api.Controllers
         public async Task<ActionResult<dynamic>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _salesOrderHeaderService.Get(queryParam);
-            return Ok(response);
+            ResponseModel responseModel = new ResponseModel();
+            responseModel.status = true;
+            responseModel.data = response;
+            return Ok(responseModel);
         }
     }
 }

@@ -170,7 +170,10 @@ namespace Demo.Api.Controllers
         public async Task<ActionResult<dynamic>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _productService.Get(queryParam);
-            return Ok(response);
+            ResponseModel responseModel = new ResponseModel();
+            responseModel.status = true;
+            responseModel.data = response;
+            return Ok(responseModel);
         }
     }
 }
