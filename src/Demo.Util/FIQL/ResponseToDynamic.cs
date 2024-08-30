@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Demo.Util.FIQL
 {
-    public static class ResponseToDynamic
+    public class ResponseToDynamic : IResponseToDynamic
     {
-        public static string GetQueryParts(string query, string part)
+        public string GetQueryParts(string query, string part)
         {
             var queryParts = SplitConditions(query, '&', '{', '}');
             var result = (queryParts.Where(x => x.StartsWith($"{part}=")).FirstOrDefault() ?? "").Replace($"{part}=", "");
@@ -14,32 +14,32 @@ namespace Demo.Util.FIQL
             return result;
         }
 
-        public static string GetSort(string query)
+        public string GetSort(string query)
         {
             return GetQueryParts(query, "sort");
         }
 
-        public static string GetFilters(string query)
+        public string GetFilters(string query)
         {
             return GetQueryParts(query, "filters");
         }
 
-        public static string GetFields(string query)
+        public string GetFields(string query)
         {
             return GetQueryParts(query, "fields");
         }
 
-        public static string GetPageNo(string query)
+        public string GetPageNo(string query)
         {
             return GetQueryParts(query, "pageno");
         }
 
-        public static string GetPageSize(string query)
+        public string GetPageSize(string query)
         {
             return GetQueryParts(query, "pagesize");
         }
 
-        public static IEnumerable<QueryIncludeModel> GetInclude(string include)
+        public IEnumerable<QueryIncludeModel> GetInclude(string include)
         {
             List<QueryIncludeModel> queryIncludes = new();
             include = include?.Trim() ?? string.Empty;
@@ -55,8 +55,8 @@ namespace Demo.Util.FIQL
                 {
                     queryInclude.ObjectName = a[0];
                     queryInclude.ObjectQuery = a[1];
-                    queryInclude.ObjectFields = ResponseToDynamic.GetFields(queryInclude.ObjectQuery);
-                    queryInclude.ObjectFilters = ResponseToDynamic.GetFilters(queryInclude.ObjectQuery);
+                    queryInclude.ObjectFields = GetFields(queryInclude.ObjectQuery);
+                    queryInclude.ObjectFilters = GetFilters(queryInclude.ObjectQuery);
                 }
                 else
                     queryInclude.ObjectName = item;
@@ -66,7 +66,7 @@ namespace Demo.Util.FIQL
             return queryIncludes;
         }
 
-        public static List<SubQueryParam> ParseIncludeParameter(string include)
+        public List<SubQueryParam> ParseIncludeParameter(string include)
         {
             var subQueryParams = new List<SubQueryParam>();
 
@@ -131,7 +131,7 @@ namespace Demo.Util.FIQL
             return subQueryParams;
         }
 
-        private static IEnumerable<string> SplitConditions(string query, char separator, char ignoreStartChar = '(', char ignoreEndChar = ')')
+        private IEnumerable<string> SplitConditions(string query, char separator, char ignoreStartChar = '(', char ignoreEndChar = ')')
         {
             int depth = 0;
             List<int> splitIndexes = new List<int>();
@@ -156,7 +156,7 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public static async Task<dynamic> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<dynamic> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
             var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq(filters ?? "");
             filters = filtersAndProperties.Filters;
@@ -164,7 +164,6 @@ namespace Demo.Util.FIQL
 
             if (_filterFields.Count > 0 && !string.IsNullOrEmpty(fields))
                 fields = string.Concat(fields, ",", string.Join(",", _filterFields.ToArray()));
-
             if (!string.IsNullOrEmpty(fields))
             {
                 result = result.Select($"new ({fields})");
@@ -181,10 +180,12 @@ namespace Demo.Util.FIQL
             {
                 result = result.Skip((pageNo - 1) * pageSize).Take(pageSize);
             }
-            return await result.ToDynamicListAsync();
+
+            var data = await result.ToDynamicListAsync();
+            return data;
         }
 
-        public static dynamic ConvertTo<T>(T retVal, string select)
+        public dynamic ConvertTo<T>(T retVal, string select)
         {
             var options = new JsonSerializerOptions();
 
@@ -196,7 +197,7 @@ namespace Demo.Util.FIQL
             return json;
         }
 
-        public static dynamic ConvertTo<T>(List<T> retVal, string select)
+        public dynamic ConvertTo<T>(List<T> retVal, string select)
         {
             var options = new JsonSerializerOptions();
 
@@ -242,5 +243,14 @@ namespace Demo.Util.FIQL
                 writer.WriteEndObject();
             }
         }
+    }
+
+    public interface IResponseToDynamic
+    {
+        IEnumerable<QueryIncludeModel> GetInclude(string include);
+        List<SubQueryParam> ParseIncludeParameter(string include);
+        dynamic ConvertTo<T>(List<T> retVal, string select);
+        dynamic ConvertTo<T>(T retVal, string select);
+        Task<dynamic> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
     }
 }

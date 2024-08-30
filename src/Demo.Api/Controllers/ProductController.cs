@@ -166,7 +166,7 @@ namespace Demo.Api.Controllers
             return base.Ok(new Response<Dto.ProductResponseModel>(null, $"Product Id ({id}) is deleted from db."));
         }
 
-        [HttpGet]
+        [HttpGet("FiqlGet")]
         public async Task<ActionResult<dynamic>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _productService.Get(queryParam);

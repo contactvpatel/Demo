@@ -123,13 +123,13 @@
 
                     if (linqOp == "IN")
                     {
-                        var values = value.Split(',').Select(v => (!int.TryParse(value, out _) && !decimal.TryParse(value, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
+                        var values = value.Split(',').Select(v => (!int.TryParse(v, out _) && !decimal.TryParse(v, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
                         value = $"new [] {{ {string.Join(", ", values)} }}";
                         linqOrConditions.Add($"{property} in {value}");
                     }
                     else if (linqOp == "NOT IN")
                     {
-                        var values = value.Split(',').Select(v => (!int.TryParse(value, out _) && !decimal.TryParse(value, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
+                        var values = value.Split(',').Select(v => (!int.TryParse(v, out _) && !decimal.TryParse(v, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
                         value = $"new [] {{ {string.Join(", ", values)} }}";
                         linqOrConditions.Add($"!({property} in {value})");
                     }
@@ -150,6 +150,11 @@
                             value = $"\"{value.Replace("*", "")}\"";
                             linqOrConditions.Add($"{property}.StartsWith({value})");
                         }
+                        else
+                        {
+                            value = $"\"{value.Replace("*", "")}\"";
+                            linqOrConditions.Add($"{property}.Contains({value})");
+                        }
                     }
                     else if (linqOp == "NOT LIKE")
                     {
@@ -167,6 +172,11 @@
                         {
                             value = $"\"{value.Replace("*", "")}\"";
                             linqOrConditions.Add($"!({property}.StartsWith({value}))");
+                        }
+                        else
+                        {
+                            value = $"\"{value.Replace("*", "")}\"";
+                            linqOrConditions.Add($"{property}.Contains({value})");
                         }
                     }
                     else

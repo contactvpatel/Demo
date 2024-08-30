@@ -16,20 +16,22 @@ namespace Demo.Infrastructure.Repositories
         private readonly IProductRepository _productRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<CustomerRepository> _logger;
+        private readonly IResponseToDynamic _responseToDynamic;
 
-        public SalesOrderHeaderRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext, IProductRepository productRepository, IConfiguration configuration, ILogger<CustomerRepository> logger) : base(demoReadContext, demoWriteContext, configuration)
+        public SalesOrderHeaderRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext, IProductRepository productRepository, IConfiguration configuration, ILogger<CustomerRepository> logger, IResponseToDynamic responseToDynamic) : base(demoReadContext, demoWriteContext, configuration)
         {
             _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
             _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _responseToDynamic = responseToDynamic;
         }
 
         public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = ResponseToDynamic.ConvertTo(retVal, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
             return dynamicResponse;
         }
 
@@ -62,38 +64,31 @@ namespace Demo.Infrastructure.Repositories
                                                                 ModifiedDate = data.ModifiedDate
                                                             });
             var foundSalesOrderFilter = false;
-            var includes = ResponseToDynamic.ParseIncludeParameter(include);
+            var includes = _responseToDynamic.ParseIncludeParameter(include);
             var salesorderDetailParts = new SubQueryParam();
             List<SalesOrderDetailResponse> salesOrderDetails = new List<SalesOrderDetailResponse>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails"))
             {
                 salesorderDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderdetails") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderDetailParts.Filters))
+                if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include.ToLower().Contains("filters")))
                 {
                     foundSalesOrderFilter = true;
                     salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
                 }
             }
 
-            if (salesOrderDetails.Count != 0 && foundSalesOrderFilter)
+            if (foundSalesOrderFilter)
             {
-                if (string.IsNullOrEmpty(filters))
-                {
-                    filters = $"salesorderid=in=({string.Join(",", salesOrderDetails.Select(x => x.SalesOrderId).ToArray())})";
-                }
+                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Select(x => x.SalesOrderId).ToArray())})";
             }
-
-            var SalesOrderHeaderResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var customeFields = "";
+            if (!string.IsNullOrEmpty(fields))
+            {
+                customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
+            }
+            var SalesOrderHeaderResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderHeaderModel> retVal = (JsonSerializer.Deserialize<List<SalesOrderHeaderModel>>(JsonSerializer.Serialize(SalesOrderHeaderResponse))) ?? new List<SalesOrderHeaderModel>();
-
-            if (salesOrderDetails.Count != 0 && foundSalesOrderFilter)
-            {
-                if (!string.IsNullOrEmpty(filters))
-                {
-                    retVal = retVal.Where(x => salesOrderDetails.Any(y => y.SalesOrderId == x.SalesOrderId)).ToList();
-                }
-            }
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails") && !foundSalesOrderFilter && retVal.Count != 0)
             {
@@ -105,7 +100,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 retVal.ForEach(x =>
                 {
-                    x.SalesOrderDetails = ResponseToDynamic.ConvertTo(salesOrderDetails.Where(y => y.SalesOrderId == x.SalesOrderId).ToList(), salesorderDetailParts.Fields ?? "");
+                    x.SalesOrderDetails = _responseToDynamic.ConvertTo(salesOrderDetails.Where(y => y.SalesOrderId == x.SalesOrderId).ToList(), salesorderDetailParts.Fields ?? "");
                 });
             }
 
@@ -130,38 +125,31 @@ namespace Demo.Infrastructure.Repositories
 
 
             var foundProductDetailFilter = false;
-            var includes = ResponseToDynamic.ParseIncludeParameter(include);
+            var includes = _responseToDynamic.ParseIncludeParameter(include);
             var productDetailParts = new SubQueryParam();
             List<ProductResponseModel> productDetail = new List<ProductResponseModel>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "product"))
             {
                 productDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "product") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(productDetailParts.Filters))
+                if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include.ToLower().Contains("filters")))
                 {
                     foundProductDetailFilter = true;
                     productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
                 }
             }
 
-            if (productDetail.Count != 0 && foundProductDetailFilter)
+            if (foundProductDetailFilter)
             {
-                if (string.IsNullOrEmpty(filters))
-                {
-                    filters = $"productid=in=({string.Join(",", productDetail.Select(x => x.ProductId).ToArray())})";
-                }
+                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Select(x => x.ProductId).ToArray())})";
             }
-
-            var salesOrderDetailResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var customeFields = "";
+            if (!string.IsNullOrEmpty(fields))
+            {
+                customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
+            }
+            var salesOrderDetailResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderDetailResponse> retVal = (JsonSerializer.Deserialize<List<SalesOrderDetailResponse>>(JsonSerializer.Serialize(salesOrderDetailResponse))) ?? new List<SalesOrderDetailResponse>();
-
-            if (productDetail.Count != 0 && foundProductDetailFilter)
-            {
-                if (!string.IsNullOrEmpty(filters))
-                {
-                    retVal = retVal.Where(x => productDetail.Any(y => y.ProductId == x.ProductId)).ToList();
-                }
-            }
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "product") && !foundProductDetailFilter && retVal.Count != 0)
             {
@@ -173,7 +161,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 retVal.ForEach(x =>
                 {
-                    x.Product = ResponseToDynamic.ConvertTo(productDetail.Where(y => y.ProductId == x.ProductId).ToList(), productDetailParts.Fields ?? "");
+                    x.Product = _responseToDynamic.ConvertTo(productDetail.Where(y => y.ProductId == x.ProductId).FirstOrDefault(), productDetailParts.Fields ?? "");
                 });
             }
             return retVal;

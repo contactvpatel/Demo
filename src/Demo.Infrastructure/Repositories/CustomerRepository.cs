@@ -4,6 +4,7 @@ using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -18,8 +19,9 @@ namespace Demo.Infrastructure.Repositories
         private readonly ISalesOrderHeaderRepository _salesOrderHeaderRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<CustomerRepository> _logger;
+        private readonly IResponseToDynamic _responseToDynamic;
 
-        public CustomerRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext, IAddressRepository addressRepository, ISalesOrderHeaderRepository salesOrderHeaderRepository, IConfiguration configuration, ILogger<CustomerRepository> logger) : base(demoReadContext, demoWriteContext, configuration)
+        public CustomerRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext, IAddressRepository addressRepository, ISalesOrderHeaderRepository salesOrderHeaderRepository, IConfiguration configuration, ILogger<CustomerRepository> logger, IResponseToDynamic responseToDynamic) : base(demoReadContext, demoWriteContext, configuration)
         {
             _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
             _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
@@ -27,12 +29,13 @@ namespace Demo.Infrastructure.Repositories
             _salesOrderHeaderRepository = salesOrderHeaderRepository ?? throw new ArgumentNullException(nameof(salesOrderHeaderRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _responseToDynamic = responseToDynamic;
         }
 
         public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = ResponseToDynamic.ConvertTo(retVal, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
             return dynamicResponse;
         }
 
@@ -62,7 +65,7 @@ namespace Demo.Infrastructure.Repositories
 
             var foundAddressFilter = false;
             var foundSalesOrderFilter = false;
-            var includes = ResponseToDynamic.ParseIncludeParameter(include);
+            var includes = _responseToDynamic.ParseIncludeParameter(include);
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
@@ -77,52 +80,49 @@ namespace Demo.Infrastructure.Repositories
                 }
             }
 
-            if (addressDetails.Count != 0 && foundAddressFilter)
+            if (foundAddressFilter)
             {
-                if (string.IsNullOrEmpty(filters))
-                {
-                    filters = $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
-                }
+                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
             }
 
             /*Sales Order Detail add*/
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders"))
             {
                 salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderParts.Filters))
+                if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include.ToLower().Contains("filters")))
                 {
                     foundSalesOrderFilter = true;
                     salesOrders = await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "");
                 }
             }
 
-            if (salesOrders.Count != 0 && foundSalesOrderFilter)
+            if (foundSalesOrderFilter)
             {
-                if (string.IsNullOrEmpty(filters))
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : ";") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
-                }
+                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
             }
 
-
-            var customerResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var customeFields = "";
+            if (!string.IsNullOrEmpty(fields))
+            {
+                customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
+            }
+            var customerResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
             List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse))) ?? new List<CustomerModel>();
 
-
-            if (addressDetails.Count != 0 && foundAddressFilter)
-            {
-                if (!string.IsNullOrEmpty(filters))
-                {
-                    retVal = retVal.Where(x => addressDetails.Any(y => y.CustomerId == x.CustomerId)).ToList();
-                }
-            }
-            if (salesOrders.Count != 0 && foundSalesOrderFilter)
-            {
-                if (!string.IsNullOrEmpty(filters))
-                {
-                    retVal = retVal.Where(x => salesOrders.Any(y => y.CustomerId == x.CustomerId)).ToList();
-                }
-            }
+            // if (addressDetails.Count != 0 && foundAddressFilter)
+            // {
+            //     if (!string.IsNullOrEmpty(filters))
+            //     {
+            //         retVal = retVal.Where(x => addressDetails.Any(y => y.CustomerId == x.CustomerId)).ToList();
+            //     }
+            // }
+            // if (salesOrders.Count != 0 && foundSalesOrderFilter)
+            // {
+            //     if (!string.IsNullOrEmpty(filters))
+            //     {
+            //         retVal = retVal.Where(x => salesOrders.Any(y => y.CustomerId == x.CustomerId)).ToList();
+            //     }
+            // }
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && !foundAddressFilter && retVal.Count != 0)
             {
@@ -141,9 +141,9 @@ namespace Demo.Infrastructure.Repositories
                 retVal.ForEach(x =>
                 {
                     x.CustomerAddresses = addressDetails.Count != 0 ?
-                    ResponseToDynamic.ConvertTo(addressDetails.Where(y => y.CustomerId == x.CustomerId).ToList(), addressParts.Fields ?? "") : null;
+                    _responseToDynamic.ConvertTo(addressDetails.Where(y => y.CustomerId == x.CustomerId).ToList(), addressParts.Fields ?? "") : null;
                     x.SalesOrderHeaders = salesOrders.Count != 0 ?
-                    ResponseToDynamic.ConvertTo(salesOrders.Where(y => y.CustomerId == x.CustomerId).ToList(), salesorderParts.Fields ?? "") : null;
+                    _responseToDynamic.ConvertTo(salesOrders.Where(y => y.CustomerId == x.CustomerId).ToList(), salesorderParts.Fields ?? "") : null;
                 });
             }
 

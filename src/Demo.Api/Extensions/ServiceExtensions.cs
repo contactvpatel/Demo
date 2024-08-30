@@ -38,6 +38,7 @@ namespace Demo.Api.Extensions
             services.AddScoped<Core.Services.IAsmService, Infrastructure.Services.AsmService>();
             services.AddScoped<Core.Services.IMisService, Infrastructure.Services.MisService>();
             services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
+            services.AddScoped<IResponseToDynamic, ResponseToDynamic>();
 
             // Add Business Layer
             services.AddScoped<ICustomerService, CustomerService>();

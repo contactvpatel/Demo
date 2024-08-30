@@ -4,6 +4,7 @@ using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -16,21 +17,23 @@ namespace Demo.Infrastructure.Repositories
         private readonly DemoWriteContext _demoWriteContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ProductRepository> _logger;
+        private readonly IResponseToDynamic _responseToDynamic;
 
         public AddressRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext,
             IConfiguration configuration,
-            ILogger<ProductRepository> logger) : base(demoReadContext, demoWriteContext, configuration)
+            ILogger<ProductRepository> logger, IResponseToDynamic responseToDynamic) : base(demoReadContext, demoWriteContext, configuration)
         {
             _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
             _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _responseToDynamic = responseToDynamic;
         }
 
         public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = ResponseToDynamic.ConvertTo(retVal, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
             return dynamicResponse;
         }
 
@@ -50,8 +53,8 @@ namespace Demo.Infrastructure.Repositories
                                   Rowguid = data.Address.Rowguid,
                                   StateProvince = data.Address.StateProvince,
                               });
-
-            var addressResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+           
+            var addressResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
             var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse))) ?? new List<CustomerAddressModel>();
             return retVal;
         }

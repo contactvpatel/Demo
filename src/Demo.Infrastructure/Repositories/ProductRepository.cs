@@ -16,15 +16,17 @@ namespace Demo.Infrastructure.Repositories
         private readonly DemoWriteContext _demoWriteContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ProductRepository> _logger;
+        private readonly IResponseToDynamic _responseToDynamic;
 
         public ProductRepository(DemoReadContext demoReadContext, DemoWriteContext demoWriteContext,
             IConfiguration configuration,
-            ILogger<ProductRepository> logger) : base(demoReadContext, demoWriteContext, configuration)
+            ILogger<ProductRepository> logger, IResponseToDynamic responseToDynamic) : base(demoReadContext, demoWriteContext, configuration)
         {
             _demoReadContext = demoReadContext ?? throw new ArgumentNullException(nameof(demoReadContext));
             _demoWriteContext = demoWriteContext ?? throw new ArgumentNullException(nameof(demoWriteContext));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _responseToDynamic = responseToDynamic;
         }
 
         /* DbContext
@@ -84,7 +86,7 @@ namespace Demo.Infrastructure.Repositories
         public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = ResponseToDynamic.ConvertTo(retVal, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
             return dynamicResponse;
         }
 
@@ -110,8 +112,7 @@ namespace Demo.Infrastructure.Repositories
                                                     Rowguid = data.Rowguid,
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
-
-            var productResponse = await ResponseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var productResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
             var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse))) ?? new List<ProductResponseModel>();
             return retVal;
         }
