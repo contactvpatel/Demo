@@ -1,9 +1,15 @@
-﻿using Demo.Util.FIQL;
+﻿using Demo.Business.Models;
+using Demo.Util.FIQL;
+using Demo.Util.Models;
 
 namespace Demo.Business.Interfaces
 {
     public interface ICustomerService
     {
-        Task<dynamic> Get(QueryParam queryParam);
+        Task<HttpResponseModel> Get(QueryParam queryParam);
+        Task<CustomerModel> GetById(int id);
+        Task<CustomerModel> Create(CustomerModel customerModel);
+        Task Update(CustomerModel customerModel);
+        Task Delete(CustomerModel customerModel);
     }
 }

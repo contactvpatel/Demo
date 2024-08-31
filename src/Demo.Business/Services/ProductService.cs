@@ -5,6 +5,7 @@ using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Util.FIQL;
 using Demo.Util.Logging;
+using Demo.Util.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Demo.Business.Services
@@ -81,7 +82,7 @@ namespace Demo.Business.Services
             _logger.LogInformationExtension($"Product successfully deleted.");
         }
 
-        public async Task<dynamic> Get(QueryParam queryParam)
+        public async Task<HttpResponseModel> GetDynamic(QueryParam queryParam)
         {
             return await _productRepository.GetDynamic(queryParam.Fields, queryParam.Filters, queryParam.Include, queryParam.Sort, queryParam.PageNo, queryParam.PageSize);
         }

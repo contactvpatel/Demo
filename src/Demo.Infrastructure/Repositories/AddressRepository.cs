@@ -4,6 +4,7 @@ using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
+using Demo.Util.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -30,15 +31,19 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
+            HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
+            httpResponseModel.Data = dynamicResponse;
+            httpResponseModel.TotalRecords = retVal.TotalRecords;
             return dynamicResponse;
         }
 
-        public async Task<List<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ListResponseToModel<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            ListResponseToModel<CustomerAddressModel> listResponseToModel = new();
             IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
                               .Select(data => new CustomerAddressModel()
                               {
@@ -53,10 +58,12 @@ namespace Demo.Infrastructure.Repositories
                                   Rowguid = data.Address.Rowguid,
                                   StateProvince = data.Address.StateProvince,
                               });
-           
+
             var addressResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
-            var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse))) ?? new List<CustomerAddressModel>();
-            return retVal;
+            var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse.Data))) ?? new List<CustomerAddressModel>();
+            listResponseToModel.Data = retVal;
+            listResponseToModel.TotalRecords = addressResponse.TotalRecords;
+            return listResponseToModel;
         }
     }
 }

@@ -13,6 +13,9 @@ namespace Demo.Api.Mapper
 
             CreateMap<ProductRequestModel, ProductModel>();
             CreateMap<ProductModel, ProductResponseModel>();
+
+            CreateMap<CustomerRequestModel, CustomerModel>();
+            CreateMap<CustomerModel, CustomerResponseModel>();
         }
     }
 }

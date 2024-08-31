@@ -1,3 +1,4 @@
+using Demo.Util.Models;
 using System.Linq.Dynamic.Core;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -156,8 +157,9 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public async Task<dynamic> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseToDynamicModel> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
+            ResponseToDynamicModel responseToDynamicModel = new ResponseToDynamicModel();
             var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq(filters ?? "");
             filters = filtersAndProperties.Filters;
             var _filterFields = filtersAndProperties.Properties.Where(x => !string.IsNullOrEmpty(x) && !fields.Split(',').Any(y => y.ToLower() == x.ToLower())).ToList();
@@ -178,11 +180,18 @@ namespace Demo.Util.FIQL
             }
             if (pageNo > 0 && pageSize > 0)
             {
+                responseToDynamicModel.TotalRecords = result.Count();
                 result = result.Skip((pageNo - 1) * pageSize).Take(pageSize);
             }
 
-            var data = await result.ToDynamicListAsync();
-            return data;
+            responseToDynamicModel.Data = await result.ToDynamicListAsync();
+
+            if (!(pageNo > 0 && pageSize > 0))
+            {
+                responseToDynamicModel.TotalRecords = responseToDynamicModel.Data.Count;
+            }
+
+            return responseToDynamicModel;
         }
 
         public dynamic ConvertTo<T>(T retVal, string select)
@@ -251,6 +260,6 @@ namespace Demo.Util.FIQL
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);
         dynamic ConvertTo<T>(T retVal, string select);
-        Task<dynamic> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<ResponseToDynamicModel> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
     }
 }

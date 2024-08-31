@@ -1,10 +1,8 @@
-﻿using Demo.Core.Entities.Base;
-
-namespace Demo.Core.Models
+﻿namespace Demo.Api.Dto
 {
-    public class CustomerModel : Entity
+    public class CustomerRequestModel
     {
-        public int CustomerId { get; set; }
+       public int CustomerId { get; set; }
         public bool NameStyle { get; set; }
         public string Title { get; set; }
         public string FirstName { get; set; } = null!;
@@ -17,9 +15,5 @@ namespace Demo.Core.Models
         public string Phone { get; set; }
         public string PasswordHash { get; set; } = null!;
         public string PasswordSalt { get; set; } = null!;
-        public Guid Rowguid { get; set; }
-        public DateTime ModifiedDate { get; set; }
-        public dynamic CustomerAddresses { get; set; }
-        public dynamic SalesOrderHeaders { get; set; }
     }
 }

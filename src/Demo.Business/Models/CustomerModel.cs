@@ -1,8 +1,8 @@
-﻿using Demo.Core.Entities.Base;
+﻿using Demo.Business.Models.Base;
 
-namespace Demo.Core.Models
+namespace Demo.Business.Models
 {
-    public class CustomerModel : Entity
+    public class CustomerModel : BaseModel
     {
         public int CustomerId { get; set; }
         public bool NameStyle { get; set; }
@@ -19,7 +19,5 @@ namespace Demo.Core.Models
         public string PasswordSalt { get; set; } = null!;
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
-        public dynamic CustomerAddresses { get; set; }
-        public dynamic SalesOrderHeaders { get; set; }
     }
 }

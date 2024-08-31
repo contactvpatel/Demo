@@ -1,8 +1,6 @@
-﻿using Demo.Core.Entities.Base;
-
-namespace Demo.Core.Models
+﻿namespace Demo.Api.Dto
 {
-    public class CustomerModel : Entity
+    public class CustomerResponseModel
     {
         public int CustomerId { get; set; }
         public bool NameStyle { get; set; }
@@ -19,7 +17,9 @@ namespace Demo.Core.Models
         public string PasswordSalt { get; set; } = null!;
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
-        public dynamic CustomerAddresses { get; set; }
-        public dynamic SalesOrderHeaders { get; set; }
+        public DateTime Created { get; set; }
+        public int CreatedBy { get; set; }
+        public DateTime LastUpdated { get; set; }
+        public int LastUpdatedBy { get; set; }
     }
 }

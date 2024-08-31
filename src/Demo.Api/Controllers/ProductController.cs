@@ -10,6 +10,7 @@ using Demo.Business.Models;
 using Demo.Core.Models;
 using Demo.Util.FIQL;
 using Demo.Util.Logging;
+using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -166,14 +167,11 @@ namespace Demo.Api.Controllers
             return base.Ok(new Response<Dto.ProductResponseModel>(null, $"Product Id ({id}) is deleted from db."));
         }
 
-        [HttpGet("FiqlGet")]
-        public async Task<ActionResult<dynamic>> Get([FromQuery] QueryParam queryParam)
+        [HttpGet("GetDynamic")]
+        public async Task<ActionResult<HttpResponseModel>> GetDynamic([FromQuery] QueryParam queryParam)
         {
-            var response = await _productService.Get(queryParam);
-            ResponseModel responseModel = new ResponseModel();
-            responseModel.status = true;
-            responseModel.data = response;
-            return Ok(responseModel);
+            var response = await _productService.GetDynamic(queryParam);
+            return Ok(response);
         }
     }
 }

@@ -4,6 +4,7 @@ using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
+using Demo.Util.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -32,15 +33,20 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
+            HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
-            return dynamicResponse;
+            httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, fields ?? "");
+            httpResponseModel.TotalRecords = retVal.TotalRecords;
+            return httpResponseModel;
         }
 
-        public async Task<List<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ListResponseToModel<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            ListResponseToModel<CustomerModel> responseModel = new();
+            responseModel.Data = new List<CustomerModel>();
+
             IQueryable<CustomerModel> result = _demoReadContext.Customers.Select(data => new CustomerModel()
             {
                 CustomerId = data.CustomerId,
@@ -57,7 +63,7 @@ namespace Demo.Infrastructure.Repositories
                 Rowguid = data.Rowguid,
                 SalesPerson = data.SalesPerson,
                 Suffix = data.Suffix,
-                Title = data.Title,
+                Title = data.Title
             });
 
             List<CustomerAddressModel> addressDetails = new List<CustomerAddressModel>();
@@ -76,7 +82,7 @@ namespace Demo.Infrastructure.Repositories
                 if (!string.IsNullOrEmpty(addressParts.Filters))
                 {
                     foundAddressFilter = true;
-                    addressDetails = await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "");
+                    addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
                 }
             }
 
@@ -92,7 +98,7 @@ namespace Demo.Infrastructure.Repositories
                 if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include.ToLower().Contains("filters")))
                 {
                     foundSalesOrderFilter = true;
-                    salesOrders = await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "");
+                    salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
                 }
             }
 
@@ -107,33 +113,18 @@ namespace Demo.Infrastructure.Repositories
                 customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
             }
             var customerResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
-            List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse))) ?? new List<CustomerModel>();
-
-            // if (addressDetails.Count != 0 && foundAddressFilter)
-            // {
-            //     if (!string.IsNullOrEmpty(filters))
-            //     {
-            //         retVal = retVal.Where(x => addressDetails.Any(y => y.CustomerId == x.CustomerId)).ToList();
-            //     }
-            // }
-            // if (salesOrders.Count != 0 && foundSalesOrderFilter)
-            // {
-            //     if (!string.IsNullOrEmpty(filters))
-            //     {
-            //         retVal = retVal.Where(x => salesOrders.Any(y => y.CustomerId == x.CustomerId)).ToList();
-            //     }
-            // }
+            List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse.Data))) ?? new List<CustomerModel>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && !foundAddressFilter && retVal.Count != 0)
             {
                 addressParts.Filters = $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
-                addressDetails = await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "");
+                addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
             }
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders") && !foundSalesOrderFilter && retVal.Count != 0)
             {
                 salesorderParts.Filters = $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
-                salesOrders = await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "");
+                salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
             }
 
             if ((addressDetails.Count != 0 || salesOrders.Count != 0) && retVal.Count != 0)
@@ -146,8 +137,9 @@ namespace Demo.Infrastructure.Repositories
                     _responseToDynamic.ConvertTo(salesOrders.Where(y => y.CustomerId == x.CustomerId).ToList(), salesorderParts.Fields ?? "") : null;
                 });
             }
-
-            return retVal;
+            responseModel.Data = retVal;
+            responseModel.TotalRecords = customerResponse.TotalRecords;
+            return responseModel;
         }
     }
 }

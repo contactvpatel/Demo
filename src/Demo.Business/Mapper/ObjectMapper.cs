@@ -28,6 +28,7 @@ namespace Demo.Business.Mapper
         public DemoDtoMapper()
         {
             CreateMap<Product, Models.ProductModel>().ReverseMap();
+            CreateMap<Customer, Models.CustomerModel>().ReverseMap();
             CreateMap<Category, CategoryModel>().ReverseMap();
             CreateMap(typeof(PagedList<>), typeof(PagedList<>)).ConvertUsing(typeof(PagedListConverter<,>));
         }

@@ -4,6 +4,7 @@ using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
+using Demo.Util.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -83,15 +84,16 @@ namespace Demo.Infrastructure.Repositories
             return null;
         }
 
-        public async Task<dynamic> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
             return dynamicResponse;
         }
 
-        public async Task<List<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ListResponseToModel<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            ListResponseToModel<ProductResponseModel> listResponseToModel = new();
             IQueryable<ProductResponseModel> result = _demoReadContext.Products
                                                 .Select(data => new ProductResponseModel()
                                                 {
@@ -113,8 +115,10 @@ namespace Demo.Infrastructure.Repositories
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
             var productResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
-            var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse))) ?? new List<ProductResponseModel>();
-            return retVal;
+            var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse.Data))) ?? new List<ProductResponseModel>();
+            listResponseToModel.Data = retVal;
+            listResponseToModel.TotalRecords = productResponse.TotalRecords;
+            return listResponseToModel;
         }
     }
 }
