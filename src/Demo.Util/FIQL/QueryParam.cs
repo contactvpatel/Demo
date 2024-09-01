@@ -15,6 +15,6 @@ namespace Demo.Util.FIQL
         public string ObjectName { get; set; }
         public string Fields { get; set; }
         public string Filters { get; set; }
-        public string? Include { get; set; }
+        public string Include { get; set; }
     }
 }
