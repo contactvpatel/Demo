@@ -76,7 +76,7 @@ namespace Demo.Infrastructure.Repositories
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails"))
             {
                 salesorderDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderdetails") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include.ToLower().Contains("filters")))
+                if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include != null && salesorderDetailParts.Include.ToLower().Contains("filters")))
                 {
                     foundSalesOrderFilter = true;
                     salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
@@ -139,7 +139,7 @@ namespace Demo.Infrastructure.Repositories
             if (includes.Any(x => x.ObjectName?.ToLower() == "product"))
             {
                 productDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "product") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include.ToLower().Contains("filters")))
+                if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include != null && productDetailParts.Include.ToLower().Contains("filters")))
                 {
                     foundProductDetailFilter = true;
                     productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");

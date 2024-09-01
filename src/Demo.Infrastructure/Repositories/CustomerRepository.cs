@@ -95,7 +95,7 @@ namespace Demo.Infrastructure.Repositories
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders"))
             {
                 salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include.ToLower().Contains("filters")))
+                if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include != null && salesorderParts.Include.ToLower().Contains("filters")))
                 {
                     foundSalesOrderFilter = true;
                     salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
