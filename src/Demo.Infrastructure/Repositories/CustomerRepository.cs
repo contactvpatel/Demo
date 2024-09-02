@@ -55,7 +55,7 @@ namespace Demo.Infrastructure.Repositories
                 FirstName = data.FirstName,
                 LastName = data.LastName,
                 MiddleName = data.MiddleName,
-                ModifiedDate = DateTime.Now,
+                ModifiedDate = data.ModifiedDate,
                 NameStyle = data.NameStyle,
                 PasswordHash = data.PasswordHash,
                 PasswordSalt = data.PasswordSalt,
@@ -88,7 +88,14 @@ namespace Demo.Infrastructure.Repositories
 
             if (foundAddressFilter)
             {
-                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
+                if (addressDetails.ToArray().Length > 0)
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
+                }
+                else
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+                }
             }
 
             /*Sales Order Detail add*/
@@ -104,7 +111,14 @@ namespace Demo.Infrastructure.Repositories
 
             if (foundSalesOrderFilter)
             {
-                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
+                if (salesOrders.ToArray().Length > 0)
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
+                }
+                else
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+                }
             }
 
             var customeFields = "";

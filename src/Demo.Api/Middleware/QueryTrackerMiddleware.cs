@@ -22,8 +22,6 @@ namespace Demo.Api.Middleware
 
             using (var responseBody = new MemoryStream())
             {
-                context.Response.Body = responseBody;
-
                 // Call the next middleware in the pipeline
                 await _next(context);
 

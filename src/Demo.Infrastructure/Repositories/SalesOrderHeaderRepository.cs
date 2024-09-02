@@ -85,7 +85,14 @@ namespace Demo.Infrastructure.Repositories
 
             if (foundSalesOrderFilter)
             {
-                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Data.Select(x => x.SalesOrderId).ToArray())})";
+                if (salesOrderDetails.Data.ToArray().Length > 0)
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Data.Select(x => x.SalesOrderId).ToArray())})";
+                }
+                else
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+                }
             }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
@@ -148,7 +155,14 @@ namespace Demo.Infrastructure.Repositories
 
             if (foundProductDetailFilter)
             {
-                filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Data.Select(x => x.ProductId).ToArray())})";
+                if (productDetail.Data.ToArray().Length > 0)
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Data.Select(x => x.ProductId).ToArray())})";
+                }
+                else
+                {
+                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+                }
             }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))

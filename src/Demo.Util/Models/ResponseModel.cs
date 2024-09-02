@@ -19,7 +19,7 @@ namespace Demo.Util.Models
     }
     public class ListResponseToModel<T>
     {
-        public List<T> Data { get; set; }
+        public List<T> Data { get; set; } = new();
         public int TotalRecords { get; set; }
     }
     public class ResponseToDynamicModel

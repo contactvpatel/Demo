@@ -112,6 +112,14 @@
                         "le" => "<=",
                         "eq" => "==",
                         "ne" => "!=",
+
+                        "eqd" => "==",
+                        "led" => "<=",
+                        "ged" => ">=",
+                        "ltd" => "<",
+                        "gtd" => ">",
+                        "ned" => "!=",
+
                         "==" => "==",
                         "" => "==",
                         "in" => "IN",
@@ -190,7 +198,10 @@
                             else
                             {
                                 value = $"\"{value}\"";
-                                linqOrConditions.Add($"{property} {linqOp} {value}");
+                                if ("eqd,led,ged,ltd,gtd,ned".Contains(op))
+                                    linqOrConditions.Add($"{property}.Date {linqOp} {value}");
+                                else
+                                    linqOrConditions.Add($"{property} {linqOp} {value}");
                             }
                         }
                         else

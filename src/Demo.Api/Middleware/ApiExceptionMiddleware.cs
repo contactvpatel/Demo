@@ -9,13 +9,14 @@ namespace Demo.Api.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ApiExceptionMiddleware> _logger;
         private readonly ApiExceptionOptions _options;
-
+        private readonly IWebHostEnvironment _env;
         public ApiExceptionMiddleware(ApiExceptionOptions options, RequestDelegate next,
-            ILogger<ApiExceptionMiddleware> logger)
+            ILogger<ApiExceptionMiddleware> logger, IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
             _options = options;
+            _env = env;
         }
 
         public async Task Invoke(HttpContext context)
@@ -47,7 +48,9 @@ namespace Demo.Api.Middleware
                     Message = exception.GetType() == typeof(ApplicationException) ||
                               exception.GetType() == typeof(UnauthorizedAccessException)
                         ? exception.Message
-                        : $"Error occurred in the API. Please use the ErrorId [{errorId}] and contact support team if the problem persists."
+                        : $"Error occurred in the API. Please use the ErrorId [{errorId}] and contact support team if the problem persists.",
+                        DevEnvErrorDetails = _env.IsDevelopment() ? exception?.ToString() : null
+
                 }
             };
 
@@ -56,7 +59,6 @@ namespace Demo.Api.Middleware
             _options.AddResponseDetails?.Invoke(context, exception, errorResponse);
 
             var innerExMessage = GetInnermostExceptionMessage(exception);
-
             var level = _options.DetermineLogLevel?.Invoke(exception) ?? LogLevel.Error;
 
             if (string.IsNullOrEmpty(exception.Data["ErrorId"]?.ToString()))
