@@ -78,24 +78,8 @@ namespace Demo.Infrastructure.Repositories
             {
                 fields = string.Concat(fields, ",SalesOrderDetails");
                 salesorderDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderdetails") ?? new SubQueryParam();
-                // if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include != null && salesorderDetailParts.Include.ToLower().Contains("filters")))
-                // {
-                //     //foundSalesOrderFilter = true;
-                //     salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
-                // }
             }
 
-            // if (foundSalesOrderFilter)
-            // {
-            //     if (salesOrderDetails.Data.ToArray().Length > 0)
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Data.Select(x => x.SalesOrderId).ToArray())})";
-            //     }
-            //     else
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-            //     }
-            // }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
             {
@@ -151,24 +135,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 fields = string.Concat(fields, ",Product");
                 productDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "product") ?? new SubQueryParam();
-                // if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include != null && productDetailParts.Include.ToLower().Contains("filters")))
-                // {
-                //     //foundProductDetailFilter = true;
-                //     productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
-                // }
             }
-
-            // if (foundProductDetailFilter)
-            // {
-            //     if (productDetail.Data.ToArray().Length > 0)
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Data.Select(x => x.ProductId).ToArray())})";
-            //     }
-            //     else
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-            //     }
-            // }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
             {

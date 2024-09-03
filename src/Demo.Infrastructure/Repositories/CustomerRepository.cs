@@ -81,48 +81,14 @@ namespace Demo.Infrastructure.Repositories
             {
                 fields = string.Concat(fields, ",CustomerAddresses");
                 addressParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "customeraddresses") ?? new SubQueryParam();
-                // if (!string.IsNullOrEmpty(addressParts.Filters))
-                // {
-                //     //foundAddressFilter = true;
-                //     addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
-                // }
             }
-
-            // if (foundAddressFilter)
-            // {
-            //     if (addressDetails.ToArray().Length > 0)
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
-            //     }
-            //     else
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-            //     }
-            // }
 
             // /*Sales Order Detail add*/
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders"))
             {
                 fields = string.Concat(fields, ",SalesOrderHeaders");
                 salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
-                // if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include != null && salesorderParts.Include.ToLower().Contains("filters")))
-                // {
-                //     //foundSalesOrderFilter = true;
-                //     salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
-                // }
             }
-
-            // if (foundSalesOrderFilter)
-            // {
-            //     if (salesOrders.ToArray().Length > 0)
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
-            //     }
-            //     else
-            //     {
-            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-            //     }
-            // }
 
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
