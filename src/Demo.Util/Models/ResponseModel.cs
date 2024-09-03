@@ -20,6 +20,7 @@ namespace Demo.Util.Models
     public class ListResponseToModel<T>
     {
         public List<T> Data { get; set; } = new();
+        public string Responsefields { get; set; }
         public int TotalRecords { get; set; }
     }
     public class ResponseToDynamicModel

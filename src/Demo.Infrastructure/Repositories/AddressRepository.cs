@@ -35,7 +35,7 @@ namespace Demo.Infrastructure.Repositories
         {
             HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.Data = dynamicResponse;
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return dynamicResponse;
@@ -43,6 +43,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<CustomerAddressModel>().ToArray()) : fields;
             ListResponseToModel<CustomerAddressModel> listResponseToModel = new();
             IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
                               .Select(data => new CustomerAddressModel()
@@ -63,6 +64,7 @@ namespace Demo.Infrastructure.Repositories
             var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse.Data))) ?? new List<CustomerAddressModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = addressResponse.TotalRecords;
+            listResponseToModel.Responsefields = fields;
             return listResponseToModel;
         }
     }

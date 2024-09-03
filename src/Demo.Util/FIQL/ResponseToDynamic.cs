@@ -1,5 +1,6 @@
 using Demo.Util.Models;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -194,6 +195,14 @@ namespace Demo.Util.FIQL
             return responseToDynamicModel;
         }
 
+        public List<string> GetPropertyNames<T>()
+        {
+            return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                            .Where(p => !p.GetCustomAttributes(typeof(JsonIgnoreAttribute), true).Any())
+                            .Select(p => p.Name)
+                            .ToList();
+        }
+
         public dynamic ConvertTo<T>(T retVal, string select)
         {
             var options = new JsonSerializerOptions();
@@ -256,6 +265,7 @@ namespace Demo.Util.FIQL
 
     public interface IResponseToDynamic
     {
+        List<string> GetPropertyNames<T>();
         IEnumerable<QueryIncludeModel> GetInclude(string include);
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);

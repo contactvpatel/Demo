@@ -33,7 +33,7 @@ namespace Demo.Infrastructure.Repositories
         {
             HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data, fields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data,  retVal.Responsefields ?? "");
             httpResponseModel.Data = dynamicResponse;
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return dynamicResponse;
@@ -41,6 +41,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<SalesOrderHeaderModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<SalesOrderHeaderModel>().ToArray()) : fields;
             ListResponseToModel<SalesOrderHeaderModel> listResponseToModel = new();
             IQueryable<SalesOrderHeaderModel> result = _demoReadContext.SalesOrderHeaders
                                                             .Select(data => new SalesOrderHeaderModel()
@@ -75,25 +76,26 @@ namespace Demo.Infrastructure.Repositories
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails"))
             {
+                fields = string.Concat(fields, ",SalesOrderDetails");
                 salesorderDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderdetails") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include != null && salesorderDetailParts.Include.ToLower().Contains("filters")))
-                {
-                    foundSalesOrderFilter = true;
-                    salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
-                }
+                // if (!string.IsNullOrEmpty(salesorderDetailParts.Filters) || (salesorderDetailParts.Include != null && salesorderDetailParts.Include.ToLower().Contains("filters")))
+                // {
+                //     //foundSalesOrderFilter = true;
+                //     salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
+                // }
             }
 
-            if (foundSalesOrderFilter)
-            {
-                if (salesOrderDetails.Data.ToArray().Length > 0)
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Data.Select(x => x.SalesOrderId).ToArray())})";
-                }
-                else
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-                }
-            }
+            // if (foundSalesOrderFilter)
+            // {
+            //     if (salesOrderDetails.Data.ToArray().Length > 0)
+            //     {
+            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"salesorderid=in=({string.Join(",", salesOrderDetails.Data.Select(x => x.SalesOrderId).ToArray())})";
+            //     }
+            //     else
+            //     {
+            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+            //     }
+            // }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
             {
@@ -104,7 +106,7 @@ namespace Demo.Infrastructure.Repositories
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails") && !foundSalesOrderFilter && retVal.Count != 0)
             {
-                salesorderDetailParts.Filters = $"salesorderid=in=({string.Join(",", retVal.Select(x => x.SalesOrderId).ToArray())})";
+                salesorderDetailParts.Filters = (string.IsNullOrEmpty(salesorderDetailParts.Filters) ? "" : "(" + salesorderDetailParts.Filters + ");") + $"salesorderid=in=({string.Join(",", retVal.Select(x => x.SalesOrderId).ToArray())})";
                 salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
             }
 
@@ -117,11 +119,13 @@ namespace Demo.Infrastructure.Repositories
             }
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = SalesOrderHeaderResponse.TotalRecords;
+            listResponseToModel.Responsefields = fields;
             return listResponseToModel;
         }
 
         public async Task<ListResponseToModel<SalesOrderDetailResponse>> GetSalesOrderDetail(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
+            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<SalesOrderHeaderModel>().ToArray()) : fields;
             ListResponseToModel<SalesOrderDetailResponse> listResponseToModel = new();
             IQueryable<SalesOrderDetailResponse> result = _demoReadContext.SalesOrderDetails
                                                           .Select(data => new SalesOrderDetailResponse()
@@ -145,25 +149,26 @@ namespace Demo.Infrastructure.Repositories
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "product"))
             {
+                fields = string.Concat(fields, ",Product");
                 productDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "product") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include != null && productDetailParts.Include.ToLower().Contains("filters")))
-                {
-                    foundProductDetailFilter = true;
-                    productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
-                }
+                // if (!string.IsNullOrEmpty(productDetailParts.Filters) || (productDetailParts.Include != null && productDetailParts.Include.ToLower().Contains("filters")))
+                // {
+                //     //foundProductDetailFilter = true;
+                //     productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
+                // }
             }
 
-            if (foundProductDetailFilter)
-            {
-                if (productDetail.Data.ToArray().Length > 0)
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Data.Select(x => x.ProductId).ToArray())})";
-                }
-                else
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-                }
-            }
+            // if (foundProductDetailFilter)
+            // {
+            //     if (productDetail.Data.ToArray().Length > 0)
+            //     {
+            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"productid=in=({string.Join(",", productDetail.Data.Select(x => x.ProductId).ToArray())})";
+            //     }
+            //     else
+            //     {
+            //         filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
+            //     }
+            // }
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
             {
@@ -174,7 +179,7 @@ namespace Demo.Infrastructure.Repositories
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "product") && !foundProductDetailFilter && retVal.Count != 0)
             {
-                productDetailParts.Filters = $"productid=in=({string.Join(",", retVal.Select(x => x.ProductId).ToArray())})";
+                productDetailParts.Filters = (string.IsNullOrEmpty(productDetailParts.Filters) ? "" : "(" + productDetailParts.Filters + ");") + $"productid=in=({string.Join(",", retVal.Select(x => x.ProductId).ToArray())})";
                 productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
             }
 
@@ -187,7 +192,7 @@ namespace Demo.Infrastructure.Repositories
             }
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = salesOrderDetailResponse.TotalRecords;
-
+            listResponseToModel.Responsefields = fields;
             return listResponseToModel;
         }
     }

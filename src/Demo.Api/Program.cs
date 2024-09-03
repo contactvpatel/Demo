@@ -80,8 +80,6 @@ public class Program
             //options.SwaggerEndpoint("/v2/swagger.json", "v2"); // Future Version
         });
 
-        app.UseMiddleware<QueryTrackerMiddleware>();
-
         app.UseHttpsRedirection();
 
         app.UseRouting();

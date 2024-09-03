@@ -1,4 +1,5 @@
 ﻿using Demo.Core.Entities.Base;
+using System.Text.Json.Serialization;
 
 namespace Demo.Core.Models
 {
@@ -26,6 +27,7 @@ namespace Demo.Core.Models
         public string Comment { get; set; }
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
+        [JsonIgnore]
         public dynamic SalesOrderDetails { get; set; }
     }  
 }
