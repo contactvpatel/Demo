@@ -33,7 +33,7 @@ namespace Demo.Infrastructure.Repositories
         {
             HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data,  retVal.Responsefields ?? "");
+            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.Data = dynamicResponse;
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return dynamicResponse;
@@ -41,7 +41,11 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<SalesOrderHeaderModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<SalesOrderHeaderModel>().ToArray()) : fields;
+            fields = string.IsNullOrEmpty(fields) ?  _responseToDynamic.GetPropertyNamesString<SalesOrderHeaderModel>(): fields;
+            if (!_responseToDynamic.TryGetMissingPropertyNames<SalesOrderHeaderModel>(fields, out var missingFields))
+            {
+                throw new ApplicationException($"{missingFields} column not found");
+            }
             ListResponseToModel<SalesOrderHeaderModel> listResponseToModel = new();
             IQueryable<SalesOrderHeaderModel> result = _demoReadContext.SalesOrderHeaders
                                                             .Select(data => new SalesOrderHeaderModel()
@@ -109,7 +113,11 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<SalesOrderDetailResponse>> GetSalesOrderDetail(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<SalesOrderHeaderModel>().ToArray()) : fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<SalesOrderDetailResponse>() : fields;
+            if (!_responseToDynamic.TryGetMissingPropertyNames<SalesOrderDetailResponse>(fields, out var missingFields))
+            {
+                throw new ApplicationException($"{missingFields} column not found");
+            }
             ListResponseToModel<SalesOrderDetailResponse> listResponseToModel = new();
             IQueryable<SalesOrderDetailResponse> result = _demoReadContext.SalesOrderDetails
                                                           .Select(data => new SalesOrderDetailResponse()

@@ -95,7 +95,11 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<ProductResponseModel>().ToArray()) : fields;
+            fields = string.IsNullOrEmpty(fields) ?  _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
+            if (!_responseToDynamic.TryGetMissingPropertyNames<ProductResponseModel>(fields, out var missingFields))
+            {
+                throw new ApplicationException($"{missingFields} column not found");
+            }
             ListResponseToModel<ProductResponseModel> listResponseToModel = new();
             IQueryable<ProductResponseModel> result = _demoReadContext.Products
                                                 .Select(data => new ProductResponseModel()

@@ -43,7 +43,11 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<CustomerAddressModel>().ToArray()) : fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<CustomerAddressModel>() : fields;
+            if (!_responseToDynamic.TryGetMissingPropertyNames<CustomerAddressModel>(fields, out var missingFields))
+            {
+                throw new ApplicationException($"{missingFields} column not found");
+            }
             ListResponseToModel<CustomerAddressModel> listResponseToModel = new();
             IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
                               .Select(data => new CustomerAddressModel()

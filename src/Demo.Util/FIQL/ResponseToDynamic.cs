@@ -194,13 +194,34 @@ namespace Demo.Util.FIQL
 
             return responseToDynamicModel;
         }
-
-        public List<string> GetPropertyNames<T>()
+        public string GetPropertyNamesString<T>()
         {
-            return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            var names = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                             .Where(p => !p.GetCustomAttributes(typeof(JsonIgnoreAttribute), true).Any())
                             .Select(p => p.Name)
-                            .ToList();
+                            .ToArray();
+
+            return string.Join(",", names);
+        }
+
+        public bool TryGetMissingPropertyNames<T>(string fields, out string missingFields)
+        {
+            var propertyNames = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                         .Select(p => p.Name)
+                                         .ToArray();
+
+            var fieldArray = fields.Split(',');
+
+            var missingFieldList = fieldArray.Where(field => !propertyNames.Contains(field)).ToList();
+
+            if (missingFieldList.Any())
+            {
+                missingFields = string.Join(",", missingFieldList);
+                return false;
+            }
+
+            missingFields = null;
+            return true;
         }
 
         public dynamic ConvertTo<T>(T retVal, string select)
@@ -265,7 +286,8 @@ namespace Demo.Util.FIQL
 
     public interface IResponseToDynamic
     {
-        List<string> GetPropertyNames<T>();
+        string GetPropertyNamesString<T>();
+        bool TryGetMissingPropertyNames<T>(string fields, out string missingFields);
         IEnumerable<QueryIncludeModel> GetInclude(string include);
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);

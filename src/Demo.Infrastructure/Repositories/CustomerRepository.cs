@@ -44,7 +44,11 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<CustomerModel>().ToArray()) : fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<CustomerModel>() : fields;
+            if (!_responseToDynamic.TryGetMissingPropertyNames<CustomerModel>(fields, out var missingFields))
+            {
+                throw new ApplicationException($"{missingFields} column not found");
+            }
             ListResponseToModel<CustomerModel> responseModel = new();
             responseModel.Data = new List<CustomerModel>();
 
