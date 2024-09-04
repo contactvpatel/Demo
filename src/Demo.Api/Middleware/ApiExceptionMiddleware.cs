@@ -104,7 +104,7 @@ namespace Demo.Api.Middleware
                               exception.GetType() == typeof(UnauthorizedAccessException)
                         ? exception.Message
                         : $"Error occurred in the API. Please use the ErrorId [{errorId}] and contact support team if the problem persists.",
-                        DevEnvErrorDetails = _env.IsDevelopment() ? exception?.Message : null
+                        DevEnvErrorDetails = _env.IsDevelopment() ? exception?.ToString() : null
 
                 }
             };

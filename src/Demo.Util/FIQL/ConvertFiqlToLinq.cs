@@ -198,7 +198,7 @@
                             else
                             {
                                 value = $"\"{value}\"";
-                                if ("eqd,led,ged,ltd,gtd,ned".Contains(op))
+                                if ("eqd,led,ged,ltd,gtd,ned".Split(',').Any(x => x.Equals(op, StringComparison.CurrentCultureIgnoreCase)))
                                     linqOrConditions.Add($"{property}.Date {linqOp} {value}");
                                 else
                                     linqOrConditions.Add($"{property} {linqOp} {value}");
