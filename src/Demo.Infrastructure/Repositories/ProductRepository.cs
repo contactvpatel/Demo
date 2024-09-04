@@ -121,7 +121,7 @@ namespace Demo.Infrastructure.Repositories
                                                     Rowguid = data.Rowguid,
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
-            var productResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
+            var productResponse = await _responseToDynamic.ContextResponse<ProductResponseModel>(result, fields, filters, sort, pageNo, pageSize);
             var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse.Data))) ?? new List<ProductResponseModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = productResponse.TotalRecords;

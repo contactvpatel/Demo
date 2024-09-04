@@ -20,6 +20,7 @@ namespace Demo.Core.Models
         public string PasswordSalt { get; set; } = null!;
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public long? RollNo { get; set; }
         [JsonIgnore]
         public dynamic CustomerAddresses { get; set; }
         [JsonIgnore]

@@ -89,7 +89,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
             }
-            var SalesOrderHeaderResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
+            var SalesOrderHeaderResponse = await _responseToDynamic.ContextResponse<SalesOrderHeaderModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderHeaderModel> retVal = (JsonSerializer.Deserialize<List<SalesOrderHeaderModel>>(JsonSerializer.Serialize(SalesOrderHeaderResponse.Data))) ?? new List<SalesOrderHeaderModel>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails") && !foundSalesOrderFilter && retVal.Count != 0)
@@ -149,7 +149,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
             }
-            var salesOrderDetailResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
+            var salesOrderDetailResponse = await _responseToDynamic.ContextResponse<SalesOrderDetailResponse>(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderDetailResponse> retVal = (JsonSerializer.Deserialize<List<SalesOrderDetailResponse>>(JsonSerializer.Serialize(salesOrderDetailResponse.Data))) ?? new List<SalesOrderDetailResponse>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "product") && !foundProductDetailFilter && retVal.Count != 0)

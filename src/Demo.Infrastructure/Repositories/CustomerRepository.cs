@@ -68,7 +68,8 @@ namespace Demo.Infrastructure.Repositories
                 Rowguid = data.Rowguid,
                 SalesPerson = data.SalesPerson,
                 Suffix = data.Suffix,
-                Title = data.Title
+                Title = data.Title,
+                RollNo = data.RollNo
             });
 
             List<CustomerAddressModel> addressDetails = new List<CustomerAddressModel>();
@@ -99,7 +100,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
             }
-            var customerResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
+            var customerResponse = await _responseToDynamic.ContextResponse<CustomerModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse.Data))) ?? new List<CustomerModel>();
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && !foundAddressFilter && retVal.Count != 0)

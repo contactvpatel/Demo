@@ -2,7 +2,7 @@
 {
     public static class ConvertFiqlToLinq
     {
-        public static FiltersAndProperties FiqlToLinq(string fiql)
+        public static FiltersAndProperties FiqlToLinq<T>(string fiql)
         {
             FiltersAndProperties filtersAndProperties = new FiltersAndProperties();
 
@@ -33,13 +33,13 @@
                 {
                     if (SplitConditions(orCondition, ',').Count() > 1)
                     {
-                        var fiqlloopString = FiqlToLinqLoop(orCondition.TrimStart('(').TrimEnd(')'));
+                        var fiqlloopString = FiqlToLinqLoop<T>(orCondition.TrimStart('(').TrimEnd(')'));
                         linqOrConditions.Add($"{fiqlloopString.Filters}");
                         filtersAndProperties.Properties.AddRange(fiqlloopString.Properties);
                     }
                     else
                     {
-                        var fiqlloopString = FiqlToLinqLoop(orCondition.TrimStart('(').TrimEnd(')'));
+                        var fiqlloopString = FiqlToLinqLoop<T>(orCondition.TrimStart('(').TrimEnd(')'));
                         linqOrConditions.Add($"{fiqlloopString.Filters}");
                         filtersAndProperties.Properties.AddRange(fiqlloopString.Properties);
                     }
@@ -72,8 +72,10 @@
                 return "";
             }
         }
-        static FiltersAndProperties FiqlToLinqLoop(string fiql)
+        static FiltersAndProperties FiqlToLinqLoop<T>(string fiql)
         {
+            var properties = typeof(T).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
             FiltersAndProperties filtersAndProperties = new FiltersAndProperties();
             // Split by semicolon for AND, and comma for OR
 
@@ -89,7 +91,7 @@
                 {
                     if (SplitConditions(orCondition, ',').Count() > 1)
                     {
-                        var fiqlloopString = FiqlToLinqLoop(orCondition.TrimStart('(').TrimEnd(')'));
+                        var fiqlloopString = FiqlToLinqLoop<T>(orCondition.TrimStart('(').TrimEnd(')'));
                         linqOrConditions.Add($"{fiqlloopString.Filters}");
                         filtersAndProperties.Properties.AddRange(fiqlloopString.Properties);
                     }
@@ -128,72 +130,128 @@
                         "olike" => "NOT LIKE",
                         _ => throw new ArgumentException($"Unsupported operator: {op}")
                     };
+                    var propertyType = properties.Where(x => x.Name.Equals(property, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault()?.PropertyType;
+
+                    if (propertyType == null)
+                        throw new ArgumentException($"Unsupported type: {op}");
 
                     if (linqOp == "IN")
                     {
-                        var values = value.Split(',').Select(v => (!int.TryParse(v, out _) && !decimal.TryParse(v, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
-                        value = $"new [] {{ {string.Join(", ", values)} }}";
+                        var values = value.Split(',')
+                            .Select(v => v.Trim())
+                            .Select(v => propertyType == typeof(string) || propertyType == typeof(DateTime) ? $"\"{v}\"" : v)
+                            .ToList();
+
+                        // If the property is a long or another numeric type, adjust the LINQ query accordingly
+                        if (propertyType == typeof(long))
+                        {
+                            value = $"new long[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else if (propertyType == typeof(int))
+                        {
+                            value = $"new int[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else if (propertyType == typeof(decimal))
+                        {
+                            value = $"new int[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else
+                        {
+                            value = $"new [] {{ {string.Join(", ", values)} }}";
+                        }
+
                         linqOrConditions.Add($"{property} in {value}");
                     }
                     else if (linqOp == "NOT IN")
                     {
-                        var values = value.Split(',').Select(v => (!int.TryParse(v, out _) && !decimal.TryParse(v, out _)) ? "\"" + v.Trim() + "\"" : v.Trim()).ToList();
-                        value = $"new [] {{ {string.Join(", ", values)} }}";
+                        var values = value.Split(',')
+                           .Select(v => v.Trim())
+                           .Select(v => propertyType == typeof(string) || propertyType == typeof(DateTime) ? $"\"{v}\"" : v)
+                           .ToList();
+
+                        // If the property is a long or another numeric type, adjust the LINQ query accordingly
+                        if (propertyType == typeof(long))
+                        {
+                            value = $"new long[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else if (propertyType == typeof(int))
+                        {
+                            value = $"new int[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else if (propertyType == typeof(decimal))
+                        {
+                            value = $"new int[] {{ {string.Join(", ", values)} }}";
+                        }
+                        else
+                        {
+                            value = $"new [] {{ {string.Join(", ", values)} }}";
+                        }
+
                         linqOrConditions.Add($"!({property} in {value})");
                     }
                     else if (linqOp == "LIKE")
                     {
-                        if (value.StartsWith('*') && value.EndsWith('*'))
+                        if (propertyType == typeof(string))
                         {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"{property}.Contains({value})");
-                        }
-                        else if (value.StartsWith('*'))
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"{property}.EndsWith({value})");
-                        }
-                        else if (value.EndsWith('*'))
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"{property}.StartsWith({value})");
+                            if (value.StartsWith('*') && value.EndsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"{property}.Contains({value})");
+                            }
+                            else if (value.StartsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"{property}.EndsWith({value})");
+                            }
+                            else if (value.EndsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"{property}.StartsWith({value})");
+                            }
+                            else
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"{property}.Contains({value})");
+                            }
                         }
                         else
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"{property}.Contains({value})");
-                        }
+                            throw new ArgumentException($"Unsupported type: {op}");
                     }
                     else if (linqOp == "NOT LIKE")
                     {
-                        if (value.StartsWith('*') && value.EndsWith('*'))
+                        if (propertyType == typeof(string))
                         {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"!({property}.Contains({value}))");
-                        }
-                        else if (value.StartsWith('*'))
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"!({property}.EndsWith({value}))");
-                        }
-                        else if (value.EndsWith('*'))
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"!({property}.StartsWith({value}))");
+                            if (value.StartsWith('*') && value.EndsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"!({property}.Contains({value}))");
+                            }
+                            else if (value.StartsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"!({property}.EndsWith({value}))");
+                            }
+                            else if (value.EndsWith('*'))
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"!({property}.StartsWith({value}))");
+                            }
+                            else
+                            {
+                                value = $"\"{value.Replace("*", "")}\"";
+                                linqOrConditions.Add($"{property}.Contains({value})");
+                            }
                         }
                         else
-                        {
-                            value = $"\"{value.Replace("*", "")}\"";
-                            linqOrConditions.Add($"{property}.Contains({value})");
-                        }
+                            throw new ArgumentException($"Unsupported type: {op}");
                     }
                     else
                     {
-                        if (!int.TryParse(value, out _) && !decimal.TryParse(value, out _))
+                        if (propertyType == typeof(string) || propertyType == typeof(DateTime))
                         {
                             if (value?.ToLower() == "null")
                             {
-                                linqOrConditions.Add($"{property} {linqOp} null");
+                                linqOrConditions.Add($"{property} == null");
                             }
                             else
                             {
@@ -206,7 +264,10 @@
                         }
                         else
                         {
-                            linqOrConditions.Add($"{property} {linqOp} {value}");
+                            if (value?.ToLower() == "null")
+                                linqOrConditions.Add($"{property} == null");
+                            else
+                                linqOrConditions.Add($"{property} {linqOp} {value}");
                         }
 
                     }

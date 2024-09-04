@@ -156,7 +156,7 @@ namespace Demo.Infrastructure.Data
                     .HasMaxLength(50)
                     .HasComment("Middle name or middle initial of the person.");
                 entity.Property(e => e.ModifiedDate)
-                    //.HasDefaultValueSql("(getdate())")
+                    .HasDefaultValueSql("(getdate())")
                     .HasComment("Date and time the record was last updated.")
                     .HasColumnType("datetime");
                 entity.Property(e => e.NameStyle).HasComment("0 = The data in FirstName and LastName are stored in western style (first name, last name) order.  1 = Eastern style (last name, first name) order.");
@@ -186,6 +186,7 @@ namespace Demo.Infrastructure.Data
                 entity.Property(e => e.Title)
                     .HasMaxLength(8)
                     .HasComment("A courtesy title. For example, Mr. or Ms.");
+                entity.Property(e => e.RollNo);
             });
 
             modelBuilder.Entity<CustomerAddress>(entity =>
