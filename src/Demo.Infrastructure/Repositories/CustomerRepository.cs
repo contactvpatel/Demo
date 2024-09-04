@@ -37,13 +37,14 @@ namespace Demo.Infrastructure.Repositories
         {
             HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, fields ?? "");
+            httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return httpResponseModel;
         }
 
         public async Task<ListResponseToModel<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<CustomerModel>().ToArray()) : fields;
             ListResponseToModel<CustomerModel> responseModel = new();
             responseModel.Data = new List<CustomerModel>();
 
@@ -78,47 +79,15 @@ namespace Demo.Infrastructure.Repositories
             /*Address Detail add*/
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses"))
             {
+                fields = string.Concat(fields, ",CustomerAddresses");
                 addressParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "customeraddresses") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(addressParts.Filters))
-                {
-                    foundAddressFilter = true;
-                    addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
-                }
             }
 
-            if (foundAddressFilter)
-            {
-                if (addressDetails.ToArray().Length > 0)
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", addressDetails.Select(x => x.CustomerId).ToArray())})";
-                }
-                else
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-                }
-            }
-
-            /*Sales Order Detail add*/
+            // /*Sales Order Detail add*/
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders"))
             {
+                fields = string.Concat(fields, ",SalesOrderHeaders");
                 salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
-                if (!string.IsNullOrEmpty(salesorderParts.Filters) || (salesorderParts.Include != null && salesorderParts.Include.ToLower().Contains("filters")))
-                {
-                    foundSalesOrderFilter = true;
-                    salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
-                }
-            }
-
-            if (foundSalesOrderFilter)
-            {
-                if (salesOrders.ToArray().Length > 0)
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=({string.Join(",", salesOrders.Select(x => x.CustomerId).ToArray())})";
-                }
-                else
-                {
-                    filters = (string.IsNullOrEmpty(filters) ? "" : "(" + filters + ");") + $"customerid=in=(0)";
-                }
             }
 
             var customeFields = "";
@@ -131,13 +100,13 @@ namespace Demo.Infrastructure.Repositories
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && !foundAddressFilter && retVal.Count != 0)
             {
-                addressParts.Filters = $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
+                addressParts.Filters = (string.IsNullOrEmpty(addressParts.Filters) ? "" : "(" + addressParts.Filters + ");") + $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
                 addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
             }
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders") && !foundSalesOrderFilter && retVal.Count != 0)
             {
-                salesorderParts.Filters = $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
+                salesorderParts.Filters = (string.IsNullOrEmpty(salesorderParts.Filters) ? "" : "(" + salesorderParts.Filters + ");") + $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
                 salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
             }
 
@@ -153,6 +122,7 @@ namespace Demo.Infrastructure.Repositories
             }
             responseModel.Data = retVal;
             responseModel.TotalRecords = customerResponse.TotalRecords;
+            responseModel.Responsefields = fields;
             return responseModel;
         }
     }

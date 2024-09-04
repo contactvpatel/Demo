@@ -1,4 +1,6 @@
-﻿namespace Demo.Core.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Demo.Core.Models
 {
     public partial class SalesOrderDetailResponse
     {
@@ -11,6 +13,7 @@
         public decimal LineTotal { get; set; }
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
+        [JsonIgnore]
         public dynamic Product { get; set; }
     }
 }

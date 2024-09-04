@@ -86,13 +86,16 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
+            HttpResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
-            dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal, fields ?? "");
-            return dynamicResponse;
+            httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
+            httpResponseModel.TotalRecords = retVal.TotalRecords;
+            return httpResponseModel;
         }
 
         public async Task<ListResponseToModel<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
+            fields = string.IsNullOrEmpty(fields) ? string.Join(",", _responseToDynamic.GetPropertyNames<ProductResponseModel>().ToArray()) : fields;
             ListResponseToModel<ProductResponseModel> listResponseToModel = new();
             IQueryable<ProductResponseModel> result = _demoReadContext.Products
                                                 .Select(data => new ProductResponseModel()
@@ -118,6 +121,7 @@ namespace Demo.Infrastructure.Repositories
             var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse.Data))) ?? new List<ProductResponseModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = productResponse.TotalRecords;
+            listResponseToModel.Responsefields = fields;
             return listResponseToModel;
         }
     }
