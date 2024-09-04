@@ -153,7 +153,7 @@
                         }
                         else if (propertyType == typeof(decimal))
                         {
-                            value = $"new int[] {{ {string.Join(", ", values)} }}";
+                            value = $"new decimal[] {{ {string.Join(", ", values)} }}";
                         }
                         else
                         {
