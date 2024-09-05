@@ -75,25 +75,10 @@ namespace Demo.Infrastructure.Repositories
             List<CustomerAddressModel> addressDetails = new List<CustomerAddressModel>();
             List<SalesOrderHeaderModel> salesOrders = new List<SalesOrderHeaderModel>();
 
-            var foundAddressFilter = false;
-            var foundSalesOrderFilter = false;
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
-            /*Address Detail add*/
-            if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses"))
-            {
-                fields = string.Concat(fields, ",CustomerAddresses");
-                addressParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "customeraddresses") ?? new SubQueryParam();
-            }
-
-            // /*Sales Order Detail add*/
-            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders"))
-            {
-                fields = string.Concat(fields, ",SalesOrderHeaders");
-                salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
-            }
 
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
@@ -103,14 +88,21 @@ namespace Demo.Infrastructure.Repositories
             var customerResponse = await _responseToDynamic.ContextResponse<CustomerModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse.Data))) ?? new List<CustomerModel>();
 
-            if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && !foundAddressFilter && retVal.Count != 0)
+
+            if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && retVal.Count != 0)
             {
+                fields = string.Concat(fields, ",CustomerAddresses");
+                addressParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "customeraddresses") ?? new SubQueryParam();
+
                 addressParts.Filters = (string.IsNullOrEmpty(addressParts.Filters) ? "" : "(" + addressParts.Filters + ");") + $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
                 addressDetails = (await _addressRepository.Get(addressParts.Fields ?? "", addressParts.Filters ?? "")).Data;
             }
 
-            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders") && !foundSalesOrderFilter && retVal.Count != 0)
+            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderheaders") && retVal.Count != 0)
             {
+                fields = string.Concat(fields, ",SalesOrderHeaders");
+                salesorderParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderheaders") ?? new SubQueryParam();
+
                 salesorderParts.Filters = (string.IsNullOrEmpty(salesorderParts.Filters) ? "" : "(" + salesorderParts.Filters + ");") + $"customerid=in=({string.Join(",", retVal.Select(x => x.CustomerId).ToArray())})";
                 salesOrders = (await _salesOrderHeaderRepository.Get(salesorderParts.Fields ?? "", salesorderParts.Filters ?? "", salesorderParts.Include ?? "")).Data;
             }
