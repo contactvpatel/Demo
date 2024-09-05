@@ -204,12 +204,76 @@ namespace Demo.Util.FIQL
             return responseToDynamicModel;
         }
 
+        string SortFieldsMapingName<T>(string sort)
+        {
+            string retValue = string.Empty;
+
+            var properties = typeof(T).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+            Dictionary<string, string> sortFields = sort
+                .Split(',')
+                .Select(x => x.Trim())
+                .ToDictionary(
+                    x => x,
+                    x => x.Replace(" desc", "").Replace(" asc", "").Trim()
+                );
+
+            foreach (var property in sortFields)
+            {
+                var prop = properties
+                    .Where(x => x.Name.Equals(property.Value, StringComparison.CurrentCultureIgnoreCase))
+                    .FirstOrDefault();
+
+                if (prop != null)
+                {
+                    var attribute = prop.GetCustomAttributes(typeof(FilterMappingAttribute), false)
+                                        .FirstOrDefault() as FilterMappingAttribute;
+
+                    if (attribute != null)
+                    {
+                        if (property.Key.EndsWith("desc", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            retValue += $"{attribute.ColumnName} desc, ";
+                        }
+                        else if (property.Key.EndsWith("asc", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            retValue += $"{attribute.ColumnName} asc, ";
+                        }
+                        else
+                        {
+                            retValue += $"{attribute.ColumnName}, ";
+                        }
+                    }
+                    else
+                    {
+                        if (property.Key.EndsWith("desc", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            retValue += $"{property.Value} desc, ";
+                        }
+                        else if (property.Key.EndsWith("asc", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            retValue += $"{property.Value} asc, ";
+                        }
+                        else
+                        {
+                            retValue += $"{property.Value}, ";
+                        }
+                    }
+                }
+            }
+
+            retValue = retValue.TrimEnd(',', ' ');
+
+            return retValue;
+        }
+
         public async Task<ResponseToDynamicModelDapper<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
+
             ResponseToDynamicModelDapper<T> responseToDynamicModel = new ResponseToDynamicModelDapper<T>();
             var filtersAndProperties = ConvertFiqlToDapper.FiqlToDapper<T>(filters ?? "");
             filters = filtersAndProperties.Filters;
-
+            sort = SortFieldsMapingName<T>(sort);
             // Modify the query with filters, sorting, and pagination
             if (!string.IsNullOrEmpty(filters))
             {
