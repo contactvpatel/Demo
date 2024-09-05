@@ -1,25 +1,57 @@
-﻿namespace Demo.Core.Models
+﻿using Demo.Util.FIQL;
+
+namespace Demo.Core.Models
 {
+
     public class ProductResponseModel
     {
+        [FilterMapping("a.ProductID")]
         public int ProductId { get; set; }
+
+        [FilterMapping("a.[Name]")]
         public string Name { get; set; } = null!;
+
+        [FilterMapping("a.ProductNumber")]
         public string ProductNumber { get; set; } = null!;
+
+        [FilterMapping("a.Color")]
         public string Color { get; set; }
+
+        [FilterMapping("a.StandardCost")]
         public decimal StandardCost { get; set; }
+
+        [FilterMapping("a.ListPrice")]
         public decimal ListPrice { get; set; }
+
+        [FilterMapping("a.Size")]
         public string Size { get; set; }
+
+        [FilterMapping("a.[Weight]")]
         public decimal? Weight { get; set; }
+
+        [FilterMapping("b.[Name]")]
         public string ProductCategory { get; set; }
+
+        [FilterMapping("c.[Name]")]
         public string ProductModel { get; set; }
+
+        [FilterMapping("a.SellStartDate")]
         public DateTime SellStartDate { get; set; }
+
+        [FilterMapping("a.SellEndDate")]
         public DateTime? SellEndDate { get; set; }
+
+        [FilterMapping("a.DiscontinuedDate")]
         public DateTime? DiscontinuedDate { get; set; }
-        //public byte[]? ThumbNailPhoto { get; set; }
+
+        [FilterMapping("a.ThumbnailPhotoFileName")]
         public string ThumbnailPhotoFileName { get; set; }
+
+        [FilterMapping("a.rowguid")]
         public Guid Rowguid { get; set; }
+
+        [FilterMapping("a.ModifiedDate")]
         public DateTime ModifiedDate { get; set; }
-        public ProductCategoryModel Category { get; set; }
     }
 
     public static class ProductResponseModelFieldsMapping

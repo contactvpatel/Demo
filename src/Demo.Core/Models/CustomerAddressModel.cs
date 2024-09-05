@@ -1,16 +1,28 @@
-﻿namespace Demo.Core.Models
+﻿using Demo.Util.FIQL;
+
+namespace Demo.Core.Models
 {
     public partial class CustomerAddressModel
     {
+        [FilterMapping("a.CustomerId")]
         public int CustomerId { get; set; }
+        [FilterMapping("a.AddressId")]
         public int AddressId { get; set; }
+        [FilterMapping("b.AddressLine1")]
         public string AddressLine1 { get; set; } = null!;
+        [FilterMapping("b.AddressLine2")]
         public string AddressLine2 { get; set; }
+        [FilterMapping("b.City")]
         public string City { get; set; } = null!;
+        [FilterMapping("b.StateProvince")]
         public string StateProvince { get; set; } = null!;
+        [FilterMapping("b.CountryRegion")]
         public string CountryRegion { get; set; } = null!;
+        [FilterMapping("b.PostalCode")]
         public string PostalCode { get; set; } = null!;
+        [FilterMapping("b.Rowguid")]
         public Guid Rowguid { get; set; }
+        [FilterMapping("b.ModifiedDate")]
         public DateTime ModifiedDate { get; set; }
     }
     public static class CustomerAddressModelFieldsMapping

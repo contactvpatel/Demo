@@ -99,7 +99,19 @@
                     string op = parts[1];
                     string value = parts[2].Trim('(', ')');
 
+                    var propertie = properties.Where(x => x.Name.Equals(property, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                    if (propertie != null)
+                    {
+                        var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
+
+                        if (attribute != null)
+                        {
+                            property = attribute.ColumnName;
+                        }
+                    }
+
                     filtersAndProperties.Properties.Add(property);
+
                     string linqOp = op switch
                     {
                         "gt" => ">",
@@ -125,8 +137,7 @@
                         _ => throw new ArgumentException($"Unsupported operator: {op}")
                     };
 
-                    var propertyType = properties.Where(x => x.Name.Equals(property, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault()?.PropertyType;
-
+                    var propertyType = propertie?.PropertyType;
                     if (propertyType == null)
                         throw new ArgumentException($"Unsupported type: {op}");
 
@@ -134,7 +145,7 @@
                     {
                         var values = string.Join(",", value.Split(',')
                            .Select(v => v.Trim())
-                           .Select(v => propertyType == typeof(string) || propertyType == typeof(DateTime) ? $"\"{v}\"" : v)
+                           .Select(v => propertyType == typeof(string) || propertyType == typeof(DateTime) ? $"'{v}'" : v)
                            .ToArray());
 
                         linqOrConditions.Add($"{property} {linqOp} ({values})");
@@ -143,12 +154,12 @@
                     {
                         if (value.StartsWith('*') || value.EndsWith('*'))
                         {
-                            value = $"\"{value.Replace("*", "%")}\"";
+                            value = $"'{value.Replace("*", "%")}'";
                             linqOrConditions.Add($"{property} like ({value})");
                         }
                         else
                         {
-                            value = $"\"%{value}%\"";
+                            value = $"'%{value}%'";
                             linqOrConditions.Add($"{property} {linqOp} ({value})");
                         }
                     }
@@ -162,7 +173,7 @@
                             }
                             else
                             {
-                                value = $"\"{value}\"";
+                                value = $"'{value}'";
                                 if ("eqd,led,ged,ltd,gtd,ned".Split(',').Any(x => x.Equals(op, StringComparison.CurrentCultureIgnoreCase)))
                                     linqOrConditions.Add($"cast({property} as date) {linqOp} {value}");
                                 else
