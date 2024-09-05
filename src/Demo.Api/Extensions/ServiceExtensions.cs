@@ -16,6 +16,8 @@ using Microsoft.OpenApi.Models;
 using RestSharp;
 using StackExchange.Redis;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Data;
+using System.Data.SqlClient;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -100,6 +102,11 @@ namespace Demo.Api.Extensions
                 options.EnableDetailedErrors();
                 options.AddInterceptors(serviceProvider.GetRequiredService<QueryCountInterceptor>());
             });
+
+            // Register SqlConnection with dependency injection
+            services.AddTransient<IDbConnection>((sp) =>
+                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write))
+            );
         }
 
         public static void ConfigureCors(this IServiceCollection services)

@@ -13,4 +13,21 @@
         public Guid Rowguid { get; set; }
         public DateTime ModifiedDate { get; set; }
     }
+    public static class CustomerAddressModelFieldsMapping
+    {
+        // Dictionary to map model properties to SQL column names
+        public static Dictionary<string, string> MappingFields = new Dictionary<string, string>
+    {
+        { "CustomerId", "a.[CustomerId]" },
+        { "AddressId", "a.[AddressId]" },
+        { "AddressLine1", "b.[AddressLine1]" },
+        { "AddressLine2", "b.[AddressLine2]" },
+        { "City", "b.[City]" },
+        { "StateProvince", "b.[StateProvince]" },
+        { "CountryRegion", "b.[CountryRegion]" },
+        { "PostalCode", "b.[PostalCode]" },
+        { "Rowguid", "b.[Rowguid]" },
+        { "ModifiedDate", "b.[ModifiedDate]" }
+    };
+    }
 }

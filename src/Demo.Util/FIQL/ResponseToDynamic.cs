@@ -1,13 +1,22 @@
 using Demo.Util.Models;
+using System.Data;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using System.Data.SqlClient;
+using Dapper;
 namespace Demo.Util.FIQL
 {
     public class ResponseToDynamic : IResponseToDynamic
     {
+        private readonly IDbConnection _dbConnection;
+
+        public ResponseToDynamic(IDbConnection dbConnection)
+        {
+            _dbConnection = dbConnection;
+        }
+
         public string GetQueryParts(string query, string part)
         {
             var queryParts = SplitConditions(query, '&', '{', '}');
@@ -158,10 +167,10 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public async Task<ResponseToDynamicModel> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
             ResponseToDynamicModel responseToDynamicModel = new ResponseToDynamicModel();
-            var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq(filters ?? "");
+            var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq<T>(filters ?? "");
             filters = filtersAndProperties.Filters;
             var _filterFields = filtersAndProperties.Properties.Where(x => !string.IsNullOrEmpty(x) && !fields.Split(',').Any(y => y.ToLower() == x.ToLower())).ToList();
 
@@ -186,6 +195,42 @@ namespace Demo.Util.FIQL
             }
 
             responseToDynamicModel.Data = await result.ToDynamicListAsync();
+
+            if (!(pageNo > 0 && pageSize > 0))
+            {
+                responseToDynamicModel.TotalRecords = responseToDynamicModel.Data.Count;
+            }
+
+            return responseToDynamicModel;
+        }
+
+        public async Task<ResponseToDynamicModelDapper<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        {
+            ResponseToDynamicModelDapper<T> responseToDynamicModel = new ResponseToDynamicModelDapper<T>();
+            var filtersAndProperties = ConvertFiqlToDapper.FiqlToDapper<T>(filters ?? "");
+            filters = filtersAndProperties.Filters;
+
+            // Modify the query with filters, sorting, and pagination
+            if (!string.IsNullOrEmpty(filters))
+            {
+                query += $" WHERE {filters}";
+            }
+            if (pageNo > 0 && pageSize > 0)
+            {
+                var countQuery = $"SELECT COUNT(1) FROM ({query}) AS CountQuery";
+                responseToDynamicModel.TotalRecords = await _dbConnection.ExecuteScalarAsync<int>(countQuery);
+            }
+
+            if (!string.IsNullOrEmpty(sort))
+            {
+                query += $" ORDER BY {sort}";
+            }
+            if (pageNo > 0 && pageSize > 0)
+            {
+                query += $" OFFSET {(pageNo - 1) * pageSize} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+            }
+
+            responseToDynamicModel.Data = (await _dbConnection.QueryAsync<T>(query)).ToList();
 
             if (!(pageNo > 0 && pageSize > 0))
             {
@@ -292,6 +337,7 @@ namespace Demo.Util.FIQL
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);
         dynamic ConvertTo<T>(T retVal, string select);
-        Task<ResponseToDynamicModel> ContextResponse(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<ResponseToDynamicModelDapper<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0);
     }
 }

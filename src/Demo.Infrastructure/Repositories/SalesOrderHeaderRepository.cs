@@ -1,4 +1,5 @@
-﻿using Demo.Core.Models;
+﻿using Demo.Core.Entities;
+using Demo.Core.Models;
 using Demo.Core.Repositories;
 using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
@@ -10,7 +11,7 @@ using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
 {
-    public class SalesOrderHeaderRepository : Repository<SalesOrderHeaderModel>, ISalesOrderHeaderRepository
+    public class SalesOrderHeaderRepository : Repository<SalesOrderHeader>, ISalesOrderHeaderRepository
     {
         private readonly DemoReadContext _demoReadContext;
         private readonly DemoWriteContext _demoWriteContext;
@@ -41,7 +42,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<SalesOrderHeaderModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ?  _responseToDynamic.GetPropertyNamesString<SalesOrderHeaderModel>(): fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<SalesOrderHeaderModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<SalesOrderHeaderModel>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
@@ -73,27 +74,23 @@ namespace Demo.Infrastructure.Repositories
                                                                 Rowguid = data.Rowguid,
                                                                 ModifiedDate = data.ModifiedDate
                                                             });
-            var foundSalesOrderFilter = false;
+
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var salesorderDetailParts = new SubQueryParam();
             ListResponseToModel<SalesOrderDetailResponse> salesOrderDetails = new();
 
-            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails"))
+            var customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
+            customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
+            var query = $@"select {customeFields} From SalesLT.SalesOrderHeader with(nolock)";
+            var SalesOrderHeaderResponse = await _responseToDynamic.DapperResponse<SalesOrderHeaderModel>(query, filters, sort, pageNo, pageSize);
+
+            List<SalesOrderHeaderModel> retVal = SalesOrderHeaderResponse.Data ?? new List<SalesOrderHeaderModel>();
+
+            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails") && retVal.Count != 0)
             {
                 fields = string.Concat(fields, ",SalesOrderDetails");
                 salesorderDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "salesorderdetails") ?? new SubQueryParam();
-            }
 
-            var customeFields = "";
-            if (!string.IsNullOrEmpty(fields))
-            {
-                customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
-            }
-            var SalesOrderHeaderResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
-            List<SalesOrderHeaderModel> retVal = (JsonSerializer.Deserialize<List<SalesOrderHeaderModel>>(JsonSerializer.Serialize(SalesOrderHeaderResponse.Data))) ?? new List<SalesOrderHeaderModel>();
-
-            if (includes.Any(x => x.ObjectName?.ToLower() == "salesorderdetails") && !foundSalesOrderFilter && retVal.Count != 0)
-            {
                 salesorderDetailParts.Filters = (string.IsNullOrEmpty(salesorderDetailParts.Filters) ? "" : "(" + salesorderDetailParts.Filters + ");") + $"salesorderid=in=({string.Join(",", retVal.Select(x => x.SalesOrderId).ToArray())})";
                 salesOrderDetails = await GetSalesOrderDetail(salesorderDetailParts.Fields ?? "", salesorderDetailParts.Filters ?? "", salesorderDetailParts.Include ?? "");
             }
@@ -134,26 +131,22 @@ namespace Demo.Infrastructure.Repositories
                                                           });
 
 
-            var foundProductDetailFilter = false;
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var productDetailParts = new SubQueryParam();
             ListResponseToModel<ProductResponseModel> productDetail = new();
 
-            if (includes.Any(x => x.ObjectName?.ToLower() == "product"))
+            var customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
+            customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
+            var query = $@"select {customeFields} From SalesLT.SalesOrderDetail with(nolock)";
+            var salesOrderDetailResponse = await _responseToDynamic.DapperResponse<SalesOrderDetailResponse>(query, filters, sort, pageNo, pageSize);
+
+            List<SalesOrderDetailResponse> retVal = salesOrderDetailResponse.Data ?? new List<SalesOrderDetailResponse>();
+
+            if (includes.Any(x => x.ObjectName?.ToLower() == "product") && retVal.Count != 0)
             {
                 fields = string.Concat(fields, ",Product");
                 productDetailParts = includes.FirstOrDefault(x => x.ObjectName?.ToLower() == "product") ?? new SubQueryParam();
-            }
-            var customeFields = "";
-            if (!string.IsNullOrEmpty(fields))
-            {
-                customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
-            }
-            var salesOrderDetailResponse = await _responseToDynamic.ContextResponse(result, customeFields, filters, sort, pageNo, pageSize);
-            List<SalesOrderDetailResponse> retVal = (JsonSerializer.Deserialize<List<SalesOrderDetailResponse>>(JsonSerializer.Serialize(salesOrderDetailResponse.Data))) ?? new List<SalesOrderDetailResponse>();
 
-            if (includes.Any(x => x.ObjectName?.ToLower() == "product") && !foundProductDetailFilter && retVal.Count != 0)
-            {
                 productDetailParts.Filters = (string.IsNullOrEmpty(productDetailParts.Filters) ? "" : "(" + productDetailParts.Filters + ");") + $"productid=in=({string.Join(",", retVal.Select(x => x.ProductId).ToArray())})";
                 productDetail = await _productRepository.Get(productDetailParts.Fields ?? "", productDetailParts.Filters ?? "", productDetailParts.Include ?? "");
             }

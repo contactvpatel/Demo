@@ -95,7 +95,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ListResponseToModel<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ?  _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<ProductResponseModel>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
@@ -121,8 +121,15 @@ namespace Demo.Infrastructure.Repositories
                                                     Rowguid = data.Rowguid,
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
-            var productResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
-            var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse.Data))) ?? new List<ProductResponseModel>();
+
+            var customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => fields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
+            var query = $@"select {customeFields}
+                        From SalesLT.Product a with(nolock)
+                        left join SalesLT.ProductCategory b with(nolock) on b.ProductCategoryID = a.ProductCategoryID
+                        left join SalesLT.ProductModel c with(nolock) on c.ProductModelID = a.ProductModelID";
+            var productResponse = await _responseToDynamic.DapperResponse<ProductResponseModel>(query, filters, sort, pageNo, pageSize);
+
+            var retVal = productResponse.Data ?? new List<ProductResponseModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = productResponse.TotalRecords;
             listResponseToModel.Responsefields = fields;

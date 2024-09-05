@@ -28,4 +28,9 @@ namespace Demo.Util.Models
         public dynamic Data { get; set; }
         public int TotalRecords { get; set; }
     }
+    public class ResponseToDynamicModelDapper<T>
+    {
+        public List<T> Data { get; set; }
+        public int TotalRecords { get; set; }
+    }
 }

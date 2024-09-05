@@ -8,6 +8,7 @@ using Demo.Util.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
@@ -64,8 +65,14 @@ namespace Demo.Infrastructure.Repositories
                                   StateProvince = data.Address.StateProvince,
                               });
 
-            var addressResponse = await _responseToDynamic.ContextResponse(result, fields, filters, sort, pageNo, pageSize);
-            var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse.Data))) ?? new List<CustomerAddressModel>();
+            var customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => fields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
+            
+            var query = $@"select {customeFields}
+                            From SalesLT.CustomerAddress a with(nolock)
+                            left join SalesLT.[Address] b with(nolock) on a.AddressID = b.AddressID";
+            var addressResponse = await _responseToDynamic.DapperResponse<CustomerAddressModel>(query, filters, sort, pageNo, pageSize);
+
+            var retVal = addressResponse.Data ?? new List<CustomerAddressModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = addressResponse.TotalRecords;
             listResponseToModel.Responsefields = fields;
@@ -73,4 +80,3 @@ namespace Demo.Infrastructure.Repositories
         }
     }
 }
-

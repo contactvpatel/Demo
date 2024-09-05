@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Demo.Core.Models
 {
-    public partial class SalesOrderHeaderModel : Entity
+    public partial class SalesOrderHeaderModel
     {
         public int SalesOrderId { get; set; }
         public byte RevisionNumber { get; set; }
