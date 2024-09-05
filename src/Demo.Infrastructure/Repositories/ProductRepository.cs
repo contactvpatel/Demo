@@ -122,7 +122,8 @@ namespace Demo.Infrastructure.Repositories
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
 
-            var customeFields = string.Join(",", ProductResponseModelFieldsMapping.MappingFields.Where(x => fields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
+            var customeFields = (fields.Split(',').Any(x => "productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,") + fields;
+            customeFields = string.Join(",", ProductResponseModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
             var query = $@"select {customeFields}
                         From SalesLT.Product a with(nolock)
                         left join SalesLT.ProductCategory b with(nolock) on b.ProductCategoryID = a.ProductCategoryID

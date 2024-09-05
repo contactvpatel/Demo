@@ -65,7 +65,8 @@ namespace Demo.Infrastructure.Repositories
                                   StateProvince = data.Address.StateProvince,
                               });
 
-            var customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => fields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
+            var customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
+            customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
             
             var query = $@"select {customeFields}
                             From SalesLT.CustomerAddress a with(nolock)
