@@ -103,11 +103,6 @@ namespace Demo.Api.Extensions
                 options.AddInterceptors(serviceProvider.GetRequiredService<QueryCountInterceptor>());
             });
 
-            // Register SqlConnection with dependency injection
-            services.AddTransient<IDbConnection>((sp) =>
-                new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write))
-            );
-
             // Register IDbConnection with QueryCountingInterceptor wrapper
             services.AddScoped<IDbConnection>(serviceProvider =>
             {
