@@ -9,6 +9,7 @@
             if (string.IsNullOrEmpty(fiql)) { return filtersAndProperties; }
 
             fiql = fiql.Replace("\\", "\\\\");
+            fiql = fiql.Replace("'", "");
             fiql = fiql.Replace(">=", "=ge=");
             fiql = fiql.Replace("<=", "=le=");
             fiql = fiql.Replace("!=", "=ne=");
@@ -155,7 +156,7 @@
                         if (value.StartsWith('*') || value.EndsWith('*'))
                         {
                             value = $"'{value.Replace("*", "%")}'";
-                            linqOrConditions.Add($"{property} like ({value})");
+                            linqOrConditions.Add($"{property} {linqOp} ({value})");
                         }
                         else
                         {
