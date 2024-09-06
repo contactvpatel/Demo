@@ -107,6 +107,15 @@ namespace Demo.Api.Extensions
             services.AddTransient<IDbConnection>((sp) =>
                 new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write))
             );
+
+            // Register IDbConnection with QueryCountingInterceptor wrapper
+            services.AddScoped<IDbConnection>(serviceProvider =>
+            {
+                // Get the original connection (e.g., SqlConnection)
+                var originalConnection = new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write));
+                // Wrap it with the QueryCountingInterceptor
+                return new DbConnectionInterceptors(originalConnection);
+            });
         }
 
         public static void ConfigureCors(this IServiceCollection services)

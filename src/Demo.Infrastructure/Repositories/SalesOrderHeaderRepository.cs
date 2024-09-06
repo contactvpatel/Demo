@@ -47,6 +47,10 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
+            if ((pageNo > 0 && pageSize > 0) && string.IsNullOrEmpty(sort))
+            {
+                throw new ApplicationException($"Sort parameter are required");
+            }
             ListResponseToModel<SalesOrderHeaderModel> listResponseToModel = new();
             IQueryable<SalesOrderHeaderModel> result = _demoReadContext.SalesOrderHeaders
                                                             .Select(data => new SalesOrderHeaderModel()

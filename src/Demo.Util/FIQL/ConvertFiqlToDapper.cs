@@ -8,7 +8,6 @@
 
             if (string.IsNullOrEmpty(fiql)) { return filtersAndProperties; }
 
-            fiql = fiql.Replace("\\", "\\\\");
             fiql = fiql.Replace("'", "");
             fiql = fiql.Replace(">=", "=ge=");
             fiql = fiql.Replace("<=", "=le=");

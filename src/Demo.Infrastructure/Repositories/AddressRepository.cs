@@ -49,6 +49,10 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
+             if ((pageNo > 0 && pageSize > 0) && string.IsNullOrEmpty(sort))
+            {
+                throw new ApplicationException($"Sort parameter are required");
+            }
             ListResponseToModel<CustomerAddressModel> listResponseToModel = new();
             IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
                               .Select(data => new CustomerAddressModel()

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Data;
+using System.Net;
 using Demo.Util.FIQL;
 using Demo.Util.Models;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace Demo.Api.Middleware
             _env = env;
         }
 
-        public async Task Invoke(HttpContext context, QueryTrackerService queryTracker)
+        public async Task Invoke(HttpContext context, IDbConnection dbConnection)
         {
             var originalBodyStream = context.Response.Body;
             using (var responseBody = new MemoryStream())
@@ -49,12 +50,16 @@ namespace Demo.Api.Middleware
                         var includeSqlQueryCount = context.Request.Query.Any(x => x.Key.ToLower() == "include" && x.Value.ToString().ToLower().Contains("sqlquerycount"));
                         if (includeSqlQueryCount)
                         {
+                            int queryCount = 0;
+                            if (dbConnection is DbConnectionInterceptors countingConnection)
+                                queryCount = countingConnection.GetQueryCount();
+
                             var modifiedResponse = new
                             {
                                 originalResponse.Status,
                                 originalResponse.Message,
                                 originalResponse.TotalRecords,
-                                SqlQueryCount = queryTracker.QueryCount,
+                                SqlQueryCount = queryCount,
                                 originalResponse.Data
                             };
                             // Serialize the modified response and write it back to the response body
