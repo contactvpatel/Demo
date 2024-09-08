@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Demo.Util\Demo.Util.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
 </Project>

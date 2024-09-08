@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using AutoMapper;
 using Demo.Api.Attributes;
+using Demo.Api.Filters;
 using Demo.Business.Interfaces;
 using Demo.Util.FIQL;
 using Demo.Util.Models;
@@ -27,7 +28,8 @@ namespace Demo.Api.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpGet("GetDynamic")]
+        [HttpGet]
+        [AsmAuthorization(ModuleCode.Product, AccessType.View)]
         public async Task<ActionResult<ResponseModel>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _productService.Get(queryParam);

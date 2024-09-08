@@ -235,11 +235,10 @@ namespace Demo.Api.Filters
 
     public enum ModuleCode
     {
-        [Description("PROD")] Product,
-        [Description("CATE")] Category,
-        [Description("ADDR")] Address,
         [Description("CUST")] Customer,
-        [Description("SAOR")] SalesOrderHeader
+        [Description("ADDR")] Address,
+        [Description("SAOR")] SalesOrderHeader,
+        [Description("PROD")] Product
     }
 
     public enum AccessType
