@@ -33,23 +33,23 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            HttpResponseModel httpResponseModel = new();
+            ResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return httpResponseModel;
         }
 
-        public async Task<ListResponseToModel<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ResponseModelList<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<CustomerModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<CustomerModel>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
-            ListResponseToModel<CustomerModel> responseModel = new();
+            ResponseModelList<CustomerModel> responseModel = new();
             responseModel.Data = new List<CustomerModel>();
 
             IQueryable<CustomerModel> result = _demoReadContext.Customers.Select(data => new CustomerModel()
@@ -68,26 +68,24 @@ namespace Demo.Infrastructure.Repositories
                 Rowguid = data.Rowguid,
                 SalesPerson = data.SalesPerson,
                 Suffix = data.Suffix,
-                Title = data.Title,
-                RollNo = data.RollNo
+                Title = data.Title
             });
 
-            List<CustomerAddressModel> addressDetails = new List<CustomerAddressModel>();
-            List<SalesOrderHeaderModel> salesOrders = new List<SalesOrderHeaderModel>();
+            List<CustomerAddressModel> addressDetails = new();
+            List<SalesOrderHeaderModel> salesOrders = new();
 
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
-
 
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
             {
                 customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
             }
+            
             var customerResponse = await _responseToDynamic.ContextResponse<CustomerModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse.Data))) ?? new List<CustomerModel>();
-
 
             if (includes.Any(x => x.ObjectName?.ToLower() == "customeraddresses") && retVal.Count != 0)
             {

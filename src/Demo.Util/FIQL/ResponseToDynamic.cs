@@ -158,9 +158,9 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public async Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
-            ResponseToDynamicModel responseToDynamicModel = new ResponseToDynamicModel();
+            DynamicResponseModel responseToDynamicModel = new DynamicResponseModel();
             var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq<T>(filters ?? "");
             filters = filtersAndProperties.Filters;
             var _filterFields = filtersAndProperties.Properties.Where(x => !string.IsNullOrEmpty(x) && !fields.Split(',').Any(y => y.ToLower() == x.ToLower())).ToList();
@@ -292,6 +292,6 @@ namespace Demo.Util.FIQL
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);
         dynamic ConvertTo<T>(T retVal, string select);
-        Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
     }
 }

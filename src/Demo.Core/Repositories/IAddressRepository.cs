@@ -5,7 +5,7 @@ namespace Demo.Core.Repositories
 {
     public interface IAddressRepository
     {
-        Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0);
-        Task<ListResponseToModel<CustomerAddressModel>> Get(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0);
+        Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0);
+        Task<ResponseModelList<CustomerAddressModel>> Get(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0);
     }
 }

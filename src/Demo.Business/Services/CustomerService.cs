@@ -63,7 +63,7 @@ namespace Demo.Business.Services
             _logger.LogInformationExtension($"Customer successfully deleted.");
         }
 
-        public async Task<HttpResponseModel> Get(QueryParam queryParam)
+        public async Task<ResponseModel> Get(QueryParam queryParam)
         {
             return await _customerRepository.GetDynamic(queryParam.Fields, queryParam.Filters, queryParam.Include, queryParam.Sort, queryParam.PageNo, queryParam.PageSize);
         }

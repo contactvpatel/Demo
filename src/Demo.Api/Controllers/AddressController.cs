@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers
 {
-    [Route("/addresses")]
+    [Route("api/v{version:apiVersion}/addresses")]
     [ApiController]
     [ApiVersion("1")]
     public class AddressController : Controller
@@ -30,7 +30,7 @@ namespace Demo.Api.Controllers
 
         [HttpGet]
         [AsmAuthorization(ModuleCode.Address, AccessType.View)]
-        public async Task<ActionResult<HttpResponseModel>> Get([FromQuery] QueryParam queryParam)
+        public async Task<ActionResult<ResponseModel>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _addressService.Get(queryParam);
             return Ok(response);

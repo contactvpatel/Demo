@@ -29,9 +29,9 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            HttpResponseModel httpResponseModel = new();
+            ResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.Data = dynamicResponse;
@@ -39,14 +39,14 @@ namespace Demo.Infrastructure.Repositories
             return dynamicResponse;
         }
 
-        public async Task<ListResponseToModel<SalesOrderHeaderModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ResponseModelList<SalesOrderHeaderModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<SalesOrderHeaderModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<SalesOrderHeaderModel>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
-            ListResponseToModel<SalesOrderHeaderModel> listResponseToModel = new();
+            ResponseModelList<SalesOrderHeaderModel> listResponseToModel = new();
             IQueryable<SalesOrderHeaderModel> result = _demoReadContext.SalesOrderHeaders
                                                             .Select(data => new SalesOrderHeaderModel()
                                                             {
@@ -76,7 +76,7 @@ namespace Demo.Infrastructure.Repositories
 
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var salesorderDetailParts = new SubQueryParam();
-            ListResponseToModel<SalesOrderDetailResponse> salesOrderDetails = new();
+            ResponseModelList<SalesOrderDetailResponse> salesOrderDetails = new();
 
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))
@@ -108,14 +108,14 @@ namespace Demo.Infrastructure.Repositories
             return listResponseToModel;
         }
 
-        public async Task<ListResponseToModel<SalesOrderDetailResponse>> GetSalesOrderDetail(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseModelList<SalesOrderDetailResponse>> GetSalesOrderDetail(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<SalesOrderDetailResponse>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<SalesOrderDetailResponse>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
-            ListResponseToModel<SalesOrderDetailResponse> listResponseToModel = new();
+            ResponseModelList<SalesOrderDetailResponse> listResponseToModel = new();
             IQueryable<SalesOrderDetailResponse> result = _demoReadContext.SalesOrderDetails
                                                           .Select(data => new SalesOrderDetailResponse()
                                                           {
@@ -133,7 +133,7 @@ namespace Demo.Infrastructure.Repositories
 
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var productDetailParts = new SubQueryParam();
-            ListResponseToModel<ProductResponseModel> productDetail = new();
+            ResponseModelList<ProductResponseModel> productDetail = new();
 
             var customeFields = "";
             if (!string.IsNullOrEmpty(fields))

@@ -80,7 +80,6 @@ public partial class Customer : Entity
     /// Date and time the record was last updated.
     /// </summary>
     public DateTime ModifiedDate { get; set; }
-    public long? RollNo { get; set; }
 
     public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; } = new List<CustomerAddress>();
 

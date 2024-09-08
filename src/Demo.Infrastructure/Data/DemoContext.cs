@@ -186,7 +186,6 @@ namespace Demo.Infrastructure.Data
                 entity.Property(e => e.Title)
                     .HasMaxLength(8)
                     .HasComment("A courtesy title. For example, Mr. or Ms.");
-                entity.Property(e => e.RollNo);
             });
 
             modelBuilder.Entity<CustomerAddress>(entity =>

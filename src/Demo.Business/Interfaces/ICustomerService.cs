@@ -6,7 +6,7 @@ namespace Demo.Business.Interfaces
 {
     public interface ICustomerService
     {
-        Task<HttpResponseModel> Get(QueryParam queryParam);
+        Task<ResponseModel> Get(QueryParam queryParam);
         Task<CustomerModel> GetById(int id);
         Task<CustomerModel> Create(CustomerModel customerModel);
         Task Update(CustomerModel customerModel);
