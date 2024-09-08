@@ -9,7 +9,7 @@ namespace Demo.Api.Controllers
     /// <summary>
     /// MIS Controller. 
     /// </summary>
-    [Route("/mis")]
+    [Route("api/v{version:apiVersion}/mis")]
     [ApiController]
     [ApiVersion("1")]
     public class MisController : ControllerBase

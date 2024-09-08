@@ -7,7 +7,6 @@ using Demo.Util.FIQL;
 using Demo.Util.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
 {
@@ -30,70 +29,16 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        /* DbContext
-         
-         _demoReadContext -> Use for all read operation (Get)
-         _demoWriteContext -> Use for all write operation (Create, Update. Delete)
-
-         */
-
-        public async Task<PagedList<Product>> Get(PaginationQuery paginationQuery)
+        public async Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            // Option 1: Using Specification & Generic Repository (EFCore)
-            //var spec = new ProductSpecification();
-            //return await GetAsync(spec);
-
-            // Option 2: Using Repository Generic Method - GetAllAsync (EFCore)
-            //return await GetAllAsync();
-
-            // Option 3: Using Repository Generic Method with Category Include and Disable Tracking - GetAsync Overloaded Method (EFCore)
-            //return await GetAsync(null, null, "Category", true);
-
-            // Option 4: Using Repository Generic Method with Category Include, Disable Tracking & Order By Product Name - GetAsync Overloaded Method (EFCore)
-            //return await GetAsync(null, o => o.OrderBy(s => s.Name), "Category", true);
-
-            // Option 5: Using Raw SQL (EFCore)
-            //return await _demoReadContext.Products.FromSqlRaw("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT").ToListAsync();
-
-            // Option 5: Using Repository Generic Method with QueryAsync (Dapper)
-            // return await QueryAsync<Product>("SELECT ProductId, Name, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryId FROM PRODUCT");
-
-            // Option 6: Standard EFCore Way
-
-            return null;
-
-            //var pagedData = await _demoReadContext.Products
-            //    .Include(x => x.Category)
-            //    .OrderBy(x => x.ProductId)
-            //    .Skip((paginationQuery.PageNumber - 1) * paginationQuery.PageSize)
-            //    .Take(paginationQuery.PageSize)
-            //    .ToListAsync();
-
-            //var totalRecords = paginationQuery.IncludeTotalCount ? await _demoReadContext.Products.CountAsync() : 0;
-
-            //return new PagedList<Product>(pagedData, totalRecords, paginationQuery.PageNumber,
-            //    paginationQuery.PageSize);
-        }
-
-        public async Task<IEnumerable<Product>> GetByCategoryId(int categoryId)
-        {
-            //return await _demoReadContext.Products
-            //    .Where(x => x.CategoryId == categoryId)
-            //    .Include(x => x.Category)
-            //    .ToListAsync();
-            return null;
-        }
-
-        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
-        {
-            HttpResponseModel httpResponseModel = new();
+            ResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return httpResponseModel;
         }
 
-        public async Task<ListResponseToModel<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ResponseModelList<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<ProductResponseModel>(fields, out var missingFields))
@@ -104,7 +49,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"Sort parameter are required");
             }
-            ListResponseToModel<ProductResponseModel> listResponseToModel = new();
+            ResponseModelList<ProductResponseModel> listResponseToModel = new();
             IQueryable<ProductResponseModel> result = _demoReadContext.Products
                                                 .Select(data => new ProductResponseModel()
                                                 {

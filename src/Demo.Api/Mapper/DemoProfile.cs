@@ -8,12 +8,6 @@ namespace Demo.Api.Mapper
     {
         public DemoProfile()
         {
-            CreateMap<CategoryRequestModel, CategoryModel>();
-            CreateMap<CategoryModel, CategoryResponseModel>();
-
-            CreateMap<ProductRequestModel, ProductModel>();
-            CreateMap<ProductModel, ProductResponseModel>();
-
             CreateMap<CustomerRequestModel, CustomerModel>();
             CreateMap<CustomerModel, CustomerResponseModel>();
         }

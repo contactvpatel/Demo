@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Demo.Business.Models;
 using Demo.Core.Entities;
 using Demo.Core.Models;
 
@@ -27,9 +26,7 @@ namespace Demo.Business.Mapper
     {
         public DemoDtoMapper()
         {
-            CreateMap<Product, Models.ProductModel>().ReverseMap();
             CreateMap<Customer, Models.CustomerModel>().ReverseMap();
-            CreateMap<Category, CategoryModel>().ReverseMap();
             CreateMap(typeof(PagedList<>), typeof(PagedList<>)).ConvertUsing(typeof(PagedListConverter<,>));
         }
     }

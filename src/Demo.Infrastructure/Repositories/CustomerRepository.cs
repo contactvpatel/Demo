@@ -5,10 +5,8 @@ using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
 using Demo.Util.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
 {
@@ -33,16 +31,16 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            HttpResponseModel httpResponseModel = new();
+            ResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             httpResponseModel.Data = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.TotalRecords = retVal.TotalRecords;
             return httpResponseModel;
         }
 
-        public async Task<ListResponseToModel<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ResponseModelList<CustomerModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<CustomerModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<CustomerModel>(fields, out var missingFields))
@@ -53,9 +51,10 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"Sort parameter are required");
             }
-            ListResponseToModel<CustomerModel> responseModel = new();
-            responseModel.Data = new List<CustomerModel>();
-
+            ResponseModelList<CustomerModel> responseModel = new()
+            {
+                Data = new List<CustomerModel>()
+            };
 
             IQueryable<CustomerModel> result = _demoReadContext.Customers.Select(data => new CustomerModel()
             {
@@ -76,15 +75,14 @@ namespace Demo.Infrastructure.Repositories
                 Title = data.Title
             });
 
-            List<CustomerAddressModel> addressDetails = new List<CustomerAddressModel>();
-            List<SalesOrderHeaderModel> salesOrders = new List<SalesOrderHeaderModel>();
+            List<CustomerAddressModel> addressDetails = new();
+            List<SalesOrderHeaderModel> salesOrders = new();
 
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
-
-            var customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
+            var customeFields = (fields.Split(',').Any(x => x.Equals("customerid", StringComparison.CurrentCultureIgnoreCase)) ? "" : "CustomerId,") + fields;
             customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
             var query = $"SELECT {customeFields} FROM SalesLT.Customer WITH(NOLOCK)";
             var customerResponse = await _responseToDynamic.DapperResponse<CustomerModel>(query, filters, sort, pageNo, pageSize);

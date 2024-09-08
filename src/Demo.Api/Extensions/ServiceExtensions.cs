@@ -36,7 +36,6 @@ namespace Demo.Api.Extensions
             services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<ISalesOrderHeaderRepository, SalesOrderHeaderRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<Core.Services.IAsmService, Infrastructure.Services.AsmService>();
             services.AddScoped<Core.Services.IMisService, Infrastructure.Services.MisService>();
             services.AddScoped<Core.Services.ISsoService, Infrastructure.Services.SsoService>();
@@ -47,7 +46,6 @@ namespace Demo.Api.Extensions
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<ISalesOrderHeaderService, SalesOrderHeaderService>();
             services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IAsmService, AsmService>();
             services.AddScoped<IMisService, MisService>();
             services.AddScoped<ISsoService, SsoService>();
@@ -107,7 +105,7 @@ namespace Demo.Api.Extensions
             services.AddScoped<IDbConnection>(serviceProvider =>
             {
                 // Get the original connection (e.g., SqlConnection)
-                var originalConnection = new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Write));
+                var originalConnection = new SqlConnection(DbConnectionModel.CreateConnectionString(databaseConnectionSettings.Read));
                 // Wrap it with the QueryCountingInterceptor
                 return new DbConnectionInterceptors(originalConnection);
             });
@@ -129,13 +127,23 @@ namespace Demo.Api.Extensions
             services.AddApiVersioning(options =>
             {
                 options.DefaultApiVersion = new ApiVersion(1, 0);
+
                 options.AssumeDefaultVersionWhenUnspecified = true;
+
                 options.ReportApiVersions = true;
-                // Supporting multiple versioning scheme
-                // Route (api/v1/accounts)
-                // Header (x-api-version=1)
-                options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
-                    new HeaderApiVersionReader("x-api-version"));
+
+                // Allow versioning via URL and headers
+                options.ApiVersionReader = ApiVersionReader.Combine(
+                    // URL versioning (e.g., api/v1/[controller])
+                    new UrlSegmentApiVersionReader(),
+                    // Header versioning (e.g., x-app-api-version: 1)
+                    new HeaderApiVersionReader("x-app-api-version")
+                );
+
+            }).AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
             });
         }
 
@@ -147,30 +155,6 @@ namespace Demo.Api.Extensions
         private static void ConfigureSwaggerGen(SwaggerGenOptions options)
         {
             AddSwaggerDocs(options);
-
-            //options.OperationFilter<RemoveVersionFromParameter>();
-            //options.DocumentFilter<ReplaceVersionWithExactValueInPath>();
-
-            options.DocInclusionPredicate((version, desc) =>
-            {
-                if (!desc.TryGetMethodInfo(out var methodInfo))
-                    return false;
-
-                var versions = methodInfo
-                    .DeclaringType?
-                    .GetCustomAttributes(true)
-                    .OfType<ApiVersionAttribute>()
-                    .SelectMany(attr => attr.Versions);
-
-                var maps = methodInfo
-                    .GetCustomAttributes(true)
-                    .OfType<MapToApiVersionAttribute>()
-                    .SelectMany(attr => attr.Versions)
-                    .ToList();
-
-                return versions?.Any(v => $"v{v}" == version) == true
-                       && (maps.Count == 0 || maps.Any(v => $"v{v}" == version));
-            });
 
             // Add JWT Authentication
             var securityScheme = new OpenApiSecurityScheme
@@ -218,13 +202,20 @@ namespace Demo.Api.Extensions
 
             services.AddSingleton(redisCacheSettings);
 
-            services.AddStackExchangeRedisCache(options =>
+            if (redisCacheSettings.Enabled)
             {
-                options.InstanceName = redisCacheSettings.InstanceName;
-                options.ConfigurationOptions = ConfigurationOptions.Parse(redisCacheSettings.ConnectionString);
-                if (options.ConfigurationOptions != null)
-                    options.ConfigurationOptions.CertificateValidation += ValidateServerCertificate;
-            });
+                services.AddStackExchangeRedisCache(options =>
+                {
+                    options.InstanceName = redisCacheSettings.InstanceName;
+                    options.ConfigurationOptions = ConfigurationOptions.Parse(redisCacheSettings.ConnectionString);
+                    if (options.ConfigurationOptions != null)
+                        options.ConfigurationOptions.CertificateValidation += ValidateServerCertificate;
+                });
+            }
+            else
+            {
+                services.AddDistributedMemoryCache();
+            }
 
             services.AddSingleton<Core.Services.IRedisCacheService, Infrastructure.Services.RedisCacheService>();
         }

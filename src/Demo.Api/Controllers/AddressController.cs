@@ -2,14 +2,13 @@
 using AutoMapper;
 using Demo.Api.Filters;
 using Demo.Business.Interfaces;
-using Demo.Business.Models;
 using Demo.Util.FIQL;
 using Demo.Util.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demo.Api.Controllers
 {
-    [Route("/addresses")]
+    [Route("api/v{version:apiVersion}/addresses")]
     [ApiController]
     [ApiVersion("1")]
     public class AddressController : Controller
@@ -19,8 +18,7 @@ namespace Demo.Api.Controllers
         private readonly ILogger<AddressController> _logger;
         private readonly IMapper _mapper;
 
-        public AddressController(IAddressService addressService, IHttpContextAccessor httpContextAccessor,
-            ILogger<AddressController> logger, IMapper mapper)
+        public AddressController(IAddressService addressService, IHttpContextAccessor httpContextAccessor, ILogger<AddressController> logger, IMapper mapper)
         {
             _addressService = addressService ?? throw new ArgumentNullException(nameof(addressService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -30,7 +28,7 @@ namespace Demo.Api.Controllers
 
         [HttpGet]
         [AsmAuthorization(ModuleCode.Address, AccessType.View)]
-        public async Task<ActionResult<HttpResponseModel>> Get([FromQuery] QueryParam queryParam)
+        public async Task<ActionResult<ResponseModel>> Get([FromQuery] QueryParam queryParam)
         {
             var response = await _addressService.Get(queryParam);
             return Ok(response);

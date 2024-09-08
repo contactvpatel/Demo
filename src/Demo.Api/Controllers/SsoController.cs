@@ -12,7 +12,7 @@ namespace Demo.Api.Controllers
     /// SSO Controller. 
     /// Contain SSO API
     /// </summary>
-    [Route("/sso")]
+    [Route("api/v{version:apiVersion}/sso")]
     [ApiController]
     [ApiVersion("1")]
     public class SsoController : ControllerBase
@@ -21,8 +21,7 @@ namespace Demo.Api.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<MisController> _logger;
 
-        public SsoController(Business.Interfaces.ISsoService ssoService, IHttpContextAccessor httpContextAccessor,
-            ILogger<MisController> logger)
+        public SsoController(Business.Interfaces.ISsoService ssoService, IHttpContextAccessor httpContextAccessor, ILogger<MisController> logger)
         {
             _ssoService = ssoService ?? throw new ArgumentNullException(nameof(ssoService));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -43,8 +42,7 @@ namespace Demo.Api.Controllers
                 return Ok(new Response<SsoAuthModel>(ssoAuthResponse, null));
             }
 
-            return Unauthorized(new Response<bool>(false,
-                "Renew Token failed - Access Token or Refresh Token is missing"));
+            return Unauthorized(new Response<bool>(false, "Renew Token failed - Access Token or Refresh Token is missing"));
         }
 
         [HttpPost("logout", Name = "Logout")]

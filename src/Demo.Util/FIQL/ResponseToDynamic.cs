@@ -4,8 +4,8 @@ using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Data.SqlClient;
 using Dapper;
+
 namespace Demo.Util.FIQL
 {
     public class ResponseToDynamic : IResponseToDynamic
@@ -167,9 +167,9 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public async Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
-            ResponseToDynamicModel responseToDynamicModel = new ResponseToDynamicModel();
+            DynamicResponseModel responseToDynamicModel = new DynamicResponseModel();
             var filtersAndProperties = ConvertFiqlToLinq.FiqlToLinq<T>(filters ?? "");
             filters = filtersAndProperties.Filters;
             var _filterFields = filtersAndProperties.Properties.Where(x => !string.IsNullOrEmpty(x) && !fields.Split(',').Any(y => y.ToLower() == x.ToLower())).ToList();
@@ -267,10 +267,10 @@ namespace Demo.Util.FIQL
             return retValue;
         }
 
-        public async Task<ResponseToDynamicModelDapper<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0)
         {
 
-            ResponseToDynamicModelDapper<T> responseToDynamicModel = new ResponseToDynamicModelDapper<T>();
+            DynamicDapperResponseModel<T> responseToDynamicModel = new DynamicDapperResponseModel<T>();
             var filtersAndProperties = ConvertFiqlToDapper.FiqlToDapper<T>(filters ?? "");
             filters = filtersAndProperties.Filters;
             sort = SortFieldsMapingName<T>(sort);
@@ -401,7 +401,7 @@ namespace Demo.Util.FIQL
         List<SubQueryParam> ParseIncludeParameter(string include);
         dynamic ConvertTo<T>(List<T> retVal, string select);
         dynamic ConvertTo<T>(T retVal, string select);
-        Task<ResponseToDynamicModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
-        Task<ResponseToDynamicModelDapper<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0);
     }
 }

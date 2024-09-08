@@ -5,11 +5,8 @@ using Demo.Infrastructure.Data;
 using Demo.Infrastructure.Repositories.Base;
 using Demo.Util.FIQL;
 using Demo.Util.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace Demo.Infrastructure.Repositories
 {
@@ -32,9 +29,9 @@ namespace Demo.Infrastructure.Repositories
             _responseToDynamic = responseToDynamic;
         }
 
-        public async Task<HttpResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
+        public async Task<ResponseModel> GetDynamic(string fields = "", string filters = "", string include = "", string sort = "", int pageNo = 0, int pageSize = 0)
         {
-            HttpResponseModel httpResponseModel = new();
+            ResponseModel httpResponseModel = new();
             var retVal = await Get(fields ?? "", filters ?? "", include ?? "", sort ?? "", pageNo, pageSize);
             dynamic dynamicResponse = _responseToDynamic.ConvertTo(retVal.Data, retVal.Responsefields ?? "");
             httpResponseModel.Data = dynamicResponse;
@@ -42,7 +39,7 @@ namespace Demo.Infrastructure.Repositories
             return dynamicResponse;
         }
 
-        public async Task<ListResponseToModel<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
+        public async Task<ResponseModelList<CustomerAddressModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
             fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<CustomerAddressModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<CustomerAddressModel>(fields, out var missingFields))
@@ -53,7 +50,7 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"Sort parameter are required");
             }
-            ListResponseToModel<CustomerAddressModel> listResponseToModel = new();
+            ResponseModelList<CustomerAddressModel> listResponseToModel = new();
             IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
                               .Select(data => new CustomerAddressModel()
                               {
