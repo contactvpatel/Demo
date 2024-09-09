@@ -50,28 +50,7 @@ namespace Demo.Infrastructure.Repositories
                 throw new ApplicationException($"Sort parameter are required");
             }
             ResponseModelList<ProductResponseModel> listResponseToModel = new();
-            IQueryable<ProductResponseModel> result = _demoReadContext.Products
-                                                .Select(data => new ProductResponseModel()
-                                                {
-                                                    ProductId = data.ProductId,
-                                                    Name = data.Name,
-                                                    ProductNumber = data.ProductNumber,
-                                                    Color = data.Color,
-                                                    StandardCost = data.StandardCost,
-                                                    ListPrice = data.ListPrice,
-                                                    Size = data.Size,
-                                                    Weight = data.Weight,
-                                                    ProductCategory = data.ProductCategory.Name,
-                                                    ProductModel = data.ProductModel.Name,
-                                                    SellStartDate = data.SellStartDate,
-                                                    SellEndDate = data.SellEndDate,
-                                                    DiscontinuedDate = data.DiscontinuedDate,
-                                                    ThumbnailPhotoFileName = data.ThumbnailPhotoFileName,
-                                                    Rowguid = data.Rowguid,
-                                                    ModifiedDate = data.ModifiedDate,
-                                                });
-
-            var customeFields = (fields.Split(',').Any(x => "productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,") + fields;
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "ProductId");
             customeFields = string.Join(",", ProductResponseModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
             var query = $@"select {customeFields}
                         From SalesLT.Product a with(nolock)

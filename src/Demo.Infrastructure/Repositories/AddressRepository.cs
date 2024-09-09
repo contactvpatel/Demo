@@ -46,29 +46,14 @@ namespace Demo.Infrastructure.Repositories
             {
                 throw new ApplicationException($"{missingFields} column not found");
             }
-             if ((pageNo > 0 && pageSize > 0) && string.IsNullOrEmpty(sort))
+            if ((pageNo > 0 && pageSize > 0) && string.IsNullOrEmpty(sort))
             {
                 throw new ApplicationException($"Sort parameter are required");
             }
             ResponseModelList<CustomerAddressModel> listResponseToModel = new();
-            IQueryable<CustomerAddressModel> result = _demoReadContext.CustomerAddresses
-                              .Select(data => new CustomerAddressModel()
-                              {
-                                  CustomerId = data.CustomerId,
-                                  AddressId = data.AddressId,
-                                  AddressLine1 = data.Address.AddressLine1,
-                                  AddressLine2 = data.Address.AddressLine2,
-                                  City = data.Address.City,
-                                  CountryRegion = data.Address.CountryRegion,
-                                  ModifiedDate = data.Address.ModifiedDate,
-                                  PostalCode = data.Address.PostalCode,
-                                  Rowguid = data.Address.Rowguid,
-                                  StateProvince = data.Address.StateProvince,
-                              });
-
-            var customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
             customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
-            
+
             var query = $@"select {customeFields}
                             From SalesLT.CustomerAddress a with(nolock)
                             left join SalesLT.[Address] b with(nolock) on a.AddressID = b.AddressID";

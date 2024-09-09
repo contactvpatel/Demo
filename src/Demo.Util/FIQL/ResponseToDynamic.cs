@@ -391,10 +391,35 @@ namespace Demo.Util.FIQL
                 writer.WriteEndObject();
             }
         }
+
+        public string AddRequiredFields(string fields, string requiredFields)
+        {
+            // Define the required fields
+            var _requiredFields = requiredFields.Split(',');
+
+            // Convert the input fields to a list of lowercase strings for comparison
+            var fieldList = fields.Split(',')
+                                  .Select(f => f.Trim())
+                                  .ToList();
+
+            // Add the required fields if they are not present
+            foreach (var field in _requiredFields)
+            {
+                if (!fieldList.Any(x => x.Equals(field, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    fieldList.Add(field);
+                }
+            }
+
+            // Return the updated fields as a comma-separated string
+            return string.Join(",", fieldList);
+        }
+
     }
 
     public interface IResponseToDynamic
     {
+        string AddRequiredFields(string fields, string requiredFields);
         string GetPropertyNamesString<T>();
         bool TryGetMissingPropertyNames<T>(string fields, out string missingFields);
         IEnumerable<QueryIncludeModel> GetInclude(string include);

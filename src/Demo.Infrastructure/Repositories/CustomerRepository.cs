@@ -56,25 +56,6 @@ namespace Demo.Infrastructure.Repositories
                 Data = new List<CustomerModel>()
             };
 
-            IQueryable<CustomerModel> result = _demoReadContext.Customers.Select(data => new CustomerModel()
-            {
-                CustomerId = data.CustomerId,
-                CompanyName = data.CompanyName,
-                EmailAddress = data.EmailAddress,
-                FirstName = data.FirstName,
-                LastName = data.LastName,
-                MiddleName = data.MiddleName,
-                ModifiedDate = data.ModifiedDate,
-                NameStyle = data.NameStyle,
-                PasswordHash = data.PasswordHash,
-                PasswordSalt = data.PasswordSalt,
-                Phone = data.Phone,
-                Rowguid = data.Rowguid,
-                SalesPerson = data.SalesPerson,
-                Suffix = data.Suffix,
-                Title = data.Title
-            });
-
             List<CustomerAddressModel> addressDetails = new();
             List<SalesOrderHeaderModel> salesOrders = new();
 

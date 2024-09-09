@@ -52,38 +52,11 @@ namespace Demo.Infrastructure.Repositories
                 throw new ApplicationException($"Sort parameter are required");
             }
             ResponseModelList<SalesOrderHeaderModel> listResponseToModel = new();
-            IQueryable<SalesOrderHeaderModel> result = _demoReadContext.SalesOrderHeaders
-                                                            .Select(data => new SalesOrderHeaderModel()
-                                                            {
-                                                                SalesOrderId = data.SalesOrderId,
-                                                                RevisionNumber = data.RevisionNumber,
-                                                                OrderDate = data.OrderDate,
-                                                                DueDate = data.DueDate,
-                                                                ShipDate = data.ShipDate,
-                                                                Status = data.Status,
-                                                                OnlineOrderFlag = data.OnlineOrderFlag,
-                                                                SalesOrderNumber = data.SalesOrderNumber,
-                                                                PurchaseOrderNumber = data.PurchaseOrderNumber,
-                                                                AccountNumber = data.AccountNumber,
-                                                                CustomerId = data.CustomerId,
-                                                                ShipToAddressId = data.ShipToAddressId,
-                                                                BillToAddressId = data.BillToAddressId,
-                                                                ShipMethod = data.ShipMethod,
-                                                                CreditCardApprovalCode = data.CreditCardApprovalCode,
-                                                                SubTotal = data.SubTotal,
-                                                                TaxAmt = data.TaxAmt,
-                                                                Freight = data.Freight,
-                                                                TotalDue = data.TotalDue,
-                                                                Comment = data.Comment,
-                                                                Rowguid = data.Rowguid,
-                                                                ModifiedDate = data.ModifiedDate
-                                                            });
-
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var salesorderDetailParts = new SubQueryParam();
             ResponseModelList<SalesOrderDetailResponse> salesOrderDetails = new();
 
-            var customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
+            var customeFields = _responseToDynamic.AddRequiredFields(fields,"SalesOrderId,CustomerId");
             customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
             var query = $@"select {customeFields} From SalesLT.SalesOrderHeader with(nolock)";
             var SalesOrderHeaderResponse = await _responseToDynamic.DapperResponse<SalesOrderHeaderModel>(query, filters, sort, pageNo, pageSize);
@@ -120,26 +93,11 @@ namespace Demo.Infrastructure.Repositories
                 throw new ApplicationException($"{missingFields} column not found");
             }
             ResponseModelList<SalesOrderDetailResponse> listResponseToModel = new();
-            IQueryable<SalesOrderDetailResponse> result = _demoReadContext.SalesOrderDetails
-                                                          .Select(data => new SalesOrderDetailResponse()
-                                                          {
-                                                              SalesOrderId = data.SalesOrderId,
-                                                              SalesOrderDetailId = data.SalesOrderDetailId,
-                                                              OrderQty = data.OrderQty,
-                                                              ProductId = data.ProductId,
-                                                              UnitPrice = data.UnitPrice,
-                                                              UnitPriceDiscount = data.UnitPriceDiscount,
-                                                              LineTotal = data.LineTotal,
-                                                              Rowguid = data.Rowguid,
-                                                              ModifiedDate = data.ModifiedDate,
-                                                          });
-
-
             var includes = _responseToDynamic.ParseIncludeParameter(include);
             var productDetailParts = new SubQueryParam();
             ResponseModelList<ProductResponseModel> productDetail = new();
 
-            var customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "SalesOrderId,ProductId");
             customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
             var query = $@"select {customeFields} From SalesLT.SalesOrderDetail with(nolock)";
             var salesOrderDetailResponse = await _responseToDynamic.DapperResponse<SalesOrderDetailResponse>(query, filters, sort, pageNo, pageSize);
