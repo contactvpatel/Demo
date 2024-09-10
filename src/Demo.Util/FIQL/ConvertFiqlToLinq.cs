@@ -253,6 +253,11 @@
                             {
                                 linqOrConditions.Add($"{property} == null");
                             }
+                            else if (value?.ToLower() == "''")
+                            {
+                                value = $"\"\"";
+                                linqOrConditions.Add($"{property} {linqOp} {value}");
+                            }
                             else
                             {
                                 value = $"\"{value}\"";
