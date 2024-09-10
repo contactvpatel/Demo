@@ -78,11 +78,7 @@ namespace Demo.Infrastructure.Repositories
             var salesorderDetailParts = new SubQueryParam();
             ResponseModelList<SalesOrderDetailResponse> salesOrderDetails = new();
 
-            var customeFields = "";
-            if (!string.IsNullOrEmpty(fields))
-            {
-                customeFields = (fields.Split(',').Any(x => "salesorderid,customerid".Split(',').Any(y => y == x.ToLower())) ? "" : "SalesOrderId,CustomerId,") + fields;
-            }
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "SalesOrderId,CustomerId");
             var SalesOrderHeaderResponse = await _responseToDynamic.ContextResponse<SalesOrderHeaderModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderHeaderModel> retVal = (JsonSerializer.Deserialize<List<SalesOrderHeaderModel>>(JsonSerializer.Serialize(SalesOrderHeaderResponse.Data))) ?? new List<SalesOrderHeaderModel>();
 
@@ -135,11 +131,7 @@ namespace Demo.Infrastructure.Repositories
             var productDetailParts = new SubQueryParam();
             ResponseModelList<ProductResponseModel> productDetail = new();
 
-            var customeFields = "";
-            if (!string.IsNullOrEmpty(fields))
-            {
-                customeFields = (fields.Split(',').Any(x => "salesorderid,productid".Split(',').Any(y => y == x.ToLower())) ? "" : "ProductId,SalesOrderId") + fields;
-            }
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "SalesOrderId,ProductId");
             var salesOrderDetailResponse = await _responseToDynamic.ContextResponse<SalesOrderDetailResponse>(result, customeFields, filters, sort, pageNo, pageSize);
             List<SalesOrderDetailResponse> retVal = (JsonSerializer.Deserialize<List<SalesOrderDetailResponse>>(JsonSerializer.Serialize(salesOrderDetailResponse.Data))) ?? new List<SalesOrderDetailResponse>();
 

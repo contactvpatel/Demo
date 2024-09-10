@@ -64,7 +64,8 @@ namespace Demo.Infrastructure.Repositories
                                   StateProvince = data.Address.StateProvince,
                               });
 
-            var addressResponse = await _responseToDynamic.ContextResponse<CustomerAddressModel>(result, fields, filters, sort, pageNo, pageSize);
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
+            var addressResponse = await _responseToDynamic.ContextResponse<CustomerAddressModel>(result, customeFields, filters, sort, pageNo, pageSize);
             var retVal = (JsonSerializer.Deserialize<List<CustomerAddressModel>>(JsonSerializer.Serialize(addressResponse.Data))) ?? new List<CustomerAddressModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = addressResponse.TotalRecords;

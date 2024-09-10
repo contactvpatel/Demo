@@ -41,7 +41,7 @@ namespace Demo.Infrastructure.Repositories
 
         public async Task<ResponseModelList<ProductResponseModel>> Get(string fields, string filters, string include, string sort, int pageNo, int pageSize)
         {
-            fields = string.IsNullOrEmpty(fields) ?  _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
+            fields = string.IsNullOrEmpty(fields) ? _responseToDynamic.GetPropertyNamesString<ProductResponseModel>() : fields;
             if (!_responseToDynamic.TryGetMissingPropertyNames<ProductResponseModel>(fields, out var missingFields))
             {
                 throw new ApplicationException($"{missingFields} column not found");
@@ -67,7 +67,8 @@ namespace Demo.Infrastructure.Repositories
                                                     Rowguid = data.Rowguid,
                                                     ModifiedDate = data.ModifiedDate,
                                                 });
-            var productResponse = await _responseToDynamic.ContextResponse<ProductResponseModel>(result, fields, filters, sort, pageNo, pageSize);
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "ProductId");
+            var productResponse = await _responseToDynamic.ContextResponse<ProductResponseModel>(result, customeFields, filters, sort, pageNo, pageSize);
             var retVal = (JsonSerializer.Deserialize<List<ProductResponseModel>>(JsonSerializer.Serialize(productResponse.Data))) ?? new List<ProductResponseModel>();
             listResponseToModel.Data = retVal;
             listResponseToModel.TotalRecords = productResponse.TotalRecords;

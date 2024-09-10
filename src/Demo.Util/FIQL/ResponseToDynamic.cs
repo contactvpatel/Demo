@@ -1,3 +1,4 @@
+using Demo.Util.FIQL;
 using Demo.Util.Models;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
@@ -282,16 +283,40 @@ namespace Demo.Util.FIQL
                 writer.WriteEndObject();
             }
         }
-    }
+        public string AddRequiredFields(string fields, string requiredFields)
+        {
+            // Define the required fields
+            var _requiredFields = requiredFields.Split(',');
 
-    public interface IResponseToDynamic
-    {
-        string GetPropertyNamesString<T>();
-        bool TryGetMissingPropertyNames<T>(string fields, out string missingFields);
-        IEnumerable<QueryIncludeModel> GetInclude(string include);
-        List<SubQueryParam> ParseIncludeParameter(string include);
-        dynamic ConvertTo<T>(List<T> retVal, string select);
-        dynamic ConvertTo<T>(T retVal, string select);
-        Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+            // Convert the input fields to a list of lowercase strings for comparison
+            var fieldList = fields.Split(',')
+                                  .Select(f => f.Trim())
+                                  .ToList();
+
+            // Add the required fields if they are not present
+            foreach (var field in _requiredFields)
+            {
+                if (!fieldList.Any(x => x.Equals(field, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    fieldList.Add(field);
+                }
+            }
+
+            // Return the updated fields as a comma-separated string
+            return string.Join(",", fieldList);
+        }
+
     }
+}
+
+public interface IResponseToDynamic
+{
+    string GetPropertyNamesString<T>();
+    bool TryGetMissingPropertyNames<T>(string fields, out string missingFields);
+    IEnumerable<QueryIncludeModel> GetInclude(string include);
+    List<SubQueryParam> ParseIncludeParameter(string include);
+    dynamic ConvertTo<T>(List<T> retVal, string select);
+    dynamic ConvertTo<T>(T retVal, string select);
+    Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
+    string AddRequiredFields(string fields, string requiredFields);
 }

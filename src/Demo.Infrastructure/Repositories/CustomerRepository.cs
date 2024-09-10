@@ -78,12 +78,8 @@ namespace Demo.Infrastructure.Repositories
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
-            var customeFields = "";
-            if (!string.IsNullOrEmpty(fields))
-            {
-                customeFields = (fields.Split(',').Any(x => x.ToLower() == "customerid") ? "" : "CustomerId,") + fields;
-            }
-            
+
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
             var customerResponse = await _responseToDynamic.ContextResponse<CustomerModel>(result, customeFields, filters, sort, pageNo, pageSize);
             List<CustomerModel> retVal = (JsonSerializer.Deserialize<List<CustomerModel>>(JsonSerializer.Serialize(customerResponse.Data))) ?? new List<CustomerModel>();
 
