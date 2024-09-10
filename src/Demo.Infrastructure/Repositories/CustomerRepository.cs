@@ -63,7 +63,7 @@ namespace Demo.Infrastructure.Repositories
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
-            var customeFields = (fields.Split(',').Any(x => x.Equals("customerid", StringComparison.CurrentCultureIgnoreCase)) ? "" : "CustomerId,") + fields;
+            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
             customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
             var query = $"SELECT {customeFields} FROM SalesLT.Customer WITH(NOLOCK)";
             var customerResponse = await _responseToDynamic.DapperResponse<CustomerModel>(query, filters, sort, pageNo, pageSize);
