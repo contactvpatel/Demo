@@ -51,7 +51,7 @@ namespace Demo.Infrastructure.Repositories
                 throw new ApplicationException($"Sort parameter are required");
             }
             ResponseModelList<CustomerAddressModel> listResponseToModel = new();
-            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
+            var customeFields = _responseToDynamic.AddRequiredFields<CustomerAddressModel>(fields, "CustomerId");
             customeFields = string.Join(",", CustomerAddressModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
 
             var query = $@"select {customeFields}

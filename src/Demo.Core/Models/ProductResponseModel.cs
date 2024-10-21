@@ -58,22 +58,22 @@ namespace Demo.Core.Models
     {
         public static Dictionary<string, string> MappingFields = new Dictionary<string, string>
     {
-        { "ProductId", "a.[ProductID]" },
-        { "Name", "a.[Name]" },
-        { "ProductNumber", "a.[ProductNumber]" },
-        { "Color", "a.[Color]" },
-        { "StandardCost", "a.[StandardCost]" },
-        { "ListPrice", "a.[ListPrice]" },
-        { "Size", "a.[Size]" },
-        { "Weight", "a.[Weight]" },
-        { "ProductCategory", "b.[Name] AS ProductCategory" },
-        { "ProductModel", "c.[Name] AS ProductModel" },
-        { "SellStartDate", "a.[SellStartDate]" },
-        { "SellEndDate", "a.[SellEndDate]" },
-        { "DiscontinuedDate", "a.[DiscontinuedDate]" },
-        { "ThumbnailPhotoFileName", "a.[ThumbnailPhotoFileName]" },
-        { "Rowguid", "a.[rowguid]" },
-        { "ModifiedDate", "a.[ModifiedDate]" }
+        { "a.ProductId", "a.[ProductID]" },
+        { "a.Name", "a.[Name]" },
+        { "a.ProductNumber", "a.[ProductNumber]" },
+        { "a.Color", "a.[Color]" },
+        { "a.StandardCost", "a.[StandardCost]" },
+        { "a.ListPrice", "a.[ListPrice]" },
+        { "a.Size", "a.[Size]" },
+        { "a.Weight", "a.[Weight]" },
+        { "b.ProductCategory", "b.[Name] AS ProductCategory" },
+        { "c.ProductModel", "c.[Name] AS ProductModel" },
+        { "a.SellStartDate", "a.[SellStartDate]" },
+        { "a.SellEndDate", "a.[SellEndDate]" },
+        { "a.DiscontinuedDate", "a.[DiscontinuedDate]" },
+        { "a.ThumbnailPhotoFileName", "a.[ThumbnailPhotoFileName]" },
+        { "a.Rowguid", "a.[rowguid]" },
+        { "a.ModifiedDate", "a.[ModifiedDate]" }
     };
     }
 

@@ -1,4 +1,5 @@
-﻿using Demo.Core.Entities.Base;
+﻿using Demo.Core.Entities;
+using Demo.Core.Entities.Base;
 using Demo.Util.FIQL;
 using System.Text.Json.Serialization;
 
@@ -6,39 +7,41 @@ namespace Demo.Core.Models
 {
     public class CustomerModel : Entity
     {
-        [FilterMapping("CustomerId")]
+        [FilterMapping("Customer.CustomerId")]
         public int CustomerId { get; set; }
-        [FilterMapping("NameStyle")]
+        [FilterMapping("Customer.NameStyle")]
         public bool NameStyle { get; set; }
-        [FilterMapping("Title")]
+        [FilterMapping("Customer.Title")]
         public string Title { get; set; }
-        [FilterMapping("FirstName")]
+        [FilterMapping("Customer.FirstName")]
         public string FirstName { get; set; } = null!;
-        [FilterMapping("MiddleName")]
+        [FilterMapping("Customer.MiddleName")]
         public string MiddleName { get; set; }
-        [FilterMapping("LastName")]
+        [FilterMapping("Customer.LastName")]
         public string LastName { get; set; } = null!;
-        [FilterMapping("Suffix")]
+        [FilterMapping("Customer.Suffix")]
         public string Suffix { get; set; }
-        [FilterMapping("CompanyName")]
+        [FilterMapping("Customer.CompanyName")]
         public string CompanyName { get; set; }
-        [FilterMapping("SalesPerson")]
+        [FilterMapping("Customer.SalesPerson")]
         public string SalesPerson { get; set; }
-        [FilterMapping("EmailAddress")]
+        [FilterMapping("Customer.EmailAddress")]
         public string EmailAddress { get; set; }
-        [FilterMapping("Phone")]
+        [FilterMapping("Customer.Phone")]
         public string Phone { get; set; }
-        [FilterMapping("PasswordHash")]
+        [FilterMapping("Customer.PasswordHash")]
         public string PasswordHash { get; set; } = null!;
-        [FilterMapping("PasswordSalt")]
+        [FilterMapping("Customer.PasswordSalt")]
         public string PasswordSalt { get; set; } = null!;
-        [FilterMapping("Rowguid")]
+        [FilterMapping("Customer.Rowguid")]
         public Guid Rowguid { get; set; }
-        [FilterMapping("ModifiedDate")]
+        [FilterMapping("Customer.ModifiedDate")]
         public DateTime ModifiedDate { get; set; }
         [JsonIgnore]
+        [FilterMapping(typeof(CustomerAddressModel))]
         public dynamic CustomerAddresses { get; set; }
         [JsonIgnore]
+        [FilterMapping(typeof(SalesOrderFilterModel))]
         public dynamic SalesOrderHeaders { get; set; }
     }
 }

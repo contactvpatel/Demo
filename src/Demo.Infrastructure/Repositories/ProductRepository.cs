@@ -50,7 +50,7 @@ namespace Demo.Infrastructure.Repositories
                 throw new ApplicationException($"Sort parameter are required");
             }
             ResponseModelList<ProductResponseModel> listResponseToModel = new();
-            var customeFields = _responseToDynamic.AddRequiredFields(fields, "ProductId");
+            var customeFields = _responseToDynamic.AddRequiredFields<ProductResponseModel>(fields, "ProductId");
             customeFields = string.Join(",", ProductResponseModelFieldsMapping.MappingFields.Where(x => customeFields.Split(',').Any(y => y.Equals(x.Key, StringComparison.CurrentCultureIgnoreCase))).Select(x => x.Value).ToArray());
             var query = $@"select {customeFields}
                         From SalesLT.Product a with(nolock)

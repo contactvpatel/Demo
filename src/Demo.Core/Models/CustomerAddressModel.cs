@@ -30,16 +30,16 @@ namespace Demo.Core.Models
         // Dictionary to map model properties to SQL column names
         public static Dictionary<string, string> MappingFields = new Dictionary<string, string>
     {
-        { "CustomerId", "a.[CustomerId]" },
-        { "AddressId", "a.[AddressId]" },
-        { "AddressLine1", "b.[AddressLine1]" },
-        { "AddressLine2", "b.[AddressLine2]" },
-        { "City", "b.[City]" },
-        { "StateProvince", "b.[StateProvince]" },
-        { "CountryRegion", "b.[CountryRegion]" },
-        { "PostalCode", "b.[PostalCode]" },
-        { "Rowguid", "b.[Rowguid]" },
-        { "ModifiedDate", "b.[ModifiedDate]" }
+        { "a.CustomerId", "a.[CustomerId]" },
+        { "a.AddressId", "a.[AddressId]" },
+        { "b.AddressLine1", "b.[AddressLine1]" },
+        { "b.AddressLine2", "b.[AddressLine2]" },
+        { "b.City", "b.[City]" },
+        { "b.StateProvince", "b.[StateProvince]" },
+        { "b.CountryRegion", "b.[CountryRegion]" },
+        { "b.PostalCode", "b.[PostalCode]" },
+        { "b.Rowguid", "b.[Rowguid]" },
+        { "b.ModifiedDate", "b.[ModifiedDate]" }
     };
     }
 }

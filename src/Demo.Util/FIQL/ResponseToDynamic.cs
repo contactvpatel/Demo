@@ -267,8 +267,12 @@ namespace Demo.Util.FIQL
             return retValue;
         }
 
-        public async Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0)
+        public async Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo, int pageSize, string groupBy)
         {
+            query = query.Replace("\r", " ")
+                         .Replace("\n", " ")
+                         .Replace("\t", " ")
+                         .Trim();
 
             DynamicDapperResponseModel<T> responseToDynamicModel = new DynamicDapperResponseModel<T>();
             var filtersAndProperties = ConvertFiqlToDapper.FiqlToDapper<T>(filters ?? "");
@@ -278,6 +282,10 @@ namespace Demo.Util.FIQL
             if (!string.IsNullOrEmpty(filters))
             {
                 query += $" WHERE {filters}";
+            }
+            if (!string.IsNullOrEmpty(groupBy))
+            {
+                query += $" GROUP BY {groupBy}";
             }
             if (pageNo > 0 && pageSize > 0)
             {
@@ -392,10 +400,10 @@ namespace Demo.Util.FIQL
             }
         }
 
-        public string AddRequiredFields(string fields, string requiredFields)
+        public string AddRequiredFields<T>(string fields, string requiredFields)
         {
             // Define the required fields
-            var _requiredFields = requiredFields.Split(',');
+            var _requiredFields = requiredFields.Split(',').Select(f => f.Trim()).ToArray();
 
             // Convert the input fields to a list of lowercase strings for comparison
             var fieldList = fields.Split(',')
@@ -411,15 +419,36 @@ namespace Demo.Util.FIQL
                 }
             }
 
+
+            List<string> finalFieldList = new List<string>();
+            // Get a list of property names from the model type
+            var modelProperties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var propertie in modelProperties)
+            {
+                if (fieldList.Contains(propertie.Name, StringComparer.CurrentCultureIgnoreCase))
+                {
+                    var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
+                    if (attribute != null)
+                    {
+                        finalFieldList.Add(attribute.ColumnName);
+                    }
+                    else
+                    {
+                        finalFieldList.Add(propertie.Name);
+                    }
+                }
+            }
+
             // Return the updated fields as a comma-separated string
-            return string.Join(",", fieldList);
+            return string.Join(",", finalFieldList);
         }
 
     }
 
     public interface IResponseToDynamic
     {
-        string AddRequiredFields(string fields, string requiredFields);
+        string AddRequiredFields<T>(string fields, string requiredFields);
         string GetPropertyNamesString<T>();
         bool TryGetMissingPropertyNames<T>(string fields, out string missingFields);
         IEnumerable<QueryIncludeModel> GetInclude(string include);
@@ -427,6 +456,6 @@ namespace Demo.Util.FIQL
         dynamic ConvertTo<T>(List<T> retVal, string select);
         dynamic ConvertTo<T>(T retVal, string select);
         Task<DynamicResponseModel> ContextResponse<T>(IQueryable result, string fields, string filters, string sort, int pageNo = 0, int pageSize = 0);
-        Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0);
+        Task<DynamicDapperResponseModel<T>> DapperResponse<T>(string query, string filters, string sort, int pageNo = 0, int pageSize = 0, string groupBy = "");
     }
 }

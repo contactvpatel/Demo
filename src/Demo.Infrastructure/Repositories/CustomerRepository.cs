@@ -63,10 +63,20 @@ namespace Demo.Infrastructure.Repositories
             var addressParts = new SubQueryParam();
             var salesorderParts = new SubQueryParam();
 
-            var customeFields = _responseToDynamic.AddRequiredFields(fields, "CustomerId");
-            customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
+            var customeFields = _responseToDynamic.AddRequiredFields<CustomerModel>(fields, "CustomerId");
             var query = $"SELECT {customeFields} FROM SalesLT.Customer WITH(NOLOCK)";
-            var customerResponse = await _responseToDynamic.DapperResponse<CustomerModel>(query, filters, sort, pageNo, pageSize);
+
+            if (filters?.ToLower().Contains("customeraddresses") ?? false)
+            {
+                query = query + " " + CustomeraddressQuery();
+            }
+
+            if (filters?.ToLower().Contains("salesorderheaders") ?? false)
+            {
+                query = query + " " + SalesOrderHeadersQuery();
+            }
+
+            var customerResponse = await _responseToDynamic.DapperResponse<CustomerModel>(query, filters, sort, pageNo, pageSize, customeFields);
 
             List<CustomerModel> retVal = customerResponse.Data ?? new List<CustomerModel>();
 
@@ -102,6 +112,32 @@ namespace Demo.Infrastructure.Repositories
             responseModel.TotalRecords = customerResponse.TotalRecords;
             responseModel.Responsefields = fields;
             return responseModel;
+        }
+
+        private string CustomeraddressQuery()
+        {
+            var query = @"LEFT OUTER JOIN (select a.CustomerId,a.AddressId,b.AddressLine1,b.AddressLine2,b.City,b.StateProvince,b.CountryRegion,b.PostalCode
+                            From SalesLT.CustomerAddress a with(nolock)
+                            join SalesLT.[Address] b with(nolock) on a.AddressID = b.AddressID) CustomerAddresses on CustomerAddresses.CustomerID = Customer.CustomerID";
+            return query;
+        }
+        private string SalesOrderHeadersQuery(string filters="")
+        {
+            var query = @"
+            LEFT OUTER JOIN (select A.CustomerID,A.SalesOrderID,A.RevisionNumber,A.OrderDate,A.DueDate,A.ShipDate,A.Status,A.OnlineOrderFlag,A.SalesOrderNumber
+,A.PurchaseOrderNumber,A.AccountNumber,A.ShipToAddressID,A.BillToAddressID,A.ShipMethod,A.CreditCardApprovalCode,A.SubTotal,A.TaxAmt,A.Freight,A.TotalDue,A.Comment
+,B.SalesOrderDetailID,B.OrderQty,B.ProductID,B.UnitPrice,B.UnitPriceDiscount,B.LineTotal
+,C.[Name] ProductName,C.ProductNumber,C.Color,C.StandardCost,C.ListPrice,C.Size,C.[Weight],C.ProductCategoryID,C.ProductModelID,C.SellStartDate,C.SellEndDate,C.DiscontinuedDate
+,D.ParentProductCategoryID,D.[Name] ProductCategory
+,E.[Name] ProductModel
+from 
+SalesLT.SalesOrderHeader A
+left join SalesLT.SalesOrderDetail B on B.SalesOrderID = A.SalesOrderID
+left join SalesLT.Product C on C.ProductID = B.ProductID
+left join SalesLT.ProductCategory D on D.ProductCategoryID = C.ProductCategoryID
+left join SalesLT.ProductModel E on E.ProductModelID = C.ProductModelID) SalesOrderHeaders on SalesOrderHeaders.CustomerID = Customer.CustomerID";
+
+            return query;
         }
     }
 }

@@ -56,8 +56,7 @@ namespace Demo.Infrastructure.Repositories
             var salesorderDetailParts = new SubQueryParam();
             ResponseModelList<SalesOrderDetailResponse> salesOrderDetails = new();
 
-            var customeFields = _responseToDynamic.AddRequiredFields(fields,"SalesOrderId,CustomerId");
-            customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
+            var customeFields = _responseToDynamic.AddRequiredFields<SalesOrderHeaderModel>(fields,"SalesOrderId,CustomerId");
             var query = $@"select {customeFields} From SalesLT.SalesOrderHeader with(nolock)";
             var SalesOrderHeaderResponse = await _responseToDynamic.DapperResponse<SalesOrderHeaderModel>(query, filters, sort, pageNo, pageSize);
 
@@ -97,8 +96,7 @@ namespace Demo.Infrastructure.Repositories
             var productDetailParts = new SubQueryParam();
             ResponseModelList<ProductResponseModel> productDetail = new();
 
-            var customeFields = _responseToDynamic.AddRequiredFields(fields, "SalesOrderId,ProductId");
-            customeFields = string.Join(",", customeFields.Split(',').Select(x => $"[{x}]").ToArray());
+            var customeFields = _responseToDynamic.AddRequiredFields<SalesOrderDetailResponse>(fields, "SalesOrderId,ProductId");
             var query = $@"select {customeFields} From SalesLT.SalesOrderDetail with(nolock)";
             var salesOrderDetailResponse = await _responseToDynamic.DapperResponse<SalesOrderDetailResponse>(query, filters, sort, pageNo, pageSize);
 

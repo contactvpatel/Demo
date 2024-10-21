@@ -1,4 +1,6 @@
-﻿namespace Demo.Util.FIQL
+﻿using System.Reflection;
+
+namespace Demo.Util.FIQL
 {
     public static class ConvertFiqlToDapper
     {
@@ -92,21 +94,41 @@
                     var parts = SplitConditions(orCondition, '=').ToArray();
                     if (parts.Length < 3)
                     {
-                        throw new ArgumentException("Invalid FIQL query");
+                        throw new ArgumentException("Invalid filters");
                     }
 
                     string property = parts[0];
                     string op = parts[1];
                     string value = parts[2].Trim('(', ')');
-
-                    var propertie = properties.Where(x => x.Name.Equals(property, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
-                    if (propertie != null)
+                    PropertyInfo propertie;
+                    if (property.Contains('.'))
                     {
-                        var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
-
-                        if (attribute != null)
+                        propertie = properties.Where(x => x.Name.Equals(property.Split('.').FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                        if (propertie != null)
                         {
-                            property = attribute.ColumnName;
+                            var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
+
+                            if (attribute != null)
+                            {
+                                propertie = attribute.T.GetProperties().Where(x => x.Name.Equals(property.Split('.').LastOrDefault(), StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault(); ;
+                                if (propertie == null)
+                                {
+                                    throw new ArgumentException($"Unsupported type: {op}");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        propertie = properties.Where(x => x.Name.Equals(property, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+                        if (propertie != null)
+                        {
+                            var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
+
+                            if (attribute != null)
+                            {
+                                property = attribute.ColumnName;
+                            }
                         }
                     }
 
