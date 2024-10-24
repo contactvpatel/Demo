@@ -5,6 +5,7 @@ namespace Demo.Util.FIQL
     {
         public string ColumnName { get; }
         public Type T { get; }
+        public bool ComputedColumn { get; } = false;
         public FilterMappingAttribute(string columnName)
         {
             ColumnName = columnName;
@@ -12,6 +13,10 @@ namespace Demo.Util.FIQL
         public FilterMappingAttribute(Type type)
         {
             T = type;
+        }
+        public FilterMappingAttribute(bool computedColumn)
+        {
+            ComputedColumn = computedColumn;
         }
     }
 }

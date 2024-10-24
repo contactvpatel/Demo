@@ -431,7 +431,8 @@ namespace Demo.Util.FIQL
                     var attribute = propertie.GetCustomAttributes(typeof(FilterMappingAttribute), false).FirstOrDefault() as FilterMappingAttribute;
                     if (attribute != null)
                     {
-                        finalFieldList.Add(attribute.ColumnName);
+                        if (!attribute.ComputedColumn)
+                            finalFieldList.Add(attribute.ColumnName);
                     }
                     else
                     {
